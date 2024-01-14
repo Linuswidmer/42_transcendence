@@ -1,0 +1,34 @@
+<!-- website/templates/website/index.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Room</title>
+</head>
+<body>
+    <h1>Welcome to the Chat Room!</h1>
+    <textarea id="chat-area" cols="40" rows="10"></textarea><br>
+    <input id="chat-input" type="text" size="40">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        var chatArea = document.getElementById('chat-area');
+        var chatInput = document.getElementById('chat-input');
+
+		var wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+		var wsPath = wsScheme + "://" + window.location.host + "/ws/chat/";
+		var socket = new WebSocket(wsPath);
+
+        socket.onmessage = function(event) {
+            var message = JSON.parse(event.data).message;
+            chatArea.value += message + '\n';
+        };
+
+        function sendMessage() {
+            var message = chatInput.value;
+            socket.send(JSON.stringify({'message': message}));
+            chatInput.value = '';
+        }
+    </script>
+</body>
+</html>
