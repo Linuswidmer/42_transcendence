@@ -21,4 +21,5 @@ urlpatterns = [
     path("", include("website.urls")),
 	path("chat/", include("chat.urls")),
     path("admin/", admin.site.urls),
+	path("pong/", include("pong.urls")),
 ]
