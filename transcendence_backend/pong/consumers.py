@@ -4,6 +4,8 @@ from asgiref.sync import async_to_sync
 import json
 
 class PongConsumer(WebsocketConsumer):
+    client_id = 0
+
     def connect(self):
         self.room_group_name = 'pong_group'
         async_to_sync(self.channel_layer.group_add)(
@@ -12,17 +14,30 @@ class PongConsumer(WebsocketConsumer):
         )
         self.accept()
 
+        PongConsumer.client_id += 1
+        self.client_id = PongConsumer.client_id
+
+        self.send(text_data=json.dumps({
+            'client_id': self.client_id
+        }))
+
         # Initialize ball properties
         self.ballX = 400  # Half of canvas width
         self.ballY = 300  # Half of canvas height
         self.ballSpeedX = 2
         self.ballSpeedY = 2
 
+        # Initialize paddle properties
+        self.leftPaddleY = 0
+        self.rightPaddleY = 0
+
     def disconnect(self, close_code):
         async_to_sync(self.channel_layer.group_discard)(
             self.room_group_name,
             self.channel_name
         )
+
+        PongConsumer.client_id -= 1
 
     # Update ball position
     def update_ball_position(self):
@@ -42,8 +57,14 @@ class PongConsumer(WebsocketConsumer):
     # Handle messages from WebSocket
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        self.leftPaddleY = text_data_json.get('leftPaddleY')
-        self.rightPaddleY = text_data_json.get('rightPaddleY')
+        leftPaddleY = text_data_json.get('leftPaddleY')
+        rightPaddleY = text_data_json.get('rightPaddleY')
+
+        # Update paddle positions only if they are included in the received data
+        if leftPaddleY is not None:
+            self.leftPaddleY = leftPaddleY
+        if rightPaddleY is not None:
+            self.rightPaddleY = rightPaddleY
 
         # Update ball position
         self.update_ball_position()

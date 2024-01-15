@@ -31,6 +31,9 @@
             + '/ws/pong/'
         );
 
+        // server properties
+        let clientId;
+
         const canvas = document.getElementById('pongCanvas');
         const ctx = canvas.getContext('2d');
 
@@ -77,60 +80,40 @@
             leftPaddleY = serverLeftPaddleY;
             rightPaddleY = serverRightPaddleY;
 
-            if (keys['w'] && leftPaddleY > 0) {
-                leftPaddleY -= paddleSpeed;
+            if (clientId === 1)
+            {
+                if (keys['w'] && leftPaddleY > 0) {
+                    leftPaddleY -= paddleSpeed;
+                }
+                if (keys['s'] && leftPaddleY < canvas.height - paddleHeight) {
+                    leftPaddleY += paddleSpeed;
+                }
+            } else if (clientId === 2)
+            {
+                if (keys['ArrowUp'] && rightPaddleY > 0) {
+                    rightPaddleY -= paddleSpeed;
+                }
+                if (keys['ArrowDown'] && rightPaddleY < canvas.height - paddleHeight) {
+                    rightPaddleY += paddleSpeed;
+                }
             }
-            if (keys['s'] && leftPaddleY < canvas.height - paddleHeight) {
-                leftPaddleY += paddleSpeed;
-            }
-
-            if (keys['ArrowUp'] && rightPaddleY > 0) {
-                rightPaddleY -= paddleSpeed;
-            }
-            if (keys['ArrowDown'] && rightPaddleY < canvas.height - paddleHeight) {
-                rightPaddleY += paddleSpeed;
-            }
-            ////////////////////////////
-            // Update Paddle Positions 
-            // let leftPaddleMoved = false;
-            // let rightPaddleMoved = false;
-
-            // // Update paddle positions based on key input
-            // if (keys['w'] && leftPaddleY > 0) {
-            //     leftPaddleUpdatePos = leftPaddleY - paddleSpeed;
-            //     leftPaddleMoved = true;
-            // }
-            // if (keys['s'] && leftPaddleY < canvas.height - paddleHeight) {
-            //     leftPaddleUpdatePos = leftPaddleY + paddleSpeed;
-            //     leftPaddleMoved = true;
-            // }
-
-            // if (keys['ArrowUp'] && rightPaddleY > 0) {
-            //     rightPaddleUpdatePos = rightPaddleY - paddleSpeed;
-            //     rightPaddleMoved = true;
-            // }
-            // if (keys['ArrowDown'] && rightPaddleY < canvas.height - paddleHeight) {
-            //     rightPaddleUpdatePos = rightPaddleY + paddleSpeed;
-            //     rightPaddleMoved = true;
-            // }
-
-            // if (leftPaddleMoved || rightPaddleMoved) {
-            //     chatSocket.send(JSON.stringify({
-            //         'leftPaddleY': leftPaddleUpdatePos,
-            //         'rightPaddleY': rightPaddleUpdatePos
-            //     }));
-            // }
         }
-
 
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
-            console.log('Paddle positions:', data);
+
+            if (data.client_id !== undefined) {
+                clientId = data.client_id;
+                console.log('client id: ', data.client_id);
+            }
+
             if (data.leftPaddleY !== undefined) {
             serverLeftPaddleY = data.leftPaddleY;
+            console.log('left paddle y: ', data.leftPaddleY);
             }
             if (data.rightPaddleY !== undefined) {
                 serverRightPaddleY = data.rightPaddleY;
+                console.log('right paddle y: ', data.rightPaddleY);
             }
             if (data.ballX !== undefined) {
             ballX = data.ballX;
@@ -167,11 +150,14 @@
             gameLoop();
 
             intervalId = setInterval(function() {
-                chatSocket.send(JSON.stringify({
-                    'leftPaddleY': leftPaddleY,
-                    'rightPaddleY': rightPaddleY
-                }));
-            }, 20);
+            let data = {};
+            if (clientId === 1) {
+                data = {'leftPaddleY': leftPaddleY};
+            } else if (clientId === 2) {
+                data = {'rightPaddleY': rightPaddleY};
+            }
+            chatSocket.send(JSON.stringify(data));
+        }, 50);
         };
     </script>
 </body>
