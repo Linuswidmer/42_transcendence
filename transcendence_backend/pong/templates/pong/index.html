@@ -22,6 +22,8 @@
     </style>
 </head>
 <body>
+    <div id="leftScore" style="position: absolute; left: 50%; transform: translateX(-50%); top: 10px;">0</div>
+    <div id="rightScore" style="position: absolute; left: 50%; transform: translateX(-50%); top: 30px;">0</div>
     <canvas id="pongCanvas" width="600" height="400"></canvas>
     <button id="startButton">Start</button>
 
@@ -40,6 +42,11 @@
 
         // server properties
         let clientId;
+
+        let leftScore = 0;
+        let rightScore = 0;
+        const leftScoreElement = document.getElementById('leftScore');
+        const rightScoreElement = document.getElementById('rightScore');
 
         const canvas = document.getElementById('pongCanvas');
         const ctx = canvas.getContext('2d');
@@ -111,22 +118,28 @@
 
             if (data.client_id !== undefined) {
                 clientId = data.client_id;
-                console.log('client id: ', data.client_id);
             }
-
             if (data.leftPaddleY !== undefined) {
-            serverLeftPaddleY = data.leftPaddleY;
-            console.log('left paddle y: ', data.leftPaddleY);
+                serverLeftPaddleY = data.leftPaddleY;
             }
             if (data.rightPaddleY !== undefined) {
                 serverRightPaddleY = data.rightPaddleY;
-                console.log('right paddle y: ', data.rightPaddleY);
             }
             if (data.ballX !== undefined) {
-            ballX = data.ballX;
+                ballX = data.ballX;
             }
             if (data.ballY !== undefined) {
                 ballY = data.ballY;
+            }
+            if (data.scorePlayerLeft !== undefined) {
+                leftScore = data.scorePlayerLeft;
+                console.log('scorePlayerLeft:', data.scorePlayerLeft);
+                leftScoreElement.textContent = leftScore;
+            }
+            if (data.scorePlayerRight !== undefined) {
+                rightScore = data.scorePlayerRight;
+                console.log('scorePlayerRight:', data.scorePlayerRight);
+                rightScoreElement.textContent = rightScore;
             }
         };
 

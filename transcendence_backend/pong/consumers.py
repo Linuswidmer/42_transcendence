@@ -5,15 +5,17 @@ import json
 
 class GameState:
     def __init__(self):
-        self.reset()
+        self.leftPaddleY = 0
+        self.rightPaddleY = 0
+        self.scorePlayerLeft = 0
+        self.scorePlayerRight = 0
+        self.ball_reset()
 
-    def reset(self):
+    def ball_reset(self):
         self.ballX = 300
         self.ballY = 200
         self.ballSpeedX = 2
         self.ballSpeedY = 2
-        self.leftPaddleY = 0
-        self.rightPaddleY = 0
 
     def update_ball_position(self):
         self.ballX += self.ballSpeedX
@@ -29,8 +31,12 @@ class GameState:
             self.ballSpeedX = -self.ballSpeedX
 
         # Reset the ball if it goes out of bounds
-        if self.ballX < 0 or self.ballX > 600:  # Assuming canvas width is 600
-            self.reset()
+        if self.ballX < 0:
+            self.scorePlayerRight += 1
+            self.ball_reset()
+        if self.ballX > 600:
+            self.scorePlayerLeft += 1
+            self.ball_reset()
 
 # Create a single instance of the game state
 game_state = GameState()
@@ -60,7 +66,9 @@ class PongConsumer(WebsocketConsumer):
             'leftPaddleY': game_state.leftPaddleY,
             'rightPaddleY': game_state.rightPaddleY,
             'ballX': game_state.ballX,
-            'ballY': game_state.ballY
+            'ballY': game_state.ballY,
+            'scorePlayerLeft': game_state.scorePlayerLeft,
+            'scorePlayerRight': game_state.scorePlayerRight
         }))
 
     def receive(self, text_data):
@@ -96,5 +104,7 @@ class PongConsumer(WebsocketConsumer):
                 'leftPaddleY': game_state.leftPaddleY,
                 'rightPaddleY': game_state.rightPaddleY,
                 'ballX': game_state.ballX,
-                'ballY': game_state.ballY
+                'ballY': game_state.ballY,
+                'scorePlayerLeft': game_state.scorePlayerLeft,
+                'scorePlayerRight': game_state.scorePlayerRight
             }))
