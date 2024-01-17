@@ -3,10 +3,17 @@
 /*****************************************************************************/
 
 ///////////////////////////////
+// Define Constants
+
+const   GAME_REFRESH_RATE = 20;
+const   PADDLE_WIDTH = 10;
+const   PADDLE_HEIGHT = 60;
+const   PADDLE_SPEED = 5;
+const   BALL_RADIUS = 10;
+
+///////////////////////////////
 // General Setup
-let clientId;
-const keys = {};
-let intervalId;
+const   keys = {};
 
 window.addEventListener('keydown', handleKeyDown);
 window.addEventListener('keyup', handleKeyUp);
@@ -26,36 +33,29 @@ function startGame() {
 
 const startButton = document.getElementById('startButton');
 startButton.addEventListener('click', startGame); // crashes if the start game is pressed twice
+
 const canvas = document.getElementById('pongCanvas');
 const ctx = canvas.getContext('2d');
-
 
 ///////////////////////////////
 // Setup Scoreboard
 
-let leftScore = 0;
-let rightScore = 0;
-const leftScoreElement = document.getElementById('leftScore');
-const rightScoreElement = document.getElementById('rightScore');
+let     leftScore = 0;
+let     rightScore = 0;
+const   leftScoreElement = document.getElementById('leftScore');
+const   rightScoreElement = document.getElementById('rightScore');
 
 
 ///////////////////////////////
 // Setup Game Objects
 
-const paddleWidth = 10;
-const paddleHeight = 60;
-const paddleSpeed = 5;
+let     clientLeftPaddleY = 0;
+let     clientRightPaddleY = 0;
+let     serverLeftPaddleY = 0
+let     serverRightPaddleY = 0
 
-let leftPaddleY = 0;
-let rightPaddleY = 0;
-let leftPaddleUpdatePos = 0;
-let rightPaddleUpdatePos = 0;
-let serverLeftPaddleY = 0
-let serverRightPaddleY = 0
-
-let ballX;
-let ballY;
-let ballRadius = 10;
+let     ballX;
+let     ballY;
 
 /*****************************************************************************/
 /*                               Game functions                              */
@@ -63,12 +63,12 @@ let ballRadius = 10;
 
 function drawPaddle(x, y) {
     ctx.fillStyle = '#fff';
-    ctx.fillRect(x, y, paddleWidth, paddleHeight);
+    ctx.fillRect(x, y, PADDLE_WIDTH, PADDLE_HEIGHT);
 }
 
 function drawBall() {
     ctx.beginPath();
-    ctx.arc(ballX, ballY, ballRadius, 0, Math.PI*2);
+    ctx.arc(ballX, ballY, BALL_RADIUS, 0, Math.PI*2);
     ctx.fillStyle = "#fff";
     ctx.fill();
     ctx.closePath();
@@ -80,30 +80,30 @@ function draw() {
 
     // Draw paddles
     drawPaddle(0, serverLeftPaddleY);
-    drawPaddle(canvas.width - paddleWidth, serverRightPaddleY);
+    drawPaddle(canvas.width - PADDLE_WIDTH, serverRightPaddleY);
     drawBall();
 }
 
 function update() {
 
-    leftPaddleY = serverLeftPaddleY;
-    rightPaddleY = serverRightPaddleY;
+    clientLeftPaddleY = serverLeftPaddleY;
+    clientRightPaddleY = serverRightPaddleY;
 
     if (clientId === 1)
     {
-        if (keys['w'] && leftPaddleY > 0) {
-            leftPaddleY -= paddleSpeed;
+        if (keys['w'] && clientLeftPaddleY > 0) {
+            clientLeftPaddleY -= PADDLE_SPEED;
         }
-        if (keys['s'] && leftPaddleY < canvas.height - paddleHeight) {
-            leftPaddleY += paddleSpeed;
+        if (keys['s'] && clientLeftPaddleY < canvas.height - PADDLE_HEIGHT) {
+            clientLeftPaddleY += PADDLE_SPEED;
         }
     } else if (clientId === 2)
     {
-        if (keys['ArrowUp'] && rightPaddleY > 0) {
-            rightPaddleY -= paddleSpeed;
+        if (keys['ArrowUp'] && clientRightPaddleY > 0) {
+            clientRightPaddleY -= PADDLE_SPEED;
         }
-        if (keys['ArrowDown'] && rightPaddleY < canvas.height - paddleHeight) {
-            rightPaddleY += paddleSpeed;
+        if (keys['ArrowDown'] && clientRightPaddleY < canvas.height - PADDLE_HEIGHT) {
+            clientRightPaddleY += PADDLE_SPEED;
         }
     }
 }
@@ -124,48 +124,49 @@ const chatSocket = new WebSocket(
     + '/ws/pong/'
 );
 
-// Handle messages sent by the server
-chatSocket.onmessage = function(e) {
-    const data = JSON.parse(e.data);
-
-    if (data.client_id !== undefined) {
-        clientId = data.client_id;
-    }
-    if (data.leftPaddleY !== undefined) {
-        serverLeftPaddleY = data.leftPaddleY;
-    }
-    if (data.rightPaddleY !== undefined) {
-        serverRightPaddleY = data.rightPaddleY;
-    }
-    if (data.ballX !== undefined) {
-        ballX = data.ballX;
-    }
-    if (data.ballY !== undefined) {
-        ballY = data.ballY;
-    }
-    if (data.scorePlayerLeft !== undefined) {
-        leftScore = data.scorePlayerLeft;
-        leftScoreElement.textContent = leftScore;
-    }
-    if (data.scorePlayerRight !== undefined) {
-        rightScore = data.scorePlayerRight;
-        rightScoreElement.textContent = rightScore;
-    }
-};
-
 chatSocket.onopen = function(e) {
-    // Initialize paddle positions
-
-    // Start the game loop
     gameLoop();
 
-    intervalId = setInterval(function() {
+    setInterval(function() {
     let data = {};
     if (clientId === 1) {
-        data = {'leftPaddleY': leftPaddleY};
+        data = {'leftPaddleY': clientLeftPaddleY};
     } else if (clientId === 2) {
-        data = {'rightPaddleY': rightPaddleY};
+        data = {'rightPaddleY': clientRightPaddleY};
     }
     chatSocket.send(JSON.stringify(data));
-}, 20);
+    }, GAME_REFRESH_RATE);
+}; 
+
+// Handle messages sent by the server
+chatSocket.onmessage = function(e) {
+    try{
+        const data = JSON.parse(e.data);
+    
+        if (data.client_id !== undefined) {
+            const clientId = data.client_id;
+        }
+        if (data.leftPaddleY !== undefined) {
+            serverLeftPaddleY = data.leftPaddleY;
+        }
+        if (data.rightPaddleY !== undefined) {
+            serverRightPaddleY = data.rightPaddleY;
+        }
+        if (data.ballX !== undefined) {
+            ballX = data.ballX;
+        }
+        if (data.ballY !== undefined) {
+            ballY = data.ballY;
+        }
+        if (data.scorePlayerLeft !== undefined) {
+            leftScore = data.scorePlayerLeft;
+            leftScoreElement.textContent = leftScore;
+        }
+        if (data.scorePlayerRight !== undefined) {
+            rightScore = data.scorePlayerRight;
+            rightScoreElement.textContent = rightScore;
+        }
+    } catch (error) {
+        console.log('Error parsing JSON:', error);
+    }
 };
