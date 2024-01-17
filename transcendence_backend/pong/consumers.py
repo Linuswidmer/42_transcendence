@@ -3,17 +3,22 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 import json
 
+WIDTH = 600
+HEIGHT = 400
+PADDLE_WIDTH = 10
+PADDLE_HEIGHT = 60
+
 class GameState:
     def __init__(self):
-        self.leftPaddleY = 0
-        self.rightPaddleY = 0
+        self.leftPaddleY = HEIGHT / 2 - PADDLE_HEIGHT / 2
+        self.rightPaddleY = HEIGHT / 2 - PADDLE_HEIGHT / 2
         self.scorePlayerLeft = 0
         self.scorePlayerRight = 0
         self.ball_reset()
 
     def ball_reset(self):
-        self.ballX = 300
-        self.ballY = 200
+        self.ballX = HEIGHT / 2
+        self.ballY = WIDTH / 2
         self.ballSpeedX = 2
         self.ballSpeedY = 2
 
@@ -22,19 +27,19 @@ class GameState:
         self.ballY += self.ballSpeedY
 
         # Bounce the ball off the top and bottom of the screen
-        if self.ballY < 0 or self.ballY > 400:  # Assuming canvas height is 400
+        if self.ballY < 0 or self.ballY > HEIGHT:
             self.ballSpeedY = -self.ballSpeedY
 
         # Bounce the ball off the paddles
-        if (self.ballX <= 10 and self.ballY >= self.leftPaddleY and self.ballY <= self.leftPaddleY + 60) or \
-            (self.ballX >= 590 and self.ballY >= self.rightPaddleY and self.ballY <= self.rightPaddleY + 60):
+        if (self.ballX <= PADDLE_WIDTH and self.ballY >= self.leftPaddleY and self.ballY <= self.leftPaddleY + PADDLE_HEIGHT) or \
+            (self.ballX >= (WIDTH - PADDLE_WIDTH) and self.ballY >= self.rightPaddleY and self.ballY <= self.rightPaddleY + PADDLE_HEIGHT):
             self.ballSpeedX = -self.ballSpeedX
 
         # Reset the ball if it goes out of bounds
         if self.ballX < 0:
             self.scorePlayerRight += 1
             self.ball_reset()
-        if self.ballX > 600:
+        if self.ballX > WIDTH:
             self.scorePlayerLeft += 1
             self.ball_reset()
 
@@ -43,7 +48,7 @@ game_state = GameState()
 
 class PongConsumer(WebsocketConsumer):
     client_id = 0
-    ready = False
+    ready   = False
     ready_clients = 0
 
     def connect(self):

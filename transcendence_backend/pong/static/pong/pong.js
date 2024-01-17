@@ -13,7 +13,10 @@ const   BALL_RADIUS = 10;
 
 ///////////////////////////////
 // General Setup
+let     clientId;
 const   keys = {};
+
+console.log('clientID: ', clientId);
 
 window.addEventListener('keydown', handleKeyDown);
 window.addEventListener('keyup', handleKeyUp);
@@ -144,7 +147,7 @@ chatSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
     
         if (data.client_id !== undefined) {
-            const clientId = data.client_id;
+            clientId = data.client_id;
         }
         if (data.leftPaddleY !== undefined) {
             serverLeftPaddleY = data.leftPaddleY;
