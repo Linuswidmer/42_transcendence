@@ -25,11 +25,24 @@ django_asgi_app = get_asgi_application()
 import chat.routing
 import pong.routing
 
+# application = ProtocolTypeRouter(
+#     {
+#         "http": django_asgi_app,
+#         "websocket": AllowedHostsOriginValidator(
+#             AuthMiddlewareStack(URLRouter(websocket_urlpatterns))
+#         ),
+#     }
+# )
 application = ProtocolTypeRouter(
     {
         "http": django_asgi_app,
         "websocket": AllowedHostsOriginValidator(
-            AuthMiddlewareStack(URLRouter(websocket_urlpatterns))
+            AuthMiddlewareStack(
+                URLRouter(
+                    chat.routing.websocket_urlpatterns +
+                    pong.routing.websocket_urlpatterns
+                )
+            )
         ),
     }
 )
