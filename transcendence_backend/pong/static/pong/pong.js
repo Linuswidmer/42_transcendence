@@ -143,6 +143,7 @@ chatSocket.onopen = function(e) {
 
 // Handle messages sent by the server
 chatSocket.onmessage = function(e) {
+    console.log('Message from server:');
     try{
         const data = JSON.parse(e.data);
     
