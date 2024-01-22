@@ -6,24 +6,10 @@ from asyncio import Lock
 import json
 import asyncio
 
-from channels.routing import ProtocolTypeRouter, URLRouter
-from django.urls import path
-
 WIDTH = 600
 HEIGHT = 400
 PADDLE_WIDTH = 10
 PADDLE_HEIGHT = 60
-
-import logging
-
-# Create a logger
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-handler = logging.StreamHandler()
-handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
 
 class GameState:
     def __init__(self):
@@ -62,7 +48,7 @@ class GameState:
 
 # Create a single instance of the game state
 game_state = GameState()
-channel_layer = get_channel_layer()
+# channel_layer = get_channel_layer()
 
 class PongConsumer(AsyncWebsocketConsumer):
     client_id = 0
@@ -95,12 +81,6 @@ class PongConsumer(AsyncWebsocketConsumer):
             'scorePlayerRight': game_state.scorePlayerRight
         }))
 
-    async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
-
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         leftPaddleY = text_data_json.get('leftPaddleY')
@@ -119,57 +99,23 @@ class PongConsumer(AsyncWebsocketConsumer):
                 self.ready = ready
                 PongConsumer.ready_clients += 1
 
-            # # If both players are ready, start the game
-            # if PongConsumer.ready_clients == 2:  # Add this line
-            #     # Update the game state with the received paddle positions
-            #     if leftPaddleY is not None:
-            #         game_state.leftPaddleY = leftPaddleY
-            #     if rightPaddleY is not None:
-            #         game_state.rightPaddleY = rightPaddleY
+            # If both players are ready, start the game
+            if PongConsumer.ready_clients == 2:  # Add this line
+                # Update the game state with the received paddle positions
+                if leftPaddleY is not None:
+                    game_state.leftPaddleY = leftPaddleY
+                if rightPaddleY is not None:
+                    game_state.rightPaddleY = rightPaddleY
 
-            #     # Update the ball position
-            #     game_state.update_ball_position()
+                # Update the ball position
+                game_state.update_ball_position()
 
-            #     # Send the updated game state to the client
-            #     await self.send(text_data=json.dumps({
-            #         'leftPaddleY': game_state.leftPaddleY,
-            #         'rightPaddleY': game_state.rightPaddleY,
-            #         'ballX': game_state.ballX,
-            #         'ballY': game_state.ballY,
-            #         'scorePlayerLeft': game_state.scorePlayerLeft,
-            #         'scorePlayerRight': game_state.scorePlayerRight
-            #     }))
-    async def send_game_state(self, event):
-        # Send the game state to the client
-        await self.send(text_data=json.dumps(event))
-
-async def update_game_state():
-    while True:
-        # Update the ball position
-        game_state.update_ball_position()
-        logger.info('This is a log message.')
-
-
-        # Send the updated game state to the client
-        await channel_layer.group_send(
-            'pong_group',
-            {
-                'type': 'send_game_state',
-                'leftPaddleY': game_state.leftPaddleY,
-                'rightPaddleY': game_state.rightPaddleY,
-                'ballX': game_state.ballX,
-                'ballY': game_state.ballY,
-                'scorePlayerLeft': game_state.scorePlayerLeft,
-                'scorePlayerRight': game_state.scorePlayerRight
-            }
-        )
-
-        await asyncio.sleep(0.01)
-
-application = ProtocolTypeRouter({
-    # ...
-    'websocket': URLRouter([
-        path('ws/pong/', PongConsumer.as_asgi()),
-    ]),
-    'background': update_game_state,
-})
+                # Send the updated game state to the client
+                await self.send(text_data=json.dumps({
+                    'leftPaddleY': game_state.leftPaddleY,
+                    'rightPaddleY': game_state.rightPaddleY,
+                    'ballX': game_state.ballX,
+                    'ballY': game_state.ballY,
+                    'scorePlayerLeft': game_state.scorePlayerLeft,
+                    'scorePlayerRight': game_state.scorePlayerRight
+                }))
