@@ -11,176 +11,95 @@ const   PADDLE_HEIGHT = 60;
 const   PADDLE_SPEED = 5;
 const   BALL_RADIUS = 10;
 
+class Paddle {
+	constructor() {
+		this.y = 0;
+		this.speed = PADDLE_SPEED;
+		this.position_buffer = [];
+	}
+
+	applyInput(input) {
+		this.y += input.press_time * this.speed;
+	}
+}
+
 ///////////////////////////////
 // Client
 
 class Client {
 	constructor(canvas) {
-		
+		//paddle or other game objects
+		this.paddle = new Paddle();
+
+		//input state
+		this.key_up = false;
+		this.key_down = false;
+
+		//UI
+		this.canvas = canvas;
+	}
+
+	processInputs() {
+		var now_ts = +new Date();
+		var last_ts = this.last_ts || now_ts;
+		var dt_sec = (now_ts - last_ts) / 1000.0;
+		this.last_ts = now_ts;
+	  
+		// Package player's input.
+		var input;
+		if (this.key_right) {
+		  input = { press_time: dt_sec };
+		} else if (this.key_left) {
+		  input = { press_time: -dt_sec };
+		} else {
+		  // Nothing interesting happened.
+		  return;
+		}
+
+		//client-side prediction
+		this.paddle.applyInput(input);
 	}
 }
 
-
-///////////////////////////////
-// General Setup
-let     clientId;
-const   keys = {};
-
-console.log('clientID: ', clientId);
-
-window.addEventListener('keydown', handleKeyDown);
-window.addEventListener('keyup', handleKeyUp);
-
-function handleKeyDown(e) {
-    keys[e.key] = true;
+var element = function(id) {
+	return document.getElementById(id);
 }
 
-function handleKeyUp(e) {
-    keys[e.key] = false;
+var keyHandler = function(e) {
+	if (e.key == 'd') {
+	  player2.key_right = (e.type == "keydown");
+	} else if (e.key == 'a') {
+	  player2.key_left = (e.type == "keydown");
+	} else {
+	  console.log(e)
+	}
 }
 
-function startGame() {
-    let data = {'ready': true};
-    chatSocket.send(JSON.stringify(data));
+var renderWorld = function(canvas, entities) {
+	// Clear the canvas.
+	canvas.width = canvas.width;
+  
+	var colours = ["blue", "red"];
+  
+	for (var i in entities) {
+	  var entity = entities[i];
+  
+	  // Compute size and position.
+	  var radius = canvas.height*0.9/2;
+	  var x = (entity.x / 10.0)*canvas.width;
+  
+	  // Draw the entity.
+	  var ctx = canvas.getContext("2d");
+	  ctx.beginPath();
+	  ctx.arc(x, canvas.height / 2, radius, 0, 2*Math.PI, false);
+	  ctx.fillStyle = colours[entity.entity_id];
+	  ctx.fill();
+	  ctx.lineWidth = 5;
+	  ctx.strokeStyle = "dark" + colours[entity.entity_id];
+	  ctx.stroke();
+	}
 }
 
-const startButton = document.getElementById('startButton');
-startButton.addEventListener('click', startGame); // crashes if the start game is pressed twice
+window.addEventListener('keydown', keyHandler);
 
-const canvas = document.getElementById('pongCanvas');
-const ctx = canvas.getContext('2d');
-
-///////////////////////////////
-// Setup Scoreboard
-
-let     leftScore = 0;
-let     rightScore = 0;
-const   leftScoreElement = document.getElementById('leftScore');
-const   rightScoreElement = document.getElementById('rightScore');
-
-
-///////////////////////////////
-// Setup Game Objects
-
-let     clientLeftPaddleY = 0;
-let     clientRightPaddleY = 0;
-let     serverLeftPaddleY = 0
-let     serverRightPaddleY = 0
-
-let     ballX;
-let     ballY;
-
-/*****************************************************************************/
-/*                               Game functions                              */
-/*****************************************************************************/
-
-function drawPaddle(x, y) {
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(x, y, PADDLE_WIDTH, PADDLE_HEIGHT);
-}
-
-function drawBall() {
-    ctx.beginPath();
-    ctx.arc(ballX, ballY, BALL_RADIUS, 0, Math.PI*2);
-    ctx.fillStyle = "#fff";
-    ctx.fill();
-    ctx.closePath();
-}
-
-function draw() {
-    // Clear the canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw paddles
-    drawPaddle(0, serverLeftPaddleY);
-    drawPaddle(canvas.width - PADDLE_WIDTH, serverRightPaddleY);
-    drawBall();
-}
-
-function update() {
-
-    clientLeftPaddleY = serverLeftPaddleY;
-    clientRightPaddleY = serverRightPaddleY;
-
-    if (clientId === 1)
-    {
-        if (keys['w'] && clientLeftPaddleY > 0) {
-            clientLeftPaddleY -= PADDLE_SPEED;
-        }
-        if (keys['s'] && clientLeftPaddleY < canvas.height - PADDLE_HEIGHT) {
-            clientLeftPaddleY += PADDLE_SPEED;
-        }
-    } else if (clientId === 2)
-    {
-        if (keys['ArrowUp'] && clientRightPaddleY > 0) {
-            clientRightPaddleY -= PADDLE_SPEED;
-        }
-        if (keys['ArrowDown'] && clientRightPaddleY < canvas.height - PADDLE_HEIGHT) {
-            clientRightPaddleY += PADDLE_SPEED;
-        }
-    }
-}
-
-function gameLoop() {
-    update();
-    draw();
-    requestAnimationFrame(gameLoop);
-}
-
-/*****************************************************************************/
-/*                          Websocket Communication                          */
-/*****************************************************************************/
-
-const chatSocket = new WebSocket(
-    'ws://'
-    + window.location.host
-    + '/ws/pong/'
-);
-
-chatSocket.onopen = function(e) {
-    gameLoop();
-
-    setInterval(function() {
-    let data = {};
-    if (clientId === 1) {
-        data = {'leftPaddleY': clientLeftPaddleY};
-    } else if (clientId === 2) {
-        data = {'rightPaddleY': clientRightPaddleY};
-    }
-    chatSocket.send(JSON.stringify(data));
-    }, GAME_REFRESH_RATE);
-}; 
-
-// Handle messages sent by the server
-chatSocket.onmessage = function(e) {
-    console.log('Message from server:');
-    try{
-        const data = JSON.parse(e.data);
-    
-        if (data.client_id !== undefined) {
-            clientId = data.client_id;
-        }
-        if (data.leftPaddleY !== undefined) {
-            serverLeftPaddleY = data.leftPaddleY;
-        }
-        if (data.rightPaddleY !== undefined) {
-            serverRightPaddleY = data.rightPaddleY;
-        }
-        if (data.ballX !== undefined) {
-            ballX = data.ballX;
-        }
-        if (data.ballY !== undefined) {
-            ballY = data.ballY;
-        }
-        if (data.scorePlayerLeft !== undefined) {
-            leftScore = data.scorePlayerLeft;
-            leftScoreElement.textContent = leftScore;
-        }
-        if (data.scorePlayerRight !== undefined) {
-            rightScore = data.scorePlayerRight;
-            rightScoreElement.textContent = rightScore;
-        }
-    } catch (error) {
-        console.log('Error parsing JSON:', error);
-    }
-};
+var player1 = new Client(element("player1_canvas"));
