@@ -64,17 +64,44 @@ class Ball extends Entity {
 ///////////////////////////////
 // Client
 
+class LagNetwork {
+	constructor() {
+		this.messages = [];
+	}
+
+	send(lag_ms, message) {
+		this.messages.push({recv_ts: +new Date() + lag_ms,
+			payload: message});
+	}
+
+	receive() {
+		var now = +new Date();
+		for (var i = 0; i < this.messages.length; i++) {
+			var message = this.messages[i];
+			if (message.recv_ts <= now) {
+				this.messages.splice(i, 1);
+				return message.payload;
+			}
+		}
+	}
+}
+
 class Client {
-	constructor(canvas, paddle) {
+	constructor(canvas) {
 		//local representation of entities
 		this.entities = [];
-		this.entities.push(paddle);
-
-		this.paddle = paddle;
 
 		//input state
 		this.key_left = false;
 		this.key_right = false;
+
+		// Simulated network connection.
+		this.network = new LagNetwork();
+		this.server = null;
+		this.lag = 0;
+
+		//identify client
+		this.client_id = 0;
 
 		//game improvements
 		this.client_side_prediction = true;
@@ -103,9 +130,13 @@ class Client {
 		  return;
 		}
 
+		// send the input to the server
+		input.entity_id = this.client_id;
+		this.server.network.send(this.lag. input);
+
 		//client-side prediction
 		if (this.client_side_prediction) {
-			this.paddle.applyInput(input);
+			this.entities[this.client_id].applyInput(input);
 		}
 	}
 
@@ -123,6 +154,70 @@ class Client {
 	update() {
 		this.processInputs();
 		renderWorld(this.canvas, this.entities);
+	}
+}
+
+class Server {
+	constructor() {
+		// Connected clients and their entities.
+		this.clients = [];
+		this.entities = [];
+
+		// Simulated network connection.
+		this.network = new LagNetwork();
+
+		// Default update rate.
+		this.setUpdateRate(10);
+	}
+
+	connect(client) {
+		client.server = this;
+
+		client.entity_id = this.clients.length;
+
+		this.clients.push(client);
+	}
+
+	setUpdateRate(hz) {
+		this.update_rate = hz;
+
+		clearInterval(this.update_interval);
+		this.update_interval = setInterval(() => { this.update(); },
+												1000 / this.update_rate);
+	}
+
+	update() {
+		this.processInputs();
+ 		this.sendWorldState();
+	}
+
+	processInputs() {
+		while (true) {
+			let message = this.network.receive();
+			if (!message)
+				break;
+
+			let id = message.entity_id;
+			this.entities[id].applyInput(message);
+		}
+	}
+
+	sendWorldState() {
+		let world_state = [];
+		let num_clients = this.clients.length;
+
+		for (var i = 0; i < num_clients; i++) {
+			let entity = this.entities[i];
+			world_state.push({entity_id: entity.entity_id,
+							position: entity.x,
+							last_processed_input: this.last_processed_input[i]});
+		}
+		
+    	// Broadcast the state to all the clients.
+		for (var i = 0; i < num_clients; i++) {
+			var client = this.clients[i];
+			client.network.send(client.lag, world_state);
+		}
 	}
 }
 
@@ -169,5 +264,3 @@ var paddle1 = new Paddle(50, 50, PADDLE_SPEED);
 //create a player
 //variable and function declaration is hoisted in JS (automatically moved to the top)
 var player1 = new Client(element("pongCanvas"), paddle1);
-
-
