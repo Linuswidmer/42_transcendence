@@ -6,20 +6,58 @@
 // Define Constants
 
 const   GAME_REFRESH_RATE = 20;
-const   PADDLE_WIDTH = 10;
-const   PADDLE_HEIGHT = 60;
-const   PADDLE_SPEED = 5;
+const   PADDLE_WIDTH = 60;
+const   PADDLE_HEIGHT = 10;
+const   PADDLE_SPEED = 50;
 const   BALL_RADIUS = 10;
+const	BALL_SPEED = 5;
 
-class Paddle {
-	constructor() {
-		this.y = 0;
-		this.speed = PADDLE_SPEED;
+class Entity {
+	constructor(x, y, speed) {
+		this.x = x;
+		this.y = y;
+		this.speed = speed;
 		this.position_buffer = [];
+		
+		//drawing on 2d canvas
+		this.ctx = canvas.getContext("2d");
+	}
+}
+
+class Paddle extends Entity {
+	constructor(x, y, speed) {
+		super(x, y, speed);
 	}
 
 	applyInput(input) {
-		this.y += input.press_time * this.speed;
+		this.x += input.press_time * this.speed;
+	}
+
+	draw(color) {
+		this.ctx.beginPath();
+		this.ctx.rect(this.x, this.y, PADDLE_WIDTH, PADDLE_HEIGHT);
+		this.ctx.fillStyle = color;
+		this.ctx.fill();
+		this.ctx.lineWidth = 5;
+		this.ctx.strokeStyle = "dark" + color;
+		this.ctx.stroke();
+	}
+}
+
+class Ball extends Entity {
+	constructor(x, y, speed) {
+		super(x, y, speed);
+		this.radius = BALL_RADIUS;
+	}
+
+	draw(color) {
+		this.ctx.beginPath();
+		this.ctx.arc(this.x, this.y, radius, 0, 2*Math.PI, false);
+		this.ctx.fillStyle = color;
+		this.ctx.fill();
+		this.ctx.lineWidth = 5;
+		this.ctx.strokeStyle = "dark" + color;
+		this.ctx.stroke();
 	}
 }
 
@@ -27,16 +65,25 @@ class Paddle {
 // Client
 
 class Client {
-	constructor(canvas) {
-		//paddle or other game objects
-		this.paddle = new Paddle();
+	constructor(canvas, paddle) {
+		//local representation of entities
+		this.entities = [];
+		this.entities.push(paddle);
+
+		this.paddle = paddle;
 
 		//input state
-		this.key_up = false;
-		this.key_down = false;
+		this.key_left = false;
+		this.key_right = false;
+
+		//game improvements
+		this.client_side_prediction = true;
 
 		//UI
 		this.canvas = canvas;
+
+		//set update rate for processing player input
+		this.setUpdateRate(50);
 	}
 
 	processInputs() {
@@ -57,49 +104,70 @@ class Client {
 		}
 
 		//client-side prediction
-		this.paddle.applyInput(input);
+		if (this.client_side_prediction) {
+			this.paddle.applyInput(input);
+		}
+	}
+
+	setUpdateRate(hz) {
+		this.update_rate = hz;
+
+		clearInterval(this.update_interval);
+
+		// passing this.update() with an arrow function preservers the Client object
+		this.update_interval = setInterval(() => {
+		  this.update();
+		}, 1000 / this.update_rate);
+	}
+
+	update() {
+		this.processInputs();
+		renderWorld(this.canvas, this.entities);
 	}
 }
 
-var element = function(id) {
+///////////////////////////////
+// Helpers
+
+function element(id) {
 	return document.getElementById(id);
 }
 
-var keyHandler = function(e) {
+function keyHandler(e) {
+	//reset key state
+	player1.key_left = false;
+	player1.key_right = false;
 	if (e.key == 'd') {
-	  player2.key_right = (e.type == "keydown");
+	player1.key_right = (e.type == "keydown");
 	} else if (e.key == 'a') {
-	  player2.key_left = (e.type == "keydown");
+	player1.key_left = (e.type == "keydown");
 	} else {
-	  console.log(e)
+	console.log(e)
 	}
 }
 
-var renderWorld = function(canvas, entities) {
+function renderWorld(canvas, entities) {
 	// Clear the canvas.
 	canvas.width = canvas.width;
-  
-	var colours = ["blue", "red"];
-  
+	
 	for (var i in entities) {
-	  var entity = entities[i];
-  
-	  // Compute size and position.
-	  var radius = canvas.height*0.9/2;
-	  var x = (entity.x / 10.0)*canvas.width;
-  
-	  // Draw the entity.
-	  var ctx = canvas.getContext("2d");
-	  ctx.beginPath();
-	  ctx.arc(x, canvas.height / 2, radius, 0, 2*Math.PI, false);
-	  ctx.fillStyle = colours[entity.entity_id];
-	  ctx.fill();
-	  ctx.lineWidth = 5;
-	  ctx.strokeStyle = "dark" + colours[entity.entity_id];
-	  ctx.stroke();
+	var entity = entities[i];
+
+	entity.draw("red");
 	}
 }
 
-window.addEventListener('keydown', keyHandler);
+//canvas where the pong game is displayed
+const canvas = element('pongCanvas');
 
-var player1 = new Client(element("player1_canvas"));
+//listen to keypresses inside the tab, no matter what html element is selected
+window.addEventListener('keydown', keyHandler);
+window.addEventListener('keyup', keyHandler);
+
+var paddle1 = new Paddle(50, 50, PADDLE_SPEED);
+
+//create a player
+//variable and function declaration is hoisted in JS (automatically moved to the top)
+var player1 = new Client(element("pongCanvas"), paddle1);
+
+
