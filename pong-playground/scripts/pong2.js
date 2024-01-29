@@ -1,10 +1,13 @@
+function element(id) {
+	return document.getElementById(id);
+}
+  
+const CANVAS_HEIGHT = element("server_canvas").height
+const CANVAS_WIDTH = element("server_canvas").width
+
 // =============================================================================
 //  An Entity in the world.
 // =============================================================================
-
-const   PADDLE_WIDTH = 60;
-const   PADDLE_HEIGHT = 10;
-const	BALL_RADIUS = 5;
 
 class Entity {
 	constructor(x, y, speed) {
@@ -14,6 +17,9 @@ class Entity {
 		this.position_buffer = [];
 	}
 }
+
+const   PADDLE_WIDTH = 60;
+const   PADDLE_HEIGHT = 10;
 
 class Paddle extends Entity {
 	constructor(x, y, speed) {
@@ -38,10 +44,27 @@ class Paddle extends Entity {
 	}
 }
 
+const	BALL_RADIUS = 5;
+const	BALL_DX = 30;
+const	BALL_DY = 30;
+const	BALL_ACCELERATION = 0.1;
+
+
 class Ball extends Entity {
 	constructor(x, y, speed) {
 		super(x, y, speed);
 		this.radius = BALL_RADIUS;
+		this.dx = BALL_DX;
+		this.dy = BALL_DY;
+		this.acceleration = BALL_ACCELERATION;
+	}
+
+	resetPosition() {
+		this.x = CANVAS_WIDTH / 2;
+		this.y = CANVAS_HEIGHT / 2;
+		this.dx = BALL_DX;
+		this.dy = BALL_DY;
+		this.acceleration = BALL_ACCELERATION;
 	}
 
 	draw(canvas, color) {
@@ -55,6 +78,128 @@ class Ball extends Entity {
 		this.ctx.lineWidth = 5;
 		this.ctx.strokeStyle = "dark" + color;
 		this.ctx.stroke();
+	}
+
+	accelerate(x, y, dx, dy, accel, dt) {
+		let x2  = x + (dt * dx) + (accel * dt * dt * 0.5);
+		let y2  = y + (dt * dy) + (accel * dt * dt * 0.5);
+		let dx2 = dx + (accel * dt) * (dx > 0 ? 1 : -1);
+		let dy2 = dy + (accel * dt) * (dy > 0 ? 1 : -1);
+		return { nx: (x2-x), ny: (y2-y), x: x2, y: y2, dx: dx2, dy: dy2 };
+	}
+
+	intercept (x1, y1, x2, y2, x3, y3, x4, y4, d) {
+		var denom = ((y4-y3) * (x2-x1)) - ((x4-x3) * (y2-y1));
+		if (denom != 0) {
+		  var ua = (((x4-x3) * (y1-y3)) - ((y4-y3) * (x1-x3))) / denom;
+		  if ((ua >= 0) && (ua <= 1)) {
+			var ub = (((x2-x1) * (y1-y3)) - ((y2-y1) * (x1-x3))) / denom;
+			if ((ub >= 0) && (ub <= 1)) {
+			  var x = x1 + (ua * (x2-x1));
+			  var y = y1 + (ua * (y2-y1));
+			  return { x: x, y: y, d: d};
+			}
+		  }
+		}
+		return null;
+	}
+
+	ballIntercept(ball, rect, nx, ny) {
+		var pt;
+		if (nx < 0) {
+		  pt = this.intercept(ball.x, ball.y, ball.x + nx, ball.y + ny, 
+									 rect.right  + ball.radius, 
+									 rect.top    - ball.radius, 
+									 rect.right  + ball.radius, 
+									 rect.bottom + ball.radius, 
+									 "right");
+		}
+		else if (nx > 0) {
+		  pt = this.intercept(ball.x, ball.y, ball.x + nx, ball.y + ny, 
+									 rect.left   - ball.radius, 
+									 rect.top    - ball.radius, 
+									 rect.left   - ball.radius, 
+									 rect.bottom + ball.radius,
+									 "left");
+		}
+		if (!pt) {
+		  if (ny < 0) {
+			pt = this.intercept(ball.x, ball.y, ball.x + nx, ball.y + ny, 
+									   rect.left   - ball.radius, 
+									   rect.bottom + ball.radius, 
+									   rect.right  + ball.radius, 
+									   rect.bottom + ball.radius,
+									   "bottom");
+		  }
+		  else if (ny > 0) {
+			pt = this.intercept(ball.x, ball.y, ball.x + nx, ball.y + ny, 
+									   rect.left   - ball.radius, 
+									   rect.top    - ball.radius, 
+									   rect.right  + ball.radius, 
+									   rect.top    - ball.radius,
+									   "top");
+		  }
+		}
+		return pt;
+	}
+	
+	update(dt, leftPaddle, rightPaddle) {
+		let pos = this.accelerate(this.x, this.y, this.dx, this.dy, this.acceleration, dt);
+		let maxX = CANVAS_WIDTH;
+		let maxY = CANVAS_HEIGHT;
+		let minX = 0;
+		let minY = 0;
+
+		if ((pos.dy > 0) && (pos.y > maxY)) {
+		//   pos.y = maxY;
+		//   pos.dy = -pos.dy;
+			this.resetPosition();
+			return;
+		}
+		else if ((pos.dy < 0) && (pos.y < minY)) {
+		//   pos.y = minY;
+		//   pos.dy = -pos.dy;
+			this.resetPosition();
+			return;
+		}
+		else if ((pos.dx > 0) && (pos.x > maxX)) {
+			pos.x = maxX;
+			pos.dx = -pos.dx;
+		}
+		else if ((pos.dx < 0) && (pos.x < minX)) {
+			pos.x = minX;
+			pos.dx = -pos.dx;
+		}
+
+		var paddle = (pos.dx < 0) ? leftPaddle : rightPaddle;
+		var pt     = this.ballIntercept(this, paddle, pos.nx, pos.ny);
+
+		if (pt) {
+			switch(pt.d) {
+			case 'left':
+			case 'right':
+				pos.x = pt.x;
+				pos.dx = -pos.dx;
+				break;
+			case 'top':
+			case 'bottom':
+				pos.y = pt.y;
+				pos.dy = -pos.dy;
+				break;
+			}
+
+			// add/remove spin based on paddle direction
+			if (paddle.up)
+			pos.dy = pos.dy * (pos.dy < 0 ? 0.5 : 1.5);
+			else if (paddle.down)
+			pos.dy = pos.dy * (pos.dy > 0 ? 0.5 : 1.5);
+		}
+
+
+		this.x = pos.x;
+		this.y = pos.y;
+		this.dx = pos.dx;
+		this.dy = pos.dy;
 	}
 }
 
@@ -347,6 +492,10 @@ Client.prototype.processServerMessages = function() {
   }
   
   Server.prototype.update = function() {
+	let leftPaddle = this.entities[0];
+	let rightPaddle = this.entities[1];
+
+	this.ball.update(1, leftPaddle, rightPaddle);
 	this.processInputs();
 	this.sendWorldState();
 	renderWorld(this.canvas, this.entities);
@@ -426,9 +575,9 @@ Server.prototype.sendWorldState = function() {
 }
 
 Server.prototype.addBall = function(canvas) {
-	let ball = new Ball(canvas.width / 2, canvas.height / 2, 0);
-	ball.entity_id = 2;
-	this.entities.push(ball);
+	this.ball = new Ball(canvas.width / 2, canvas.height / 2, 0);
+	this.ball.entity_id = 2;
+	this.entities.push(this.ball);
 }
 
   
@@ -452,10 +601,7 @@ Server.prototype.addBall = function(canvas) {
   }
   
   
-  var element = function(id) {
-	return document.getElementById(id);
-  }
-  
+
   // =============================================================================
   //  Get everything up and running.
   // =============================================================================
@@ -530,7 +676,9 @@ Server.prototype.addBall = function(canvas) {
   var player1 = new Client(element("player1_canvas"), element("player1_status"));
   var player2 = new Client(element("player2_canvas"), element("player2_status"));
   
-  
+  //for now the order is kind of important
+  //player connected first is on the left, second on the right
+  //ball has to be added afterwards (i know, not really elegant)
   // Connect the clients to the server.
   server.connect(player1);
   server.connect(player2);
