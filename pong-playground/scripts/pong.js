@@ -12,6 +12,8 @@ const   PADDLE_SPEED = 50;
 const   BALL_RADIUS = 10;
 const	BALL_SPEED = 5;
 
+const CLIENT_LAG = 150;
+
 class Entity {
 	constructor(x, y, speed) {
 		this.x = x;
@@ -132,7 +134,7 @@ class Client {
 
 		// send the input to the server
 		input.entity_id = this.client_id;
-		this.server.network.send(this.lag. input);
+		this.server.network.send(this.lag, input);
 
 		//client-side prediction
 		if (this.client_side_prediction) {
