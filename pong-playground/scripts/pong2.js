@@ -10,24 +10,48 @@ const CANVAS_WIDTH = element("server_canvas").width
 // =============================================================================
 
 class Entity {
-	constructor(x, y, speed) {
+	constructor(x, y, dx) {
 		this.x = x;
 		this.y = y;
-		this.speed = speed;
+		this.dx = dx;
 		this.position_buffer = [];
 	}
 }
 
-const   PADDLE_WIDTH = 60;
-const   PADDLE_HEIGHT = 10;
+const   PADDLE_WIDTH = 50;
+const   PADDLE_HEIGHT = 50;
 
 class Paddle extends Entity {
-	constructor(x, y, speed) {
-		super(x, y, speed);
+	constructor(x, y, dx) {
+		super(x, y, dx);
+		this.right = x + PADDLE_WIDTH;
+		this.left = x;
+		this.top = y;
+		this.bottom = y + PADDLE_HEIGHT;
+		this.isMovingLeft = false;
+		this.isMovingRight = false;
+	}
+
+	set_position(x, y) {
+		this.x = x;
+		this.y = y;
+		this.right = x + PADDLE_WIDTH;
+		this.left = x;
+		this.top = y;
+		this.bottom = y + PADDLE_HEIGHT;
 	}
 
 	applyInput(input) {
-		this.x += input.press_time * this.speed;
+		let new_x = this.x + input.press_time * this.dx;
+
+		if (new_x > this.x) {
+			this.isMovingRight = true;
+		} else if (new_x < this.x) {
+			this.isMovingLeft = true;
+		}
+
+		this.set_position(new_x, this.y);
+		// this.x += input.press_time * this.dx;
 	}
 
 	draw(canvas, color) {
@@ -45,14 +69,14 @@ class Paddle extends Entity {
 }
 
 const	BALL_RADIUS = 5;
-const	BALL_DX = 30;
-const	BALL_DY = 30;
-const	BALL_ACCELERATION = 0.1;
+const	BALL_DX = 3;
+const	BALL_DY = 3;
+const	BALL_ACCELERATION = 0.001;
 
 
 class Ball extends Entity {
-	constructor(x, y, speed) {
-		super(x, y, speed);
+	constructor(x, y, dx) {
+		super(x, y, dx);
 		this.radius = BALL_RADIUS;
 		this.dx = BALL_DX;
 		this.dy = BALL_DY;
@@ -75,7 +99,7 @@ class Ball extends Entity {
 		this.ctx.arc(this.x, this.y, this.radius, 0, 2*Math.PI, false);
 		this.ctx.fillStyle = color;
 		this.ctx.fill();
-		this.ctx.lineWidth = 5;
+		this.ctx.lineWidth = 1;
 		this.ctx.strokeStyle = "dark" + color;
 		this.ctx.stroke();
 	}
@@ -105,45 +129,55 @@ class Ball extends Entity {
 	}
 
 	ballIntercept(ball, rect, nx, ny) {
-		var pt;
-		if (nx < 0) {
-		  pt = this.intercept(ball.x, ball.y, ball.x + nx, ball.y + ny, 
-									 rect.right  + ball.radius, 
-									 rect.top    - ball.radius, 
-									 rect.right  + ball.radius, 
-									 rect.bottom + ball.radius, 
-									 "right");
-		}
-		else if (nx > 0) {
-		  pt = this.intercept(ball.x, ball.y, ball.x + nx, ball.y + ny, 
-									 rect.left   - ball.radius, 
-									 rect.top    - ball.radius, 
-									 rect.left   - ball.radius, 
-									 rect.bottom + ball.radius,
-									 "left");
-		}
-		if (!pt) {
-		  if (ny < 0) {
+		let pt = null;
+		if (ny < 0) {
 			pt = this.intercept(ball.x, ball.y, ball.x + nx, ball.y + ny, 
-									   rect.left   - ball.radius, 
-									   rect.bottom + ball.radius, 
-									   rect.right  + ball.radius, 
-									   rect.bottom + ball.radius,
-									   "bottom");
+								rect.left   - ball.radius, 
+								rect.bottom + ball.radius, 
+								rect.right  + ball.radius, 
+								rect.bottom + ball.radius,
+								"bottom");
 		  }
 		  else if (ny > 0) {
 			pt = this.intercept(ball.x, ball.y, ball.x + nx, ball.y + ny, 
-									   rect.left   - ball.radius, 
-									   rect.top    - ball.radius, 
-									   rect.right  + ball.radius, 
-									   rect.top    - ball.radius,
-									   "top");
+								rect.left   - ball.radius, 
+								rect.top    - ball.radius, 
+								rect.right  + ball.radius, 
+								rect.top    - ball.radius,
+								"top");
 		  }
-		}
-		return pt;
+		  if (!pt) {
+			if (nx < 0) {
+			  pt = this.intercept(ball.x, ball.y, ball.x + nx, ball.y + ny, 
+								  rect.right  + ball.radius, 
+								  rect.top    - ball.radius, 
+								  rect.right  + ball.radius, 
+								  rect.bottom + ball.radius, 
+								  "right");
+			}
+			else if (nx > 0) {
+			  pt = this.intercept(ball.x, ball.y, ball.x + nx, ball.y + ny, 
+								  rect.left   - ball.radius, 
+								  rect.top    - ball.radius, 
+								  rect.left   - ball.radius, 
+								  rect.bottom + ball.radius,
+								  "left");
+			}
+		  }
+		  return pt;
+	}
+
+	set_position(x, y) {
+		this.x = x;
+		this.y = y;
+	}
+
+	set_direction(dx, dy) {
+		this.dx = dx;
+		this.dy = dy;
 	}
 	
-	update(dt, leftPaddle, rightPaddle) {
+	update(dt, topPaddle, bottomPaddle) {
 		let pos = this.accelerate(this.x, this.y, this.dx, this.dy, this.acceleration, dt);
 		let maxX = CANVAS_WIDTH;
 		let maxY = CANVAS_HEIGHT;
@@ -171,7 +205,7 @@ class Ball extends Entity {
 			pos.dx = -pos.dx;
 		}
 
-		var paddle = (pos.dx < 0) ? leftPaddle : rightPaddle;
+		var paddle = (pos.dy < 0) ? topPaddle : bottomPaddle;
 		var pt     = this.ballIntercept(this, paddle, pos.nx, pos.ny);
 
 		if (pt) {
@@ -189,17 +223,15 @@ class Ball extends Entity {
 			}
 
 			// add/remove spin based on paddle direction
-			if (paddle.up)
-			pos.dy = pos.dy * (pos.dy < 0 ? 0.5 : 1.5);
-			else if (paddle.down)
-			pos.dy = pos.dy * (pos.dy > 0 ? 0.5 : 1.5);
+			if (paddle.isMovingRight) {
+				pos.dx = pos.dx * (pos.dx < 0 ? 0.5 : 1.5);
+			} else if (paddle.isMovingLeft) {
+				pos.dx = pos.dx * (pos.dx > 0 ? 0.5 : 1.5);
+			}
 		}
 
-
-		this.x = pos.x;
-		this.y = pos.y;
-		this.dx = pos.dx;
-		this.dy = pos.dy;
+		this.set_position(pos.x, pos.y);
+		this.set_direction(pos.dx, pos.dy);
 	}
 }
 
@@ -368,8 +400,9 @@ Client.prototype.processServerMessages = function() {
 
 		if (state.entity_id == this.entity_id) {
 			// Received the authoritative position of this client's entity.
-			entity.x = state.x;
-			entity.y = state.y;
+			// entity.x = state.x;
+			// entity.y = state.y;
+			entity.set_position(state.x, state.y);
 
 			if (this.server_reconciliation) {
 			// Server Reconciliation. Re-apply all the inputs not yet processed by
@@ -478,8 +511,9 @@ Client.prototype.processServerMessages = function() {
 	entity.entity_id = client.entity_id;
   
 	// Set the initial state of the Entity (e.g. spawn point)
-	var spawn_points = [0, client.canvas.height - PADDLE_HEIGHT];
-	entity.y = spawn_points[client.entity_id];
+	var spawn_points = [PADDLE_HEIGHT, client.canvas.height -  (2 * PADDLE_HEIGHT)]; //usually - paddle height
+	// entity.y = spawn_points[client.entity_id];
+	entity.set_position(entity.x, spawn_points[client.entity_id]);
   }
   
   Server.prototype.setUpdateRate = function(hz) {
@@ -492,11 +526,16 @@ Client.prototype.processServerMessages = function() {
   }
   
   Server.prototype.update = function() {
-	let leftPaddle = this.entities[0];
-	let rightPaddle = this.entities[1];
+	let topPaddle = this.entities[0];
+	let bottomPaddle = this.entities[1];
 
-	this.ball.update(1, leftPaddle, rightPaddle);
+	topPaddle.isMovingLeft = false;
+	topPaddle.isMovingRight = false;
+	bottomPaddle.isMovingLeft = false;
+	bottomPaddle.isMovingRight = false;
+
 	this.processInputs();
+	this.ball.update(1, topPaddle, bottomPaddle);
 	this.sendWorldState();
 	renderWorld(this.canvas, this.entities);
   }
@@ -590,7 +629,7 @@ Server.prototype.addBall = function(canvas) {
 	// Clear the canvas.
 	canvas.width = canvas.width;
   
-	var colours = ["blue", "red", "green"];
+	var colours = ["blue", "red", "magenta"];
   
 	for (var i in entities) {
 	  var entity = entities[i];
@@ -653,20 +692,25 @@ Server.prototype.addBall = function(canvas) {
   }
   
   
-  // When the player presses the arrow keys, set the corresponding flag in the client.
-  var keyHandler = function(e) {
+// keyHandler is called for keydown and keyup
+// on keydown (given a movement key is pressed) -> a movement flag is set to true
+// on keyup -> movement flag is set to false
+function keyHandler(e) {
 	if (e.keyCode == 39) {
-	  player1.key_right = (e.type == "keydown");
+		player1.key_right = (e.type == "keydown");
 	} else if (e.keyCode == 37) {
-	  player1.key_left = (e.type == "keydown");
+		player1.key_left = (e.type == "keydown");
 	} else if (e.key == 'd') {
-	  player2.key_right = (e.type == "keydown");
+		player2.key_right = (e.type == "keydown");
 	} else if (e.key == 'a') {
-	  player2.key_left = (e.type == "keydown");
+		player2.key_left = (e.type == "keydown");
 	} else {
-	  console.log(e)
+		console.log(e)
 	}
-  }
+}
+
+
+
   document.body.onkeydown = keyHandler;
   document.body.onkeyup = keyHandler;
   
