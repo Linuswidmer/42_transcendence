@@ -69,8 +69,8 @@ class Paddle extends Entity {
 }
 
 const	BALL_RADIUS = 5;
-const	BALL_DX = 3;
-const	BALL_DY = 3;
+const	BALL_DX = -3;
+const	BALL_DY = -3;
 const	BALL_ACCELERATION = 0.001;
 
 
@@ -429,12 +429,13 @@ Client.prototype.processServerMessages = function() {
 
 			if (!this.entity_interpolation) {
 			// Entity interpolation is disabled - just accept the server's position.
-			entity.x = state.x;
-			entity.y = state.y;
+			// entity.x = state.x;
+			// entity.y = state.y;
+			entity.set_position(state.x, state.y);
 			} else {
 			// Add it to the position buffer.
 			var timestamp = +new Date();
-			entity.position_buffer.push([timestamp, state.x]);
+			entity.position_buffer.push([timestamp, state.x, state.y]);
 			}
 		}
 		}
@@ -442,38 +443,42 @@ Client.prototype.processServerMessages = function() {
 }
   
   
-  Client.prototype.interpolateEntities = function() {
-	// Compute render timestamp.
-	var now = +new Date();
-	var render_timestamp = now - (1000.0 / server.update_rate);
+Client.prototype.interpolateEntities = function() {
+    // Compute render timestamp.
+    var now = +new Date();
+    var render_timestamp = now - (1000.0 / server.update_rate);
   
-	for (var i in this.entities) {
-	  var entity = this.entities[i];
+    for (var i in this.entities) {
+      var entity = this.entities[i];
+        
+      // No point in interpolating this client's entity.
+      if (entity.entity_id == this.entity_id) {
+        continue;
+      }
   
-	  // No point in interpolating this client's entity.
-	  if (entity.entity_id == this.entity_id) {
-		continue;
-	  }
+      // Find the two authoritative positions surrounding the rendering timestamp.
+      var buffer = entity.position_buffer;
   
-	  // Find the two authoritative positions surrounding the rendering timestamp.
-	  var buffer = entity.position_buffer;
+      // Drop older positions.
+      while (buffer.length >= 2 && buffer[1][0] <= render_timestamp) {
+        buffer.shift();
+      }
   
-	  // Drop older positions.
-	  while (buffer.length >= 2 && buffer[1][0] <= render_timestamp) {
-		buffer.shift();
-	  }
+      // Interpolate between the two surrounding authoritative positions.
+      if (buffer.length >= 2 && buffer[0][0] <= render_timestamp && render_timestamp <= buffer[1][0]) {
+        var x0 = buffer[0][1];
+        var x1 = buffer[1][1];
+        var y0 = buffer[0][2];
+        var y1 = buffer[1][2];
+        var t0 = buffer[0][0];
+        var t1 = buffer[1][0];
   
-	  // Interpolate between the two surrounding authoritative positions.
-	  if (buffer.length >= 2 && buffer[0][0] <= render_timestamp && render_timestamp <= buffer[1][0]) {
-		var x0 = buffer[0][1];
-		var x1 = buffer[1][1];
-		var t0 = buffer[0][0];
-		var t1 = buffer[1][0];
-  
-		entity.x = x0 + (x1 - x0) * (render_timestamp - t0) / (t1 - t0);
-	  }
-	}
-  }
+        new_x = x0 + (x1 - x0) * (render_timestamp - t0) / (t1 - t0);
+        new_y = y0 + (y1 - y0) * (render_timestamp - t0) / (t1 - t0);
+        entity.set_position(new_x, new_y);
+      }
+    }
+}
   
   
   // =============================================================================
