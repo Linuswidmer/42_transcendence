@@ -90,7 +90,8 @@ class Pong:
 			# In this case, we reverse the y-direction of the ball to simulate a bounce.
 			if abs((ball.y + ball.dy * dt) - paddle.y) < ball.radius or abs((ball.y + ball.dy * dt) - (paddle.y + paddle.height)) < ball.radius:
 		   		ball.dy *= -1
-			else: # The ball hit the side of the paddle
+			else:
+				# The ball hit the side of the paddle
 				ball.dx *= -1
 		
 			# increase or decrease dx of the ball if the paddle is moving
@@ -118,35 +119,56 @@ bottomPaddle = pong.bottomPaddle
 ball = pong.ball
 
 def input_from_keyboard(topPaddle, bottomPaddle):
-    running = True
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_LEFT:
-                topPaddle.isMoving = True
-                topPaddle.direction = -1
-            elif event.key == pygame.K_RIGHT:
-                topPaddle.isMoving = True
-                topPaddle.direction = 1
-            elif event.key == pygame.K_a:
-                bottomPaddle.isMoving = True
-                bottomPaddle.direction = -1
-            elif event.key == pygame.K_d:
-                bottomPaddle.isMoving = True
-                bottomPaddle.direction = 1
-        elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                topPaddle.isMoving = False
-            elif event.key == pygame.K_a or event.key == pygame.K_d:
-                bottomPaddle.isMoving = False
-    return running
+	running = True
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT:
+			running = False
+		elif event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_LEFT:
+				topPaddle.isMoving = True
+				topPaddle.direction = -1
+			elif event.key == pygame.K_RIGHT:
+				topPaddle.isMoving = True
+				topPaddle.direction = 1
+			elif event.key == pygame.K_a:
+				bottomPaddle.isMoving = True
+				bottomPaddle.direction = -1
+			elif event.key == pygame.K_d:
+				bottomPaddle.isMoving = True
+				bottomPaddle.direction = 1
+		elif event.type == pygame.KEYUP:
+			if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+				topPaddle.isMoving = False
+			elif event.key == pygame.K_a or event.key == pygame.K_d:
+				bottomPaddle.isMoving = False
+	return running
+
+def visualize_game(canvas, topPaddle, bottomPaddle, ball):
+	# Draw canvas
+	canvas.fill((0, 0, 0))  # Clear the canvas with black
+
+	# Draw paddles
+	pygame.draw.rect(canvas, topPaddle.color, topPaddle.hitbox)  # Draw the paddle
+	pygame.draw.rect(canvas, bottomPaddle.color, bottomPaddle.hitbox)
+
+	# Draw ball
+	pygame.draw.circle(canvas, ball.color, (ball.x, ball.y),
+					ball.radius)
+
+	# Update the display
+	pygame.display.flip()
 
 
 while running:
+	#this determines the tickrate that our server can send updated
+	
 	dt = clock.tick(60) / 1000  # Amount of seconds between each loop
-	# Event handling
+
+	# Event handling for keyboard
 	running = input_from_keyboard(topPaddle, bottomPaddle)
+
+	# backend would usually receive keypresses via JSON
+	# API for this need to be developed
 
 	topPaddle.move(dt)  # Pass the input to the move function
 	bottomPaddle.move(dt)  # Pass the input to the move function
@@ -155,19 +177,12 @@ while running:
 
 	ball.move(dt)
 
-	# Draw canvas
-	canvas.fill((0, 0, 0))  # Clear the canvas with black
+	# develop API to send world state to client
 
-	# Draw paddles
-	pygame.draw.rect(canvas, pong.topPaddle.color, pong.topPaddle.hitbox)  # Draw the paddle
-	pygame.draw.rect(canvas, pong.bottomPaddle.color, pong.bottomPaddle.hitbox)
+	# visualize the game for development/debugging 
+	visualize_game(canvas, topPaddle, bottomPaddle, ball)
 
-	# Draw ball
-	pygame.draw.circle(canvas, pong.ball.color, (pong.ball.x, pong.ball.y),
-					pong.ball.radius)
-
-	# Update the display
-	pygame.display.flip()
+	
 
 # Quit Pygame
 pygame.quit()
