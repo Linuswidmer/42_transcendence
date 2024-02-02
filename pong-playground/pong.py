@@ -37,7 +37,7 @@ class Ball(Entity):
 		if new_y - self.radius < 0 or new_y + self.radius > SCREEN_HEIGHT:
 			self.dy *= -1
 
-		self.update_pos(self.x + (self.dx * dt), self.y + (self.dy * dt))
+		self.update_pos(new_x, new_y)
 
 
 class Paddle(Entity):
@@ -47,33 +47,57 @@ class Paddle(Entity):
 		self.height = height
 		self.color = color
 		self.hitbox = pygame.Rect(self.x, self.y,self.width, self.height)
+		self.isMoving = False
+		self.direction = 0
 
 	def update_pos(self, x: int):
 		self.x = x
 		self.hitbox = pygame.Rect(self.x, self.y,self.width, self.height)
 
 	def move(self, dt) -> None:
-		self.update_pos(self.x + (self.dx * dt))
+		if (self.isMoving):
+			new_x = self.x + (self.dx * dt * self.direction)
+
+	   		# Check if the new position would be outside the screen
+			if new_x < 0:
+				new_x = 0
+			elif new_x + self.width > SCREEN_WIDTH:
+				new_x = SCREEN_WIDTH - self.width
+
+			self.update_pos(new_x)
 
 class Pong:
+	# change initial properties of entities here
 	def __init__(self) -> None:
-		self.topPaddle = Paddle(400, 580, 200, 0, 70, 15, (255, 255, 255))
+		self.topPaddle = Paddle(SCREEN_WIDTH / 2 - 70, 0,
+						200, 0, 70, 15, (255, 255, 255))
+		self.bottomPaddle = Paddle(SCREEN_WIDTH / 2 - 70, SCREEN_HEIGHT - 15,
+						200, 0, 70, 15, (255, 255, 255))
 		self.ball = Ball(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2,
-				   200, 200, 5, (255, 255, 255))
+				   		200, 200, 5, (255, 255, 255))
 		
-	def check_ball_paddle_collision(self, dt, moveTop, directionTop):
+	def check_ball_paddle_collision(self, dt):
 		ball = self.ball
-		topPaddle = self.topPaddle
 
-		if (ball.hitbox.colliderect(topPaddle.hitbox)):
-			if abs((ball.y + ball.dy*dt) - topPaddle.y) < ball.radius or abs((ball.y + ball.dy*dt) - (topPaddle.y + topPaddle.height)) < ball.radius:
+		# if the ball is moving up (negative dy) the possible 
+		# collision will be with the top paddle
+		paddle = self.topPaddle if ball.dy < 0 else self.bottomPaddle
+
+		# Check if the ball's hitbox collides with the paddle's hitbox
+		if (ball.hitbox.colliderect(paddle.hitbox)):
+			# If the ball's new y-position is within its radius of the top or bottom of the paddle,
+   			# it means the ball has hit the top or bottom of the paddle.
+			# In this case, we reverse the y-direction of the ball to simulate a bounce.
+			if abs((ball.y + ball.dy * dt) - paddle.y) < ball.radius or abs((ball.y + ball.dy * dt) - (paddle.y + paddle.height)) < ball.radius:
 		   		ball.dy *= -1
 			else: # The ball hit the side of the paddle
 				ball.dx *= -1
 		
-			if (moveTop and directionTop == 1):
+			# increase or decrease dx of the ball if the paddle is moving
+			# the same/ or opposite direction respectively
+			if (paddle.isMoving and paddle.direction == 1):
 				ball.dx = ball.dx * (0.5 if ball.dx < 0 else 1.5)
-			elif (moveTop and directionTop == -1):
+			elif (paddle.isMoving and paddle.direction == -1):
 				ball.dx = ball.dx * (0.5 if ball.dx > 0 else 1.5)
 
 # Initialize Pygame
@@ -88,35 +112,57 @@ pong = Pong()
 # Game loop
 running = True
 clock = pygame.time.Clock()  # Add a clock to control the frame rate
-moveTop = False
-direction = 0
+
+topPaddle = pong.topPaddle
+bottomPaddle = pong.bottomPaddle
+ball = pong.ball
+
+def input_from_keyboard(topPaddle, bottomPaddle):
+    running = True
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                topPaddle.isMoving = True
+                topPaddle.direction = -1
+            elif event.key == pygame.K_RIGHT:
+                topPaddle.isMoving = True
+                topPaddle.direction = 1
+            elif event.key == pygame.K_a:
+                bottomPaddle.isMoving = True
+                bottomPaddle.direction = -1
+            elif event.key == pygame.K_d:
+                bottomPaddle.isMoving = True
+                bottomPaddle.direction = 1
+        elif event.type == pygame.KEYUP:
+            if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                topPaddle.isMoving = False
+            elif event.key == pygame.K_a or event.key == pygame.K_d:
+                bottomPaddle.isMoving = False
+    return running
+
 
 while running:
 	dt = clock.tick(60) / 1000  # Amount of seconds between each loop
 	# Event handling
-	for event in pygame.event.get():
-		if event.type == pygame.QUIT:
-			running = False
-		elif event.type == pygame.KEYDOWN:
-			if event.key == pygame.K_LEFT:
-				moveTop = True
-				direction = -1  # Record the direction
-			elif event.key == pygame.K_RIGHT:
-				moveTop = True
-				direction = 1  # Record the direction
-		elif event.type == pygame.KEYUP:
-			if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-				moveTop = False
+	running = input_from_keyboard(topPaddle, bottomPaddle)
 
-	if (moveTop):
-		pong.topPaddle.move(dt * direction)  # Pass the input to the move function
-	pong.check_ball_paddle_collision(dt, moveTop, direction)
-	pong.ball.move(dt)
+	topPaddle.move(dt)  # Pass the input to the move function
+	bottomPaddle.move(dt)  # Pass the input to the move function
+	
+	pong.check_ball_paddle_collision(dt)
 
-	# Draw everything
+	ball.move(dt)
+
+	# Draw canvas
 	canvas.fill((0, 0, 0))  # Clear the canvas with black
-	pygame.draw.rect(canvas, pong.topPaddle.color, pong.topPaddle.hitbox)  # Draw the paddle
 
+	# Draw paddles
+	pygame.draw.rect(canvas, pong.topPaddle.color, pong.topPaddle.hitbox)  # Draw the paddle
+	pygame.draw.rect(canvas, pong.bottomPaddle.color, pong.bottomPaddle.hitbox)
+
+	# Draw ball
 	pygame.draw.circle(canvas, pong.ball.color, (pong.ball.x, pong.ball.y),
 					pong.ball.radius)
 
