@@ -6,12 +6,12 @@ services:
     build:
       context: ./dnginx
       dockerfile: Dockerfile
-    # command: python manage.py runserver 0.0.0.0:8000
-    command: gunicorn dnginx.wsgi:application --bind 0.0.0.0:8000
+    command: sh -c "gunicorn dnginx.wsgi:application --bind 0.0.0.0:8000 --log-level debug & daphne -b 0.0.0.0 -p 8001 dnginx.asgi:application -v 0"
     volumes:
       - ./dnginx:/usr/src/app
     expose:
       - 8000
+      - 8001
     environment:
       - DJANGO_DEBUG=1
       - DJANGO_SECRET_KEY=django-insecure-8%y-ne*%$92fgae^4rx76mzqz&w7lp6tf%=xlo&vz!o%n2a@d8

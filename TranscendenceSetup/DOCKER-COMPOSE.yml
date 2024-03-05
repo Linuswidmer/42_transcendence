@@ -6,8 +6,7 @@ services:
     build:
       context: ./app_server
       dockerfile: Dockerfile
-    # command: python manage.py runserver 0.0.0.0:8000
-    command: gunicorn app_server.wsgi:application --bind 0.0.0.0:8000
+    command: sh -c "gunicorn app_server.wsgi:application --bind 0.0.0.0:8000 & daphne -b 0.0.0.0 -p 8001 app_server.asgi:application"
     volumes:
       - ./app_server:/usr/src/app
     expose:
