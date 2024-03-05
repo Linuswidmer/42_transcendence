@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  django:
+    container_name: django
+    build:
+      context: ./dnginx
+      dockerfile: Dockerfile
+    # command: python manage.py runserver 0.0.0.0:8000
+    command: gunicorn dnginx.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./dnginx:/usr/src/app
+    expose:
+      - 8000
+    environment:
+      - DJANGO_DEBUG=1
+      - DJANGO_SECRET_KEY=django-insecure-8%y-ne*%$92fgae^4rx76mzqz&w7lp6tf%=xlo&vz!o%n2a@d8
+      - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+    
+  nginx:
+    container_name: nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    depends_on:
+      - django
+    ports:
+      - 8443:8443
+    volumes:
+      - ./nginx/certs:/etc/nginx/ssl
