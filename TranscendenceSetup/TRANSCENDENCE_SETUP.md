@@ -6,11 +6,25 @@ mkdir transcendence
 cd transcendence
 
 cp DOCKER-COMPOSE.yml docker-compose.yml
+cp ENV.DEV env.dev
 cp MAKEFILE Makefile
 
-// setup the PostgreSQL before setting up Django?
 
-# 1.  Setting up Django in a container
+# 1. Setup postgre SQL
+
+// update the settings.py Databases environment variables
+DATABASES = {
+    "default": {
+        "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": os.environ.get("SQL_DATABASE", BASE_DIR / "db.sqlite3"),
+        "USER": os.environ.get("SQL_USER", "user"),
+        "PASSWORD": os.environ.get("SQL_PASSWORD", "password"),
+        "HOST": os.environ.get("SQL_HOST", "localhost"),
+        "PORT": os.environ.get("SQL_PORT", "5432"),
+    }
+}
+
+# 2.  Setting up Django in a container
 
 virtualenv venv
 source venv/bin/activate
@@ -89,18 +103,14 @@ urlpatterns = [
     'channels',
 ]
 
-// follow the django channels tutorial for the websockets
-
-// adjust the app_server/asgi.py
-
-// create a routing.py
-
-// create a websocket consumer
-
-// update settings.py
+// IMPORTANT!!!
+// setup a routing.py in app_server to handle incoming ws connections
+// setup the app_server/asgi.py which is used to launch daphne for incoming ws connections
+// the appp_server/asgi.py relies on the pong/routing.py for url pattern matching
 
 
-# 2. Setting up NGINX for https and wss
+
+# 3. Setting up NGINX for https and wss
 
 cd ~/transcendence
 
@@ -110,8 +120,6 @@ cd nginx
 cp DOCKERFILE_NGINX Dockerfile
 cp NGINX.CONF nginx.conf
 cp -r NGINX_CERT cert
-
-
 
 
 # Helpful commands
