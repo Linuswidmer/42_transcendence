@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Test</title>
+</head>
+<body>
+    <h1>WebSocket Test</h1>
+    <div id="messages"></div>
+
+    <!-- Button to trigger WebSocket connection -->
+    <button onclick="connectWebSocket()">Connect WebSocket</button>
+
+    <!-- Testing WebSocket -->
+    <script>
+        function connectWebSocket() {
+            const ws = new WebSocket(
+            'ws://'
+            + window.location.host +
+            '/ws/pong/'
+            );
+
+            ws.onopen = function() {
+                console.log('WebSocket connection established.');
+                appendMessage('WebSocket connection established.');
+            };
+
+            ws.onmessage = function(event) {
+                console.log('Message received:', event.data);
+                appendMessage('Message received: ' + event.data);
+            };
+
+            ws.onclose = function() {
+                console.log('WebSocket connection closed.');
+                appendMessage('WebSocket connection closed.');
+            };
+
+            function appendMessage(message) {
+                const messagesDiv = document.getElementById('messages');
+                messagesDiv.innerHTML += '<p>' + message + '</p>';
+            }
+        }
+    </script>
+</body>
+</html>
