@@ -1,0 +1,3 @@
+venv/
+**/postgres_data/
+**/postgres_data2/
