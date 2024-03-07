@@ -1,46 +1,40 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebSocket Test</title>
+    <title>Pong Game</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+
+        canvas {
+            border: 2px solid #fff;
+        }
+
+        #startButton {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
 </head>
 <body>
-    <h1>WebSocket Test</h1>
-    <div id="messages"></div>
-
-    <!-- Button to trigger WebSocket connection -->
-    <button onclick="connectWebSocket()">Connect WebSocket</button>
-
-    <!-- Testing WebSocket -->
-    <script>
-        function connectWebSocket() {
-            const ws = new WebSocket(
-            'ws://'
-            + window.location.host +
-            '/ws/pong/'
-            );
-
-            ws.onopen = function() {
-                console.log('WebSocket connection established.');
-                appendMessage('WebSocket connection established.');
-            };
-
-            ws.onmessage = function(event) {
-                console.log('Message received:', event.data);
-                appendMessage('Message received: ' + event.data);
-            };
-
-            ws.onclose = function() {
-                console.log('WebSocket connection closed.');
-                appendMessage('WebSocket connection closed.');
-            };
-
-            function appendMessage(message) {
-                const messagesDiv = document.getElementById('messages');
-                messagesDiv.innerHTML += '<p>' + message + '</p>';
-            }
-        }
-    </script>
+    <div id="leftScore" style="position: absolute; left: 50%; transform: translateX(-50%); top: 10px;">0</div>
+    <div id="rightScore" style="position: absolute; left: 50%; transform: translateX(-50%); top: 30px;">0</div>
+    <canvas id="pongCanvas" width="600" height="400" style="display: none;"></canvas>
+    <button id="startLocalGame">Start Local Game</button>
+    <script src="{% static 'pong/pong_local.js' %}"></script>
+    <script src="{% static 'pong/script.js' %}"></script>
 </body>
 </html>
