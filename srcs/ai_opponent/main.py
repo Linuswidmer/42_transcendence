@@ -2,7 +2,6 @@ import pygame
 from pong import Game
 import time
 from pong_ai_opponent import AIPongOpponent
-from GameDataCollector import GameData
 
 window = pygame.display.set_mode((700,500))
 game = Game(window, 700, 500)
@@ -45,4 +44,6 @@ while run:
 
 	clock.tick(60)
 
+gd.endGame()
+gd.printData()
 pygame.quit()

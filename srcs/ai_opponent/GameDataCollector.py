@@ -53,7 +53,7 @@ class GameData:
 			self.ballHitsAcceptingPlayer += 1
 		
 
-	def endRally(self, initiatingPlayerWon=True);
+	def endRally(self, initiatingPlayerWon=True):
 		self.currentRallyHits = 0
 		if initiatingPlayerWon:
 			self.acceptingPlayerStrikeCtr = 0
@@ -67,4 +67,9 @@ class GameData:
 			if self.acceptingPlayerStrikeCtr > self.longestStreakAcceptingPlayer:
 					self.longestStreakAcceptingPlayer = self.acceptingPlayerStrikeCtr
 			self.scoreAcceptingPlayer =+ 1
+	
+	def printData(self):
+		attributes = vars(self)
+		for attribute, value in attributes.items():
+			print(f"{attribute}: {value}")
 

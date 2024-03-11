@@ -2,6 +2,8 @@ from .paddle import Paddle
 from .ball import Ball
 import pygame
 import random
+from GameDataCollector import GameData
+
 pygame.init()
 
 
