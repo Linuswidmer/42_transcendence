@@ -17,11 +17,28 @@
             font-family: Arial, sans-serif;
         }
 
+        #loggedInMessage {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
         canvas {
             border: 2px solid #fff;
         }
 
-        #startButton {
+        #startButton, #startTournamentButton {
+            display: inline-block; /* Display buttons inline */
+            margin-right: 10px; /* Add some spacing between buttons */
+        }
+
+        #submitLocalPlayerNames, #submitLocalTournamentPlayers {
+            display: none; /* Display buttons block */
+            margin-top: 10px; /* Add some spacing between buttons */
+        }
+
+        .player-input {
+            display: none;
             position: absolute;
             top: 50%;
             left: 50%;
@@ -30,11 +47,58 @@
     </style>
 </head>
 <body>
-    <div id="leftScore" style="position: absolute; left: 50%; transform: translateX(-50%); top: 10px;">0</div>
-    <div id="rightScore" style="position: absolute; left: 50%; transform: translateX(-50%); top: 30px;">0</div>
+    <div id="loggedInMessage"></div>
+
+    {% csrf_token %}
+    <!-- PONG GAME -->
+    <div id="scoreBoard">
+        <div id="leftScore" style="position: absolute; left: 50%; transform: translateX(-50%); top: 10px;">0</div>
+        <div id="rightScore" style="position: absolute; left: 50%; transform: translateX(-50%); top: 30px;">0</div>
+    </div>
     <canvas id="pongCanvas" width="600" height="400" style="display: none;"></canvas>
-    <button id="startLocalGame">Start Local Game</button>
+    
+    
+    
+    <!-- LOCAL GAME 1v1 -->
+    <button id="playLocalGame">Play Local Game</button>
+    <div id="playerInputsLocalGame" class="player-input">
+        <input type="text" id="localPlayer1Name" placeholder="Player 1 Name" value="a"><br>
+        <input type="text" id="localPlayer2Name" placeholder="Player 2 Name" value="b"><br>
+    </div>
+    <button id="submitLocalPlayerNames"> Submit </button>
+
+
+
+    <!-- TOURNAMENT 4 PLAYERS -->
+    <button id="playLocalTournament">Start Local Tournament</button>
+    
+    <div id="playerInputsTournament" class="player-input">
+        <input type="text" id="localTournament1Name" placeholder="Player 1 Name" value="a"><br>
+        <input type="text" id="localTournament2Name" placeholder="Player 2 Name" value="b"><br>
+        <input type="text" id="localTournament3Name" placeholder="Player 3 Name" value="c"><br>
+        <input type="text" id="localTournament4Name" placeholder="Player 4 Name" value="d"><br>
+        <button id="submitLocalTournamentPlayers">Submit</button>
+    </div>
+
+
+
+    <!-- TOURNAMENT TREE -->
+    <div id="tournamentTree"></div>
+
     <script src="{% static 'pong/pong_local.js' %}"></script>
     <script src="{% static 'pong/script.js' %}"></script>
+    
+    <script>
+        // Dummy implementation of logged in user
+        var loggedInUser = "Linus";
+        document.getElementById("loggedInMessage").textContent = "Logged in as " + loggedInUser;
+    
+        // Set the first player input to the logged in user
+        var player1Input = document.getElementById("localPlayer1Name");
+        player1Input.value = loggedInUser;
+
+        // Make the first player input read-only
+        player1Input.readOnly = true;
+    </script>
 </body>
 </html>

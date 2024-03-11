@@ -16,7 +16,7 @@ INSTALLED_APPS = [
     'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
-    'django.contrib.contenttypes',
+    'django.contrib.contenttypes',  
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
@@ -62,7 +62,7 @@ CHANNEL_LAYERS = {
 }
 
 ASGI_APPLICATION = 'app_server.routing.application'
-
+    
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
