@@ -111,7 +111,7 @@ function gameLoop() {
 function startLocalGame() {
 
     const roomName = "my_room";
-    const wsUrl = `wss://${window.location.host}/ws/pong/${roomName}/`; // this has to be modified to be a unique identifier
+    const wsUrl = `ws://${window.location.host}/ws/pong/${roomName}/`; // this has to be modified to be a unique identifier
 
     const ws = new WebSocket(wsUrl);
 

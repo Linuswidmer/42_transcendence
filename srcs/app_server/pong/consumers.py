@@ -6,115 +6,46 @@ from asyncio import Lock
 import json
 import asyncio
 from asgiref.sync import sync_to_async
+import pygame
+import time
+import threading
 
-WIDTH = 600
-HEIGHT = 400
-PADDLE_WIDTH = 10
-PADDLE_HEIGHT = 60
+# class PlayerConsumer(AsyncWebsocketConsumer):
+# 	async def connect(self):
+# 		self.group_name = "snek_game"
+# 		# Join a common group with all other players
+# 		await self.channel_layer.group_add(self.group_name, self.channel_name)
+# 		await self.accept()
 
-class GameState:
-    def __init__(self):
-        self.leftPaddleY = HEIGHT / 2 - PADDLE_HEIGHT / 2
-        self.rightPaddleY = HEIGHT / 2 - PADDLE_HEIGHT / 2
-        self.scorePlayerLeft = 0
-        self.scorePlayerRight = 0
-        self.ball_reset()
+# 	# Send game data to group after a Tick is processed
+# 	async def game_update(self, event):
+# 		# Send message to WebSocket
+# 		state = event["state"]
+# 		await self.send(json.dumps(state))
 
-    def ball_reset(self):
-        self.ballX = WIDTH / 2
-        self.ballY = HEIGHT / 2
-        self.ballSpeedX = 2
-        self.ballSpeedY = 2
+# 	# Receive message from Websocket
+# 	async def receive(self, text_data=None, bytes_data=None):
+# 		content = json.loads(text_data)
+# 		msg_type = content["type"]
+# 		msg = content["msg"]
+# 		if msg_type == "direction":
+# 			return await self.direction(msg)
+# 		elif msg_type == "join":
+# 			return await self.join(msg)
 
-    def update_ball_position(self):
-        self.ballX += self.ballSpeedX
-        self.ballY += self.ballSpeedY
+clock = pygame.time.Clock()
 
-        # Bounce the ball off the top and bottom of the screen
-        if self.ballY < 0 or self.ballY > HEIGHT:
-            self.ballSpeedY = -self.ballSpeedY
+class GameEngine(threading.Thread):
+	def run(self) -> None:
+		i = 0
+		while True:
+			dt = clock.tick(6)
+			# self.broadcast_state(self.state)
+			print("counter", i)
+			i += 1
 
-        # Bounce the ball off the paddles
-        if (self.ballX <= PADDLE_WIDTH and self.ballY >= self.leftPaddleY and self.ballY <= self.leftPaddleY + PADDLE_HEIGHT) or \
-            (self.ballX >= (WIDTH - PADDLE_WIDTH) and self.ballY >= self.rightPaddleY and self.ballY <= self.rightPaddleY + PADDLE_HEIGHT):
-            self.ballSpeedX = -self.ballSpeedX
 
-        # Reset the ball if it goes out of bounds
-        if self.ballX < 0:
-            self.scorePlayerRight += 1
-            self.ball_reset()
-        if self.ballX > WIDTH:
-            self.scorePlayerLeft += 1
-            self.ball_reset()
+engine = GameEngine()
 
-# Create a single instance of the game state
-
-class PongConsumer(AsyncWebsocketConsumer):
-    ready   = False
-    lock = Lock()
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.game_state = GameState()
-
-    async def connect(self):
-        self.room_group_name = self.scope['url_route']['kwargs']['room_name']
-        await self.channel_layer.group_add(
-            self.room_group_name,
-            self.channel_name
-        )
-        await self.accept()
-
-        # send the initial game state to the client (only one not the entire group/channel)
-        await self.send(text_data=json.dumps({
-            'leftPaddleY': self.game_state.leftPaddleY,
-            'rightPaddleY': self.game_state.rightPaddleY,
-            'ballX': self.game_state.ballX,
-            'ballY': self.game_state.ballY,
-            'scorePlayerLeft': self.game_state.scorePlayerLeft,
-            'scorePlayerRight': self.game_state.scorePlayerRight
-        }))
-    
-    async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
-
-    async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        leftPaddleY = text_data_json.get('leftPaddleY')
-        rightPaddleY = text_data_json.get('rightPaddleY')
-        ready = text_data_json.get('ready')
-
-        # Update the game state with the received paddle positions
-        async with PongConsumer.lock:
-            if leftPaddleY is not None:
-                self.game_state.leftPaddleY = leftPaddleY
-            if rightPaddleY is not None:
-                self.game_state.rightPaddleY = rightPaddleY
-
-            #Update player state
-            if ready is not None:
-                self.ready = ready
-
-            # If both players are ready, start the game
-            if self.ready is True:
-                # Update the game state with the received paddle positions
-                if leftPaddleY is not None:
-                    self.game_state.leftPaddleY = leftPaddleY
-                if rightPaddleY is not None:
-                    self.game_state.rightPaddleY = rightPaddleY
-
-                # Update the ball position
-                self.game_state.update_ball_position()
-
-                # Send the updated game state to the client
-                await self.send(text_data=json.dumps({
-                    'leftPaddleY': self.game_state.leftPaddleY,
-                    'rightPaddleY': self.game_state.rightPaddleY,
-                    'ballX': self.game_state.ballX,
-                    'ballY': self.game_state.ballY,
-                    'scorePlayerLeft': self.game_state.scorePlayerLeft,
-                    'scorePlayerRight': self.game_state.scorePlayerRight
-                }))
+# Start the thread (which will execute the run method)
+engine.start()
