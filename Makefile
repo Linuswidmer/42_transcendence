@@ -9,4 +9,4 @@ down:
 
 setup:
 	virtualenv venv && . venv/bin/activate
-	pip install -r ./srcs/requirements/app_server/requirements.txt
+	pip install -r ./srcs/app_server/requirements.txt
