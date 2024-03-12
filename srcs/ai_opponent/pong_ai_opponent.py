@@ -60,7 +60,7 @@ class AIPongOpponent:
 			self.paddleX = paddleX
 			self.paddleY = paddleY
 			randomFactor = random.choice((1, -1)) * random.random() #random float between -1.0 and +1.0
-			print(randomFactor)
+			#print(randomFactor)
 			self.geometricPredictedY = self.__predict_y_on_ai_paddleside() + randomFactor * self.paddleHeight / 2
 
 	def getAIDecision(self):

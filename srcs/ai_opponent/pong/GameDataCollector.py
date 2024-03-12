@@ -1,8 +1,10 @@
 import time
 import datetime
+import psycopg2
 
 class GameData:
-	def __init__(self, initiatingPlayer, acceptingPlayer):
+	def __init__(self, initiatingPlayer, acceptingPlayer, gameType):
+		self.gameType = gameType
 		self.gameStartTime = time.time() #
 		self.gameDuration = 0 #calculated at the end
 		self.matchDate = datetime.datetime.now().strftime("%Y-%m-%d") #
@@ -27,7 +29,7 @@ class GameData:
 		self.ballHitsAcceptingPlayer = 0 #
 
 	def endGame(self):
-		self.gameDuration = time.time() - self.gameStartTime
+		self.gameDuration = int(time.time() - self.gameStartTime)
 		if self.scoreInitiatingPlayer < self.scoreAcceptingPlayer:
 			self.winner = self.acceptingPlayer
 			self.loser = self.initiatingPlayer
@@ -66,10 +68,54 @@ class GameData:
 			self.acceptingPlayerStrikeCtr += 1
 			if self.acceptingPlayerStrikeCtr > self.longestStreakAcceptingPlayer:
 					self.longestStreakAcceptingPlayer = self.acceptingPlayerStrikeCtr
-			self.scoreAcceptingPlayer =+ 1
+			self.scoreAcceptingPlayer += 1
 	
 	def printData(self):
+		print('-----------------------------------------')
+		print('COLLECTED GAME DATA:\n')
 		attributes = vars(self)
 		for attribute, value in attributes.items():
 			print(f"{attribute}: {value}")
+		print('-----------------------------------------')
+	
+	def store_data_to_database(self):
+		# Connect to the PostgreSQL database
+		conn = psycopg2.connect(
+			dbname="postgres",
+			user="pong_user",
+			password="coucou",
+			host="127.0.0.1",
+			port="5432"
+		)
+
+		# Create a cursor object
+		cursor = conn.cursor()
+
+		# Insert data into the table
+		cursor.execute("""
+	INSERT INTO pong_djangogamedata (
+		"gameType", "gameDuration", "matchDate", "matchTime", "initiatingPlayer", "acceptingPlayer",
+		"scoreInitiatingPlayer", "scoreAcceptingPlayer", "longestStreakInitiatingPlayer",
+		"longestStreakAcceptingPlayer", "longestBallRallyHits", "winner", "loser",
+		"ballMissesTotal", "ballMissesInitiatingPlayer", "ballMissesAcceptingPlayer",
+		"ballHitsTotal", "ballHitsInitiatingPlayer", "ballHitsAcceptingPlayer"
+	) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+""", (
+	self.gameType, self.gameDuration, self.matchDate, self.matchTime,
+	self.initiatingPlayer, self.acceptingPlayer,
+	self.scoreInitiatingPlayer, self.scoreAcceptingPlayer,
+	self.longestStreakInitiatingPlayer, self.longestStreakAcceptingPlayer,
+	self.longestBallRallyHits, self.winner, self.loser,
+	self.ballMissesTotal, self.ballMissesInitiatingPlayer,
+	self.ballMissesAcceptingPlayer, self.ballHitsTotal,
+	self.ballHitsInitiatingPlayer, self.ballHitsAcceptingPlayer
+))
+
+
+		# Commit the transaction
+		conn.commit()
+
+		# Close the cursor and the connection
+		cursor.close()
+		conn.close()
 

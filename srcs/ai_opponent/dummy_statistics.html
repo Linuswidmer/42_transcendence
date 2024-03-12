@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Stats</title>
+    <style>
+        /* Add your CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        section {
+            margin-bottom: 30px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        h2 {
+            margin-bottom: 10px;
+        }
+        p {
+            margin-bottom: 5px;
+        }
+        .chart-container {
+            margin-top: 10px;
+            width: calc(50% - 20px);
+            height: 150px;
+            float: left;
+        }
+        .pie-chart {
+            margin-top: 10px;
+            width: 200px;
+            height: 200px;
+        }
+        .button-container {
+            margin-top: 10px;
+            text-align: center;
+        }
+        .button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>User Stats</h1>
+    
+    <!-- Gameplay Section -->
+    <section>
+        <h2>Gameplay Section</h2>
+        <div id="gameplayContent">
+            <p>Total Games: 50</p>
+            <p>Total Game Time: 120 minutes</p>
+            <div class="button-container">
+                <button class="button">List all matches</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tournament Section -->
+    <section>
+        <h2>Tournament Section</h2>
+        <div id="tournamentContent">
+            <p>Total Tournaments Attended: 15</p>
+            <p>Best Tournament Rank: 3</p>
+            <div class="pie-chart">
+                <canvas id="tournamentPieChart" width="200" height="200"></canvas>
+            </div>
+            <div class="button-container">
+                <button class="button">List all tournaments</button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Performance Section -->
+    <section id="performanceSection">
+        <h2>Performance Section</h2>
+        <div id="performanceContent">
+            <div class="chart-container">
+                <canvas id="averagePointsChart" width="300" height="150"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="longestBallRallyChart" width="300" height="150"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="bestGameScoreChart" width="300" height="150"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="highestWinningStrikeChart" width="300" height="150"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="missedVsHitBallsPieChart" width="300" height="150"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="winsVsDefeatsPieChart" width="300" height="150"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- Load Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Data for pie chart: Tournaments
+        var tournamentPieData = {
+            labels: ['Tournaments Won', 'Tournaments Lost'],
+            datasets: [{
+                data: [5, 10],
+                backgroundColor: ['#36a2eb', '#ff6384']
+            }]
+        };
+
+        // Get the context of the canvas element for tournament pie chart
+        var tournamentPieCtx = document.getElementById('tournamentPieChart').getContext('2d');
+
+        // Create the pie chart for tournaments
+        var tournamentPieChart = new Chart(tournamentPieCtx, {
+            type: 'pie',
+            data: tournamentPieData,
+            options: {
+                responsive: false
+            }
+        });
+
+        // Data for bar chart: Average Points/Game
+        var averagePointsData = {
+            labels: ['Local', 'Remote', 'AI'],
+            datasets: [{
+                label: 'Average Points/Game',
+                backgroundColor: ['#ff6384', '#36a2eb', '#ffce56'],
+                borderColor: '#ffffff',
+                borderWidth: 1,
+                data: [20, 18, 15]
+            }]
+        };
+
+        // Get the context of the canvas element for average points chart
+        var averagePointsCtx = document.getElementById('averagePointsChart').getContext('2d');
+
+        // Create the bar chart for average points/game
+        var averagePointsChart = new Chart(averagePointsCtx, {
+            type: 'bar',
+            data: averagePointsData,
+            options: {
+                responsive: true,
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+
+        // Data for bar chart: Longest Ball Rally
+        var longestBallRallyData = {
+            labels: ['Local', 'Remote', 'AI'],
+            datasets: [{
+                label: 'Longest Ball Rally',
+                backgroundColor: ['#ff6384', '#36a2eb', '#ffce56'],
+                borderColor: '#ffffff',
+                borderWidth: 1,
+                data: [10, 12, 8]
+            }]
+        };
+
+        // Get the context of the canvas element for longest ball rally chart
+        var longestBallRallyCtx = document.getElementById('longestBallRallyChart').getContext('2d');
+
+        // Create the bar chart for longest ball rally
+        var longestBallRallyChart = new Chart(longestBallRallyCtx, {
+            type: 'bar',
+            data: longestBallRallyData,
+            options: {
+                responsive: true,
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+
+        // Data for bar chart: Best Game Score
+        var bestGameScoreData = {
+            labels: ['Local', 'Remote', 'AI'],
+            datasets: [{
+                label: 'Best Game Score',
+                backgroundColor: ['#ff6384', '#36a2eb', '#ffce56'],
+                borderColor: '#ffffff',
+                borderWidth: 1,
+                data: [100, 90, 80]
+            }]
+        };
+
+        // Get the context of the canvas element for best game score chart
+        var bestGameScoreCtx = document.getElementById('bestGameScoreChart').getContext('2d');
+
+        // Create the bar chart for best game score
+        var bestGameScoreChart = new Chart(bestGameScoreCtx, {
+            type: 'bar',
+            data: bestGameScoreData,
+            options: {
+                responsive: true,
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+
+        // Data for bar chart: Highest Winning Strike
+        var highestWinningStrikeData = {
+            labels: ['Local', 'Remote', 'AI'],
+            datasets: [{
+                label: 'Highest Winning Strike',
+                backgroundColor: ['#ff6384', '#36a2eb', '#ffce56'],
+                borderColor: '#ffffff',
+                borderWidth: 1,
+                data: [5, 6, 4]
+            }]
+        };
+
+        // Get the context of the canvas element for highest winning strike chart
+        var highestWinningStrikeCtx = document.getElementById('highestWinningStrikeChart').getContext('2d');
+
+        // Create the bar chart for highest winning strike
+        var highestWinningStrikeChart = new Chart(highestWinningStrikeCtx, {
+            type: 'bar',
+            data: highestWinningStrikeData,
+            options: {
+                responsive: true,
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+
+        // Data for pie chart: Missed Balls vs Hit Balls
+        var missedVsHitBallsPieData = {
+            labels: ['Missed Balls', 'Hit Balls'],
+            datasets: [{
+                data: [100, 400],
+                backgroundColor: ['#ff6384', '#36a2eb']
+            }]
+        };
+
+        // Get the context of the canvas element for missed vs hit balls pie chart
+        var missedVsHitBallsPieCtx = document.getElementById('missedVsHitBallsPieChart').getContext('2d');
+
+        // Create the pie chart for missed balls vs hit balls
+        var missedVsHitBallsPieChart = new Chart(missedVsHitBallsPieCtx, {
+            type: 'pie',
+            data: missedVsHitBallsPieData,
+            options: {
+                responsive: true
+            }
+        });
+
+        // Data for pie chart: Wins vs Defeats
+        var winsVsDefeatsPieData = {
+            labels: ['Wins', 'Defeats'],
+            datasets: [{
+                data: [30, 20],
+                backgroundColor: ['#36a2eb', '#ff6384']
+            }]
+        };
+
+        // Get the context of the canvas element for wins vs defeats pie chart
+        var winsVsDefeatsPieCtx = document.getElementById('winsVsDefeatsPieChart').getContext('2d');
+
+        // Create the pie chart for wins vs defeats
+        var winsVsDefeatsPieChart = new Chart(winsVsDefeatsPieCtx, {
+            type: 'pie',
+            data: winsVsDefeatsPieData,
+            options: {
+                responsive: true
+            }
+        });
+    </script>
+</body>
+</html>
+

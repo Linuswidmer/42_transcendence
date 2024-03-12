@@ -5,12 +5,11 @@ from pong_ai_opponent import AIPongOpponent
 
 window = pygame.display.set_mode((700,500))
 game = Game(window, 700, 500)
-gd = GameData("Alex", "AI-Ursula")
 
 run = True
 clock = pygame.time.Clock()
 ai = AIPongOpponent(game.right_paddle.y, game.right_paddle.y, game.ball.x, game.ball.y, game.ball.x_vel, game.ball.y_vel, game.right_paddle.VEL, game.right_paddle.HEIGHT)
-decision = ai.getAIDecision()
+ai.setGameState(game.right_paddle.y, game.right_paddle.x, game.ball.x, game.ball.y, game.ball.x_vel, game.ball.y_vel, game.right_paddle.VEL, game.right_paddle.HEIGHT)
 start_time = time.time()
 while run:
 
@@ -44,6 +43,7 @@ while run:
 
 	clock.tick(60)
 
-gd.endGame()
-gd.printData()
+game.gd.endGame()
+game.gd.printData()
+game.gd.store_data_to_database()
 pygame.quit()
