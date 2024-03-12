@@ -1,23 +1,40 @@
-// Hide button(s) and show the canvas and other elements
-document.getElementById("playLocalGame").addEventListener("click", function() {
-    this.style.display = "none";
-    document.getElementById("playLocalTournament").style.display = "none";
 
+/*****************************************************************************/
+/*                               PLAY LOCAL GAME                             */
+/*****************************************************************************/
+
+document.getElementById("playLocalGame").addEventListener("click", function() {
+    
+    hidePlayOptions()
     document.getElementById("playerInputsLocalGame").style.display = "block";
-    document.getElementById("submitLocalPlayerNames").style.display = "block";
 });
 
 document.getElementById("submitLocalPlayerNames").addEventListener("click", function() {
-    var player1Name = document.getElementById("localGame1Name").value;
-    var player2Name = document.getElementById("localGame2Name").value;
+    
+    // Hide the player input elements
+    document.getElementById("playerInputsLocalGame").style.display = "none";
+    
+    // Set the player names and make them visible
+    var player1Name = document.getElementById("localPlayer1Name").value;
+    player1Name.value = username;
 
-    document.getElementById("pongCanvas").style.display = "block";
-    document.getElementById("leftScore").style.display = "block";
-    document.getElementById("rightScore").style.display = "block";
+
+    var player2Name = document.getElementById("localPlayer2Name").value;
+    document.getElementById("leftPlayerName").textContent = player1Name;
+    document.getElementById("rightPlayerName").textContent = player2Name;
+    document.getElementById("leftPlayerName").style.display = "block";
+    document.getElementById("rightPlayerName").style.display = "block";
+
+    document.getElementById("pongGame").style.display = "block";
 
     // Start the game
     startLocalGame();
 });
+
+/*****************************************************************************/
+/*                           PLAY LOCAL TOURNAMENT                           */
+/*****************************************************************************/
+
 
 function startLocalTournament() {
     var tournamentButton = document.getElementById("playLocalTournament");
@@ -94,6 +111,21 @@ document.getElementById("submitLocalTournamentPlayers").addEventListener("click"
         console.error('Error creating tournament:', error);
     });
 });
+
+
+
+/*****************************************************************************/
+/*                              HELPER FUNCTIONS                             */
+/*****************************************************************************/
+
+function hidePlayOptions() {
+    var buttons = document.querySelectorAll('#playOptions button');
+
+    for (var i = 0; i < buttons.length; i++) {
+        buttons[i].style.display = 'none';
+    }
+}
+
 
 function getCookie(name) {
     var cookieValue = null;

@@ -19,12 +19,16 @@ class GameState:
         self.scorePlayerLeft = 0
         self.scorePlayerRight = 0
         self.ball_reset()
+        self.game_over = False
 
     def ball_reset(self):
         self.ballX = WIDTH / 2
         self.ballY = HEIGHT / 2
         self.ballSpeedX = 2
         self.ballSpeedY = 2
+
+    def is_game_over(self):
+        return self.game_over
 
     def update_ball_position(self):
         self.ballX += self.ballSpeedX
@@ -42,10 +46,16 @@ class GameState:
         # Reset the ball if it goes out of bounds
         if self.ballX < 0:
             self.scorePlayerRight += 1
-            self.ball_reset()
+            if self.scorePlayerRight == 3:
+                self.game_over = True
+            else:
+                self.ball_reset()
         if self.ballX > WIDTH:
             self.scorePlayerLeft += 1
-            self.ball_reset()
+            if self.scorePlayerLeft == 3:
+                self.game_over = True
+            else:
+                self.ball_reset()
 
 # Create a single instance of the game state
 
@@ -109,12 +119,21 @@ class PongConsumer(AsyncWebsocketConsumer):
                 # Update the ball position
                 self.game_state.update_ball_position()
 
-                # Send the updated game state to the client
-                await self.send(text_data=json.dumps({
-                    'leftPaddleY': self.game_state.leftPaddleY,
-                    'rightPaddleY': self.game_state.rightPaddleY,
-                    'ballX': self.game_state.ballX,
-                    'ballY': self.game_state.ballY,
-                    'scorePlayerLeft': self.game_state.scorePlayerLeft,
-                    'scorePlayerRight': self.game_state.scorePlayerRight
-                }))
+                if self.game_state.is_game_over():
+                    # Send a game over message to the client
+                    await self.send(text_data=json.dumps({
+                        'gameOver': True,
+                        'scorePlayerLeft': self.game_state.scorePlayerLeft,
+                        'scorePlayerRight': self.game_state.scorePlayerRight
+                    }))
+                    await self.close()
+                else:
+                    # Send the updated game state to the client
+                    await self.send(text_data=json.dumps({
+                        'leftPaddleY': self.game_state.leftPaddleY,
+                        'rightPaddleY': self.game_state.rightPaddleY,
+                        'ballX': self.game_state.ballX,
+                        'ballY': self.game_state.ballY,
+                        'scorePlayerLeft': self.game_state.scorePlayerLeft,
+                        'scorePlayerRight': self.game_state.scorePlayerRight
+                    }))

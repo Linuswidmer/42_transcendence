@@ -158,6 +158,10 @@ function startLocalGame() {
                 rightScore = data.scorePlayerRight;
                 rightScoreElement.textContent = rightScore;
             }
+            if (data.gameOver !== undefined) {
+                console.log('Game Over');
+                document.getElementById('gameOverMessage').style.display = 'block';
+            }
         } catch (error) {
             console.log('Error parsing JSON:', error);
         }
