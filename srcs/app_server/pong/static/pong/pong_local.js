@@ -103,12 +103,19 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
+function gameOver() {
+    console.log('Game Over');
+    document.getElementById('gameOverMessage').style.display = 'block';
+    document.getElementById('reloadLocalGame').style.display = 'block';
+    document.getElementById('reloadPlayOptions').style.display = 'block';
+}
+
 /*****************************************************************************/
 /*                          Websocket Communication                          */
 /*****************************************************************************/
 
 
-function startLocalGame() {
+function startLocalGame(localPlayer1Name, localPlayer2Name) {
 
     console.log('Starting local game');
 
@@ -159,8 +166,7 @@ function startLocalGame() {
                 rightScoreElement.textContent = rightScore;
             }
             if (data.gameOver !== undefined) {
-                console.log('Game Over');
-                document.getElementById('gameOverMessage').style.display = 'block';
+                gameOver();
             }
         } catch (error) {
             console.log('Error parsing JSON:', error);

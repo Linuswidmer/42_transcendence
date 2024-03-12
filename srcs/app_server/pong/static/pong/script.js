@@ -5,7 +5,7 @@
 
 document.getElementById("playLocalGame").addEventListener("click", function() {
     
-    hidePlayOptions()
+    document.getElementById("playOptions").style.display = "none";
     document.getElementById("playerInputsLocalGame").style.display = "block";
 });
 
@@ -31,6 +31,13 @@ document.getElementById("submitLocalPlayerNames").addEventListener("click", func
     startLocalGame();
 });
 
+document.getElementById("reloadPlayOptions").addEventListener("click", function() {
+    document.getElementById("pongGame").style.display = "none";
+    document.getElementById("playOptions").style.display = "block";
+    document.getElementById("gameOverMessage").style.display = "none";
+});
+
+
 /*****************************************************************************/
 /*                           PLAY LOCAL TOURNAMENT                           */
 /*****************************************************************************/
@@ -40,7 +47,7 @@ function startLocalTournament() {
     var tournamentButton = document.getElementById("playLocalTournament");
     var playerInputsTournament = document.getElementById("playerInputsTournament");
 
-    tournamentButton.style.display = "none";
+    document.getElementById("playOptions").style.display = "none";
     playerInputsTournament.style.display = "block";
 }
 
