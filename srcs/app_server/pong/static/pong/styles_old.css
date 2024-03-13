@@ -1,0 +1,100 @@
+/* -------------------------- GENERAL ---------------------------- */
+body {
+    margin: 0;
+    height: 80vh;
+    background-color: #000;
+    color: #fff;
+    font-family: Arial, sans-serif;
+}
+
+
+.item {
+    background-color: black; 
+    border: 2px solid white; 
+    border-radius: 10px;
+    padding: 20px;
+    margin: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+}
+
+.container {
+    text-align: center;
+}
+
+#centeredContent {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 80%;
+}
+
+/* ------------------------ LOG IN SIGN UP ----------------------- */
+#loggedInMessage {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+#logInSignUpPage {
+    display: none;
+}
+
+#logoutItem {
+    display: none;
+}
+
+/* --------------------------- CHOOSE GAME ---------------------- */
+#chooseGamePage {
+    display: none;
+}
+
+/* -------------------------- MATCHMAKING ----------------------- */
+#matchmakingPage {
+    display: none;
+}
+
+.controls {
+    margin-top: 20%;
+}
+#controlsPlayer1 {
+    margin-top:10px;
+}
+
+/* --------------------------- PONG GAME ------------------------ */
+#pongGamePage {
+    display: none;
+}
+
+canvas {
+    border: 2px solid #fff;
+}
+
+#leftPlayerName {
+    position: absolute; 
+    left: 30px; 
+    top:65%;
+    font-size: large;
+}
+
+#rightPlayerName {
+    position: absolute; 
+    right: 30px; 
+    top: 65%;
+    font-size: large;
+}
+
+#leftScore {
+    position: absolute;
+    left: 50%; 
+    transform: translateX(-50%); 
+    top: 10px;
+}
+
+#rightScore {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 30px;
+}

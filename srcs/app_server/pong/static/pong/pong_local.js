@@ -1,3 +1,6 @@
+
+// load the script when the document is fully loaded to preven errors accessing html elements
+
 /*****************************************************************************/
 /*                             Intitialization                               */
 /*****************************************************************************/
@@ -25,8 +28,6 @@ function handleKeyDown(e) {
 function handleKeyUp(e) {
     keys[e.key] = false;
 }
-
-const startButton = document.getElementById('startButton');
 
 const canvas = document.getElementById('pongCanvas');
 const ctx = canvas.getContext('2d');
@@ -56,14 +57,14 @@ let     ballY;
 /*****************************************************************************/
 
 function drawPaddle(x, y) {
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = '#000';
     ctx.fillRect(x, y, PADDLE_WIDTH, PADDLE_HEIGHT);
 }
 
 function drawBall() {
     ctx.beginPath();
     ctx.arc(ballX, ballY, BALL_RADIUS, 0, Math.PI*2);
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = "#000";
     ctx.fill();
     ctx.closePath();
 }
@@ -113,7 +114,6 @@ function gameOver() {
 /*****************************************************************************/
 /*                          Websocket Communication                          */
 /*****************************************************************************/
-
 
 function startLocalGame(localPlayer1Name, localPlayer2Name) {
 
@@ -173,4 +173,3 @@ function startLocalGame(localPlayer1Name, localPlayer2Name) {
         }
     };
 };
-// });

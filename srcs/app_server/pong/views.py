@@ -1,11 +1,17 @@
 from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, Http404
 import json
 from .tournament import create_tournament_tree
-import logging
+from django.template import TemplateDoesNotExist
 
 def index(request):
-    return render(request, 'pong/index.html')
+    return render(request, 'pong/base.html')
+
+def section(request, name):
+    try:
+        return render(request, f'pong/{name}.html')
+    except TemplateDoesNotExist:
+        raise Http404("No such section")
 
 def create_local_tournament(request):
     if request.method == 'POST':
