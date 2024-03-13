@@ -1,4 +1,4 @@
-import neat
+#import neat
 import os
 import pickle
 import random
@@ -7,6 +7,7 @@ W_WIDTH = 700
 W_HEIGT = 500
 
 class AIPongOpponent:
+	"""
 	def __createAIOpponent(self):
 		local_dir = os.path.dirname(__file__)
 		config_path = os.path.join(local_dir, "neat_config.txt")
@@ -17,6 +18,7 @@ class AIPongOpponent:
 		with open("best.pickle", "rb") as f:
 			genome = pickle.load(f)
 		return (neat.nn.FeedForwardNetwork.create(genome,config))
+		"""
 
 	def __predict_y_on_ai_paddleside(self):
 		triangleHieght = (self.ballVelocityY/self.ballVelocityX) * (self.paddleX - self.ballX)
@@ -40,7 +42,7 @@ class AIPongOpponent:
 		self.ballY = ballY
 		self.ballVelocityX = ballVelocityX
 		self.ballVelocityY = ballVelocityY
-		self.ai = self.__createAIOpponent()
+		#self.ai = self.__createAIOpponent()
 		self.aiDecision = 0
 
 	def setGameState(self, paddleY, paddleX, ballX, ballY, ballVelocityX, ballVelocityY, paddleStepSize, paddleHeight):
@@ -52,16 +54,18 @@ class AIPongOpponent:
 		self.ballY = ballY
 		self.ballVelocityX = ballVelocityX
 		self.ballVelocityY = ballVelocityY
+		"""
 		if (self.ballVelocityX < 0):
 			output = self.ai.activate(
 				(self.paddleY, self.ballY, abs(self.paddleX - self.ballX)))
 			self.aiDecision = output.index(max(output))
-		else:
-			self.paddleX = paddleX
-			self.paddleY = paddleY
-			randomFactor = random.choice((1, -1)) * random.random() #random float between -1.0 and +1.0
-			#print(randomFactor)
-			self.geometricPredictedY = self.__predict_y_on_ai_paddleside() + randomFactor * self.paddleHeight / 2
+		"""
+		#else:
+		self.paddleX = paddleX
+		self.paddleY = paddleY
+		randomFactor = random.choice((1, -1)) * random.random() #random float between -1.0 and +1.0
+		#print(randomFactor)
+		self.geometricPredictedY = self.__predict_y_on_ai_paddleside() + randomFactor * self.paddleHeight / 2
 
 	def getAIDecision(self):
 		# if (self.ballVelocityX < 0):

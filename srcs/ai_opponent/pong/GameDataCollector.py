@@ -78,7 +78,35 @@ class GameData:
 			print(f"{attribute}: {value}")
 		print('-----------------------------------------')
 	
-	def store_data_to_database(self):
+	def storeGameinDB(self):
+		#This is the way to do it later
+		"""
+		game_data = DjangoGameData(
+			gameType=self.gameType, 
+			gameDuration=self.gameDuration, 
+			matchDate=self.matchDate,
+			matchTime=self.matchTime,
+			initiatingPlayer=self.initiatingPlayer,
+			acceptingPlayer=self.acceptingPlayer,
+			scoreInitiatingPlayer=self.scoreInitiatingPlayer,
+			scoreAcceptingPlayer=self.scoreAcceptingPlayer,
+			longestStreakInitiatingPlayer=self.longestStreakInitiatingPlayer,
+			longestStreakAcceptingPlayer=self.longestStreakAcceptingPlayer,
+			longestBallRallyHits=self.longestBallRallyHits,
+			winner=self.winner,
+			loser=self.loser,
+			ballMissesTotal=self.ballMissesTotal,
+			ballMissesInitiatingPlayer=self.ballMissesInitiatingPlayer,
+			ballMissesAcceptingPlayer=self.ballMissesAcceptingPlayer,
+			ballHitsTotal=self.ballHitsTotal,
+			ballHitsInitiatingPlayer=self.ballHitsInitiatingPlayer,
+			ballHitsAcceptingPlayer=self.ballHitsAcceptingPlayer
+		)
+
+		# Save the instance to the database
+		game_data.save()
+		"""
+		#JUST FOR TESTING
 		# Connect to the PostgreSQL database
 		conn = psycopg2.connect(
 			dbname="postgres",
@@ -119,3 +147,60 @@ class GameData:
 		cursor.close()
 		conn.close()
 
+	""" def updateUserStats(self):
+		#Pseudocode for updating both users if there was a DjangoUser models in the models.py
+		initiatingUser_DBinstance = DjangoUser.objects.get(pk=self.initiatingPlayer)
+		acceptingPlayer_DBinstance = DjangoUser.objects.get(pk=self.acceptingPlayer)
+
+		initiatingUser_DBinstance.inGameWith = -1
+		acceptingPlayer_DBinstance.inGameWith = -1
+
+		if (self.gameType == "local"):
+			initiatingUser_DBinstance.totalScoredPointsLocal += self.scoreInitiatingPlayer
+			if self.longestStreakInitiatingPlayer > initiatingUser_DBinstance.highestStrikeLocal:
+				initiatingUser_DBinstance.highestStrikeLocal = self.longestStreakInitiatingPlayer
+			if self.scoreInitiatingPlayer > initiatingUser_DBinstance.highestScoreLocal:
+				initiatingUser_DBinstance.highestScoreLocal = self.scoreInitiatingPlayer
+			
+			if self.longestBallRallyHits > initiatingUser_DBinstance.longestBallRallyLocal:
+				initiatingUser_DBinstance.longestBallRallyLocal = self.longestBallRallyHits
+		
+		if (self.gameType == "remote"):
+			initiatingUser_DBinstance.totalScoredPointsRemote += self.scoreInitiatingPlayer
+			if self.longestStreakInitiatingPlayer > initiatingUser_DBinstance.highestStrikeRemote:
+				initiatingUser_DBinstance.highestStrikeRemote = self.longestStreakInitiatingPlayer
+			if self.scoreInitiatingPlayer > initiatingUser_DBinstance.highestScoreRemote:
+				initiatingUser_DBinstance.highestScoreRemote = self.scoreInitiatingPlayer
+			
+			if self.longestBallRallyHits > initiatingUser_DBinstance.longestBallRallyRemote:
+				initiatingUser_DBinstance.longestBallRallyRemote = self.longestBallRallyHits
+		
+		if (self.gameType == "ai"):
+			initiatingUser_DBinstance.totalScoredPointsAI += self.scoreInitiatingPlayer
+			if self.longestStreakInitiatingPlayer > initiatingUser_DBinstance.highestStrikeAI:
+				initiatingUser_DBinstance.highestStrikeAI = self.longestStreakInitiatingPlayer
+			if self.scoreInitiatingPlayer > initiatingUser_DBinstance.highestScoreAI:
+				initiatingUser_DBinstance.highestScoreAI = self.scoreInitiatingPlayer
+			
+			if self.longestBallRallyHits > initiatingUser_DBinstance.longestBallRallyAI:
+				initiatingUser_DBinstance.longestBallRallyAI = self.longestBallRallyHits
+
+		if (self.winner == self.loser):
+			pass#Do nothing
+		elif (self.winner == initiatingUser_DBinstance.id):
+			initiatingUser_DBinstance.totalWins =+ 1
+			acceptingPlayer_DBinstance.totalDefeats += 1
+		elif (self.winner == acceptingPlayer_DBinstance.id):
+			acceptingPlayer_DBinstance.totalWins =+ 1
+			initiatingUser_DBinstance.totalDefeats += 1
+		
+		
+		initiatingUser_DBinstance.totalBallHits += self.ballHitsInitiatingPlayer
+		initiatingUser_DBinstance.totalBallMisses += self.ballMissesInitiatingPlayer
+		acceptingPlayer_DBinstance.totalBallHits += self.ballHitsAcceptingPlayer
+		acceptingPlayer_DBinstance.totalBallMisses += self.ballMissesAcceptingPlayer
+
+
+		initiatingUser_DBinstance.bestTournamentRank # TBD?
+		initiatingUser_DBinstance.totalGameTime += self.gameDuration
+		acceptingPlayer_DBinstance.totalGameTime += self.gameDuration """

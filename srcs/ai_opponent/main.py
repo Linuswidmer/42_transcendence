@@ -45,5 +45,5 @@ while run:
 
 game.gd.endGame()
 game.gd.printData()
-game.gd.store_data_to_database()
+game.gd.storeGameinDB()
 pygame.quit()
