@@ -3,7 +3,7 @@ import datetime
 import psycopg2
 
 class GameData:
-	def __init__(self, initiatingPlayer, acceptingPlayer, gameType):
+	def __init__(self, initiatingPlayer, acceptingPlayer, gameType, tournament_id=-1):
 		self.gameType = gameType
 		self.gameStartTime = time.time() #
 		self.gameDuration = 0 #calculated at the end
@@ -27,6 +27,7 @@ class GameData:
 		self.ballHitsTotal = 0 #
 		self.ballHitsInitiatingPlayer = 0 #
 		self.ballHitsAcceptingPlayer = 0 #
+		self.tournament_id = tournament_id
 
 	def endGame(self):
 		self.gameDuration = int(time.time() - self.gameStartTime)
@@ -121,13 +122,16 @@ class GameData:
 
 		# Insert data into the table
 		cursor.execute("""
-	INSERT INTO pong_djangogamedata (
+	INSERT INTO "Games" (
 		"gameType", "gameDuration", "matchDate", "matchTime", "initiatingPlayer", "acceptingPlayer",
 		"scoreInitiatingPlayer", "scoreAcceptingPlayer", "longestStreakInitiatingPlayer",
 		"longestStreakAcceptingPlayer", "longestBallRallyHits", "winner", "loser",
 		"ballMissesTotal", "ballMissesInitiatingPlayer", "ballMissesAcceptingPlayer",
-		"ballHitsTotal", "ballHitsInitiatingPlayer", "ballHitsAcceptingPlayer"
-	) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+		"ballHitsTotal", "ballHitsInitiatingPlayer", "ballHitsAcceptingPlayer", "tournament_id_fk"
+	) VALUES (
+		%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+	)
+	RETURNING id
 """, (
 	self.gameType, self.gameDuration, self.matchDate, self.matchTime,
 	self.initiatingPlayer, self.acceptingPlayer,
@@ -136,9 +140,30 @@ class GameData:
 	self.longestBallRallyHits, self.winner, self.loser,
 	self.ballMissesTotal, self.ballMissesInitiatingPlayer,
 	self.ballMissesAcceptingPlayer, self.ballHitsTotal,
-	self.ballHitsInitiatingPlayer, self.ballHitsAcceptingPlayer
-))
+	self.ballHitsInitiatingPlayer, self.ballHitsAcceptingPlayer, self.tournament_id))
+		
+		# Commit the transaction
+		conn.commit()
 
+		# Fetch the ID of the newly inserted row
+		new_game_id = cursor.fetchone()[0]
+
+		cursor.execute(
+		"""
+		INSERT INTO "games_users_junction" (
+		"user_email_fk", "games_id_fk"
+		) VALUES(%s, %s)
+		""", (self.initiatingPlayer, new_game_id))
+
+		# Commit the transaction
+		conn.commit()
+
+		cursor.execute(
+		"""
+		INSERT INTO "games_users_junction" (
+		"user_email_fk", "games_id_fk"
+		) VALUES(%s, %s)
+		""", (self.acceptingPlayer, new_game_id))
 
 		# Commit the transaction
 		conn.commit()
@@ -146,61 +171,3 @@ class GameData:
 		# Close the cursor and the connection
 		cursor.close()
 		conn.close()
-
-	""" def updateUserStats(self):
-		#Pseudocode for updating both users if there was a DjangoUser models in the models.py
-		initiatingUser_DBinstance = DjangoUser.objects.get(pk=self.initiatingPlayer)
-		acceptingPlayer_DBinstance = DjangoUser.objects.get(pk=self.acceptingPlayer)
-
-		initiatingUser_DBinstance.inGameWith = -1
-		acceptingPlayer_DBinstance.inGameWith = -1
-
-		if (self.gameType == "local"):
-			initiatingUser_DBinstance.totalScoredPointsLocal += self.scoreInitiatingPlayer
-			if self.longestStreakInitiatingPlayer > initiatingUser_DBinstance.highestStrikeLocal:
-				initiatingUser_DBinstance.highestStrikeLocal = self.longestStreakInitiatingPlayer
-			if self.scoreInitiatingPlayer > initiatingUser_DBinstance.highestScoreLocal:
-				initiatingUser_DBinstance.highestScoreLocal = self.scoreInitiatingPlayer
-			
-			if self.longestBallRallyHits > initiatingUser_DBinstance.longestBallRallyLocal:
-				initiatingUser_DBinstance.longestBallRallyLocal = self.longestBallRallyHits
-		
-		if (self.gameType == "remote"):
-			initiatingUser_DBinstance.totalScoredPointsRemote += self.scoreInitiatingPlayer
-			if self.longestStreakInitiatingPlayer > initiatingUser_DBinstance.highestStrikeRemote:
-				initiatingUser_DBinstance.highestStrikeRemote = self.longestStreakInitiatingPlayer
-			if self.scoreInitiatingPlayer > initiatingUser_DBinstance.highestScoreRemote:
-				initiatingUser_DBinstance.highestScoreRemote = self.scoreInitiatingPlayer
-			
-			if self.longestBallRallyHits > initiatingUser_DBinstance.longestBallRallyRemote:
-				initiatingUser_DBinstance.longestBallRallyRemote = self.longestBallRallyHits
-		
-		if (self.gameType == "ai"):
-			initiatingUser_DBinstance.totalScoredPointsAI += self.scoreInitiatingPlayer
-			if self.longestStreakInitiatingPlayer > initiatingUser_DBinstance.highestStrikeAI:
-				initiatingUser_DBinstance.highestStrikeAI = self.longestStreakInitiatingPlayer
-			if self.scoreInitiatingPlayer > initiatingUser_DBinstance.highestScoreAI:
-				initiatingUser_DBinstance.highestScoreAI = self.scoreInitiatingPlayer
-			
-			if self.longestBallRallyHits > initiatingUser_DBinstance.longestBallRallyAI:
-				initiatingUser_DBinstance.longestBallRallyAI = self.longestBallRallyHits
-
-		if (self.winner == self.loser):
-			pass#Do nothing
-		elif (self.winner == initiatingUser_DBinstance.id):
-			initiatingUser_DBinstance.totalWins =+ 1
-			acceptingPlayer_DBinstance.totalDefeats += 1
-		elif (self.winner == acceptingPlayer_DBinstance.id):
-			acceptingPlayer_DBinstance.totalWins =+ 1
-			initiatingUser_DBinstance.totalDefeats += 1
-		
-		
-		initiatingUser_DBinstance.totalBallHits += self.ballHitsInitiatingPlayer
-		initiatingUser_DBinstance.totalBallMisses += self.ballMissesInitiatingPlayer
-		acceptingPlayer_DBinstance.totalBallHits += self.ballHitsAcceptingPlayer
-		acceptingPlayer_DBinstance.totalBallMisses += self.ballMissesAcceptingPlayer
-
-
-		initiatingUser_DBinstance.bestTournamentRank # TBD?
-		initiatingUser_DBinstance.totalGameTime += self.gameDuration
-		acceptingPlayer_DBinstance.totalGameTime += self.gameDuration """

@@ -33,7 +33,7 @@ class Game:
 		self.window_width = window_width
 		self.window_height = window_height
 
-		self.gd = GameData("Alex", "AI Ursula", "local")
+		self.gd = GameData("aehrlich@student.42Berlin.de", "ycardona@student.42Berlin.de", "remote", 1)
 
 		self.left_paddle = Paddle(
 			10, self.window_height // 2 - Paddle.HEIGHT // 2)
