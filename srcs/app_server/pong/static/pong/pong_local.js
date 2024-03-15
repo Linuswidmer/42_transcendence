@@ -1,6 +1,4 @@
 
-// load the script when the document is fully loaded to preven errors accessing html elements
-
 /*****************************************************************************/
 /*                             Intitialization                               */
 /*****************************************************************************/

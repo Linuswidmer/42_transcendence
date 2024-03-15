@@ -7,6 +7,9 @@ from django.template import TemplateDoesNotExist
 def index(request):
     return render(request, 'pong/base.html')
 
+def game(request):
+    return render(request, 'pong/pong_game.html')
+
 def section(request, name):
     try:
         return render(request, f'pong/{name}.html')

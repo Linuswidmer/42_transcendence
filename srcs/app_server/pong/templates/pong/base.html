@@ -25,12 +25,22 @@
                 console.log('Section loaded');
             });
 
-            if (section === 'game') {
-                const script = document.createElement('script');
-                script.src = "{% static 'pong/pong_local.js' %}";
-                console.log('pong_local.js loaded');
-                document.body.appendChild(script);
-            }
+            document.addEventListener('DOMContentLoaded', function() {
+                if (section === 'game') {
+                    const script = document.createElement('script');
+                    script.src = "{% static 'pong/pong_local.js' %}";
+                    document.body.appendChild(script);
+                
+                    console.log('Script loaded');
+                    const startButton = document.getElementById('startButton');
+                    if (startButton) {
+                        startButton.addEventListener('click', function() {
+                            startLocalGame('Player 1', 'Player 2');
+                            console.log('Start button clicked');
+                        });
+                    }
+                }
+            });
         }
 
         // Add click listeners to all buttons so that they can load the appropriate section
@@ -42,13 +52,13 @@
                 }
             })
         
-            const startButton = document.getElementById('startButton');
-                if (startButton) {
-                    startButton.addEventListener('click', function() {
-                        startLocalGame('Player 1', 'Player 2');
-                        console.log('Start button clicked');
-                });
-    }
+            // const startButton = document.getElementById('startButton');
+            //     if (startButton) {
+            //         startButton.addEventListener('click', function() {
+            //             startLocalGame('Player 1', 'Player 2');
+            //             console.log('Start button clicked');
+            //         });
+            //     }
         }
     
         // request the landing page content when the page loads
@@ -66,6 +76,5 @@
 
         
         </script>
-        <!-- <script src="{% static 'pong/pong_local.js' %}"></script> -->
 </body>
 </html>

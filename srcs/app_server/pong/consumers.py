@@ -7,6 +7,8 @@ import json
 import asyncio
 from asgiref.sync import sync_to_async
 
+from .GameData import GameData
+
 WIDTH = 600
 HEIGHT = 400
 PADDLE_WIDTH = 10
@@ -20,6 +22,8 @@ class GameState:
         self.scorePlayerRight = 0
         self.ball_reset()
         self.game_over = False
+
+        self.game_data = GameData('Linus', 'Alex', 'local') # instance of game data
 
     def ball_reset(self):
         self.ballX = WIDTH / 2
@@ -39,9 +43,15 @@ class GameState:
             self.ballSpeedY = -self.ballSpeedY
 
         # Bounce the ball off the paddles
-        if (self.ballX <= PADDLE_WIDTH and self.ballY >= self.leftPaddleY and self.ballY <= self.leftPaddleY + PADDLE_HEIGHT) or \
-            (self.ballX >= (WIDTH - PADDLE_WIDTH) and self.ballY >= self.rightPaddleY and self.ballY <= self.rightPaddleY + PADDLE_HEIGHT):
+        if (self.ballX <= PADDLE_WIDTH and self.ballY >= self.leftPaddleY and self.ballY <= self.leftPaddleY + PADDLE_HEIGHT):
             self.ballSpeedX = -self.ballSpeedX
+            # update game data
+            self.game_data.ballHit(True)
+
+        elif (self.ballX >= (WIDTH - PADDLE_WIDTH) and self.ballY >= self.rightPaddleY and self.ballY <= self.rightPaddleY + PADDLE_HEIGHT):
+            self.ballSpeedX = -self.ballSpeedX
+            # update game data
+            self.game_data.ballHit(False)
 
         # Reset the ball if it goes out of bounds
         if self.ballX < 0:
@@ -50,12 +60,18 @@ class GameState:
                 self.game_over = True
             else:
                 self.ball_reset()
+
+            # update game data
+            self.game_data.endRally(False)
         if self.ballX > WIDTH:
             self.scorePlayerLeft += 1
             if self.scorePlayerLeft == 3:
                 self.game_over = True
             else:
                 self.ball_reset()
+            
+            # update game data
+            self.game_data.endRally(True)
 
 # Create a single instance of the game state
 
@@ -65,6 +81,7 @@ class PongConsumer(AsyncWebsocketConsumer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # self.game_data = GameData('Linus', 'Alex', 'local')
         self.game_state = GameState()
 
     async def connect(self):
@@ -126,6 +143,11 @@ class PongConsumer(AsyncWebsocketConsumer):
                         'scorePlayerLeft': self.game_state.scorePlayerLeft,
                         'scorePlayerRight': self.game_state.scorePlayerRight
                     }))
+
+                    # save and print GameData
+                    self.game_state.game_data.endGame()
+                    self.game_state.game_data.printData()
+
                     await self.close()
                 else:
                     # Send the updated game state to the client

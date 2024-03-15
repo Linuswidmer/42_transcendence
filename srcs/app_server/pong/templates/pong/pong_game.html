@@ -1,0 +1,42 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{% static 'pong/styles.css' %}">
+    <title>Pong Game</title>
+</head>
+<body>
+    {% csrf_token %}
+    <!-- HEADER -->
+    <h1>PONG GAME</h1>
+    <div id="loggedInMessage">Playing as: Guest</div>
+
+    <div id="centeredContent">
+
+        <!-- *** PONG GAME ***-->
+        <div class="container" id="pongGamePage">
+            <div id="scoreBoard">
+                <div id="leftScore" >0</div>
+                <div id="rightScore">0</div>
+            </div>
+            <h2 id="gameOverMessage" style="display: none; position: absolute; top: 90%; left: 50%; transform: translate(-50%, -50%);">Game Over</h2>
+            <canvas id="pongCanvas" width="600" height="400"></canvas>
+        </div>
+        <button id="startButton">Start game</button>
+    </div>
+    
+    <script src="{% static 'pong/pong_local.js' %}"></script>
+    
+    <script>
+            const startButton = document.getElementById('startButton');
+                if (startButton) {
+                    startButton.addEventListener('click', function() {
+                        startLocalGame('Player 1', 'Player 2');
+                        console.log('Start button clicked');
+                    });
+                }
+    </script>
+</body>
+</html>
