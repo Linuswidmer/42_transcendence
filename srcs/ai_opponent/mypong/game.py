@@ -2,7 +2,7 @@ from .paddle import Paddle
 from .ball import Ball
 import pygame
 import random
-from .GameDataCollector import GameData
+from .GameDataCollector import GameDataCollector
 
 pygame.init()
 
@@ -33,7 +33,7 @@ class Game:
 		self.window_width = window_width
 		self.window_height = window_height
 
-		self.gd = GameData("aehrlich@student.42Berlin.de", "ycardona@student.42Berlin.de", "remote", 1)
+		self.collector = GameDataCollector("lwidmer@student.42Berlin.de", "ycardona@student.42Berlin.de", "remote", 1)
 
 		self.left_paddle = Paddle(
 			10, self.window_height // 2 - Paddle.HEIGHT // 2)
@@ -94,7 +94,7 @@ class Game:
 					y_vel = difference_in_y / reduction_factor
 					ball.y_vel = -1 * y_vel
 					self.left_hits += 1
-					self.gd.ballHit(True)
+					self.collector.ballHit(True)
 
 		else:
 			if ball.y >= right_paddle.y and ball.y <= right_paddle.y + Paddle.HEIGHT:
@@ -107,7 +107,7 @@ class Game:
 					y_vel = difference_in_y / reduction_factor
 					ball.y_vel = -1 * y_vel
 					self.right_hits += 1
-					self.gd.ballHit(False)
+					self.collector.ballHit(False)
 
 	def draw(self, draw_score=True, draw_hits=False, draw_prediction=False):
 		self.window.fill(self.BLACK)
@@ -164,11 +164,11 @@ class Game:
 		if self.ball.x < 0:
 			self.ball.reset()
 			self.right_score += 1
-			self.gd.endRally(False)
+			self.collector.endRally(False)
 		elif self.ball.x > self.window_width:
 			self.ball.reset()
 			self.left_score += 1
-			self.gd.endRally(True)
+			self.collector.endRally(True)
 
 		game_info = GameInformation(
 			self.left_hits, self.right_hits, self.left_score, self.right_score)

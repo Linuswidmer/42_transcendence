@@ -1,9 +1,15 @@
 import time
 import datetime
 import psycopg2
+#from models import Games
 
-class GameData:
+class GameDataCollector:
 	def __init__(self, initiatingPlayer, acceptingPlayer, gameType, tournament_id=-1):
+
+		#With Django DB later 
+		#self.games_instance = Games()
+
+		#TESTING withoud Django DB
 		self.gameType = gameType
 		self.gameStartTime = time.time() #
 		self.gameDuration = 0 #calculated at the end
@@ -81,32 +87,9 @@ class GameData:
 	
 	def storeGameinDB(self):
 		#This is the way to do it later
-		"""
-		game_data = DjangoGameData(
-			gameType=self.gameType, 
-			gameDuration=self.gameDuration, 
-			matchDate=self.matchDate,
-			matchTime=self.matchTime,
-			initiatingPlayer=self.initiatingPlayer,
-			acceptingPlayer=self.acceptingPlayer,
-			scoreInitiatingPlayer=self.scoreInitiatingPlayer,
-			scoreAcceptingPlayer=self.scoreAcceptingPlayer,
-			longestStreakInitiatingPlayer=self.longestStreakInitiatingPlayer,
-			longestStreakAcceptingPlayer=self.longestStreakAcceptingPlayer,
-			longestBallRallyHits=self.longestBallRallyHits,
-			winner=self.winner,
-			loser=self.loser,
-			ballMissesTotal=self.ballMissesTotal,
-			ballMissesInitiatingPlayer=self.ballMissesInitiatingPlayer,
-			ballMissesAcceptingPlayer=self.ballMissesAcceptingPlayer,
-			ballHitsTotal=self.ballHitsTotal,
-			ballHitsInitiatingPlayer=self.ballHitsInitiatingPlayer,
-			ballHitsAcceptingPlayer=self.ballHitsAcceptingPlayer
-		)
-
 		# Save the instance to the database
-		game_data.save()
-		"""
+		#game_data.save() """
+
 		#JUST FOR TESTING
 		# Connect to the PostgreSQL database
 		conn = psycopg2.connect(
@@ -171,3 +154,4 @@ class GameData:
 		# Close the cursor and the connection
 		cursor.close()
 		conn.close()
+

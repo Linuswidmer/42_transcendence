@@ -1,5 +1,5 @@
 import pygame
-from pong import Game
+from mypong import Game
 import time
 from pong_ai_opponent import AIPongOpponent
 
@@ -43,7 +43,7 @@ while run:
 
 	clock.tick(60)
 
-game.gd.endGame()
-game.gd.printData()
-game.gd.storeGameinDB()
+game.collector.endGame()
+game.collector.printData()
+game.collector.storeGameinDB()
 pygame.quit()

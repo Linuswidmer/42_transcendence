@@ -1,5 +1,5 @@
 import pygame
-from pong import Game
+from mypong import Game
 import neat
 import os
 import pickle
