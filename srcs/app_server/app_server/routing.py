@@ -12,7 +12,7 @@ websocket_urlpatterns = [
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
     "websocket": AuthMiddlewareStack(URLRouter(websocket_urlpatterns)),
-	"channel": ChannelNameRouter({"game_engine": GameConsumer.as_asgi()}),
+	"channel": ChannelNameRouter({"lobby": GameConsumer.as_asgi()}),
 })
 
 # application = ProtocolTypeRouter(

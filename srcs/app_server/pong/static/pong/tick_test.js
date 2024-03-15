@@ -1,4 +1,4 @@
-function tick_test() {
+function tick_test(name) {
 
     const roomName = "my_room";
     const wsUrl = `ws://${window.location.host}/ws/pong/${roomName}/`; // this has to be modified to be a unique identifier
@@ -8,7 +8,7 @@ function tick_test() {
     ws.onopen = function(e) {
         // telling the server that the client is ready
         console.log('WebSocket connection established');
-        let data = {'ready': true};
+        let data = {'username': name};
         ws.send(JSON.stringify(data));
 
         // gameLoop();
@@ -53,8 +53,10 @@ function tick_test() {
     };
 };
 
-document.getElementById("startLocalGame").addEventListener("click", function() {
+document.getElementById('nameForm').addEventListener('submit', function(event) {
+	event.preventDefault();
 
+	var name = document.getElementById('nameInput').value;
     // Start the game
-    tick_test();
+    tick_test(name);
 });
