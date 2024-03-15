@@ -10,7 +10,7 @@ if [ ! -f "$env_file" ]; then
 fi
 
 # Read each line from the file and export variables
-while IFS= read -r line; do
+while IFS= read -r line || [[ -n "$line" ]]; do
     # Skip empty lines or lines starting with #
     if [[ -z "$line" || "$line" == \#* ]]; then
         continue
@@ -22,7 +22,6 @@ while IFS= read -r line; do
     # Echo the exported variable for confirmation
     echo "Exported: $line"
 done < "$env_file"
-
 docker stop $(docker ps -aq) && docker rm $(docker ps -aq)
 
 docker run -d \
@@ -31,6 +30,11 @@ docker run -d \
     --env-file ../env.dev \
     -v $(pwd)/../postgres_data:/var/lib/postgresql/data \
     postgres:15
+
+docker run -d \
+    -p 127.0.0.1:6380:6379 \
+    --name redis_container \
+    redis:latest
 
 # source ../venv/bin/activate
 

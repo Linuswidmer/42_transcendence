@@ -81,7 +81,6 @@ class PongConsumer(AsyncWebsocketConsumer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # self.game_data = GameData('Linus', 'Alex', 'local')
         self.game_state = GameState()
 
     async def connect(self):
