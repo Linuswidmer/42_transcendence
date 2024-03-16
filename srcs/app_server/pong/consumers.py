@@ -1,147 +1,109 @@
-from channels.generic.websocket import WebsocketConsumer
-from channels.generic.websocket import AsyncWebsocketConsumer
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
-from asyncio import Lock
 import json
+import uuid
 import asyncio
-from asgiref.sync import sync_to_async
+import math
 import pygame
-import time
-import threading
-from channels.layers import get_channel_layer
-from channels.consumer import SyncConsumer
-import logging
 
-log = logging.getLogger(__name__)
+from channels.generic.websocket import AsyncWebsocketConsumer
+from asgiref.sync import async_to_sync
 
-# class PlayerConsumer(AsyncWebsocketConsumer):
-# 	async def connect(self):
-# 		self.group_name = "tick_test"
-# 		# Join a common group with all other players
-# 		await self.channel_layer.group_add(self.group_name, self.channel_name)
-# 		await self.accept()
+class MultiplayerConsumer(AsyncWebsocketConsumer):
+	MAX_SPEED = 5
+	THRUST = 0.2
 
-# 	# Send game data to group after a Tick is processed
-# 	# async def game_update(self, event):
-# 	# 	# Send message to WebSocket
-# 	# 	state = event["state"]
-# 	# 	await self.send(json.dumps(state))
 
-# 	# Receive message from Websocket
-# 	async def receive(self, text_data=None, bytes_data=None):
-# 		content = json.loads(text_data)
-# 		print(content)
-class PongConsumer(AsyncWebsocketConsumer):
-	def __init__(self, *args, **kwargs):
-		super().__init__(*args, **kwargs)
-		# self.game_state = GameState()
+	players = {}
+
+	update_lock = asyncio.Lock()
 
 	async def connect(self):
-		self.room_group_name = "tick_test"
-		await self.channel_layer.group_add(
-			self.room_group_name,
-			self.channel_name
-		)
-
+		self.player_id = str(uuid.uuid4())
 		await self.accept()
 
-		# await self.send(text_data=json.dumps({
-		# 	'PongConsumer': "ws between new client and gameUpdateGroup established",
-		# }))
-		# thisdict = {
-		# 	"brand": "Ford",
-		# 	"model": "Mustang",
-		# 	"year": 1964
-		# 	}
-		# await self.join(thisdict)
+		game_group_name = str(uuid.uuid4()) 	
+		print("game_group_name:", game_group_name)
+		await self.channel_layer.group_add(
+			game_group_name, self.channel_name
+		)
 
-	
+		await self.send(
+			text_data=json.dumps({"type": "playerId", "playerId": self.player_id})
+		)
+
+		async with self.update_lock:
+			self.players[self.player_id] = {
+				"id": self.player_id,
+				"x": 500,
+				"y": 500,
+				"facing": 0,
+				"dx": 0,
+				"dy": 0,
+				"thrusting": False,
+			}
+
+		# if len(self.players) == 1:
+		asyncio.create_task(self.game_loop(game_group_name))
+
 	async def disconnect(self, close_code):
-		await self.channel_layer.group_discard(
-			self.room_group_name,
-			self.channel_name
-		)
+		async with self.update_lock:
+			if self.player_id in self.players:
+				del self.players[self.player_id]
 
-	async def join(self, msg: dict):
-		await self.channel_layer.send(
-			"game_engine",
-			{"type": "player.new", "channel": self.channel_name},
-		)
+		#TODO handle proper disconnecting from all groups
+		# await self.channel_layer.group_discard(
+		# 	self.game_group_name, self.channel_name
+		# )
 
 	async def receive(self, text_data):
 		text_data_json = json.loads(text_data)
 
-		username = text_data_json["username"]
+		message_type = text_data_json.get("type", "")
 
-		await self.send(text_data=json.dumps({
-			'username': username,
-		}))
+		player_id = text_data_json["playerId"]
 
-		await self.join(text_data_json)
+		player = self.players.get(player_id, None)
 
+		if message_type == "thrust":
+			player["thrusting"] = not player["thrusting"]
 
-	async def game_update(self, event):
-		print(event)
-		# Send message to WebSocket
-		await self.send(json.dumps(event))
+		if not player:
+			return
 
-
-class Lobby(SyncConsumer)
-
-
-class GameConsumer(SyncConsumer):
-	def __init__(self, *args, **kwargs):
-		"""
-		Created on demand when the first player joins.
-		"""
-		super().__init__(*args, **kwargs)
-		self.group_name = "tick_test"
-		# self.engine = GameEngine(self.group_name)
-		log.info("GameConsumer constructor called")
-		# Runs the engine in a new thread (run method is called)
-		# self.engine.start()
-		print("constructor gameConsumer")
-
-	def player_new(self, event):
-		engine = GameEngine(self.group_name)
-		engine.start()
-		# self.engine.join_queue(event["player"])
-
-	# def player_direction(self, event):
-	# 	direction = event.get("direction", "UP")
-	# 	self.engine.set_player_direction(event["player"], direction)
-	
-	# def broadcast_state(self, counter: int) -> None:
-	# 	counter_json = json.dumps({'counter': counter})
-	# 	channel_layer = get_channel_layer()
-	# 	async_to_sync(channel_layer.group_send)(
-	# 		self.group_name, {"type": "game_update", "counter": counter_json}
-	# 	)
-
-clock = pygame.time.Clock()
-
-class GameEngine(threading.Thread):
-	def __init__(self, group_name, **kwargs):
-		super(GameEngine, self).__init__(daemon=True, name="GameEngine", **kwargs)
-		self.group_name = group_name
-		print('group_name', group_name)
-		self.channel_layer = get_channel_layer()
-		self.logger = logging.getLogger('game_engine')
-		print("hello")
-
-	def run(self) -> None:
-		self.logger.info('GameEngine loop started')
-		i = 0
-		while True:
-			dt = clock.tick(6)
-			self.broadcast_state(i)
-			self.logger.info('GameEngine loop running, counter: %s', i)
-			i += 1
-
-	def broadcast_state(self, counter: int) -> None:
-		counter_json = json.dumps({'counter': counter})
-		async_to_sync(self.channel_layer.group_send)(
-			self.group_name, {"type": "game_update", "counter": counter_json}
+	async def state_update(self, event):
+		await self.send(
+			text_data=json.dumps(
+				{
+					"type": "stateUpdate",
+					"objects": event["objects"],
+					"groupName": event["groupName"],
+				}
+			)
 		)
 
+	async def game_loop(self, group_name):
+		print("new game loop started")
+		while len(self.players) > 0:
+			async with self.update_lock:
+				for player in self.players.values():
+					if player["thrusting"]:
+						dx = self.THRUST * math.cos(player["facing"])
+						dy = self.THRUST * math.sin(player["facing"])
+						player["dx"] += dx
+						player["dy"] += dy
+
+						speed = math.sqrt(player["dx"] ** 2 + player["dy"] ** 2)
+						if speed > self.MAX_SPEED:
+							ratio = self.MAX_SPEED / speed
+							player["dx"] *= ratio
+							player["dy"] *= ratio
+
+					player["x"] += player["dx"]
+					player["y"] += player["dy"]
+					
+					# print(player)
+			# print("publishing update to:", group_name)
+			await self.channel_layer.group_send(
+				group_name,
+				{"type": "state_update", "objects": list(self.players.values()), "groupName": group_name},
+			)
+			await asyncio.sleep(3)

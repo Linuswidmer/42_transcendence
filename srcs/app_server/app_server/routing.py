@@ -3,16 +3,16 @@ from channels.routing import ChannelNameRouter, ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application  # Import get_asgi_application
 from channels.auth import AuthMiddlewareStack
 
-from pong.consumers import PongConsumer, GameConsumer
+from pong.consumers import MultiplayerConsumer
 
 websocket_urlpatterns = [
-    path('ws/pong/<room_name>/', PongConsumer.as_asgi()),
+    path('ws/pong/<room_name>/', MultiplayerConsumer.as_asgi()),
 ]
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
     "websocket": AuthMiddlewareStack(URLRouter(websocket_urlpatterns)),
-	"channel": ChannelNameRouter({"game_engine": GameConsumer.as_asgi()}),
+	# "channel": ChannelNameRouter({"game_engine": GameConsumer.as_asgi()}),
 })
 
 # application = ProtocolTypeRouter(
