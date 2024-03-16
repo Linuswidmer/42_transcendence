@@ -38,17 +38,23 @@ class PongConsumer(AsyncWebsocketConsumer):
 		# self.game_state = GameState()
 
 	async def connect(self):
-		# self.room_group_name = "gameUpdateGroup"
-		# await self.channel_layer.group_add(
-		# 	self.room_group_name,
-		# 	self.channel_name
-		# )
+		self.room_group_name = "tick_test"
+		await self.channel_layer.group_add(
+			self.room_group_name,
+			self.channel_name
+		)
 
 		await self.accept()
 
 		# await self.send(text_data=json.dumps({
 		# 	'PongConsumer': "ws between new client and gameUpdateGroup established",
 		# }))
+		# thisdict = {
+		# 	"brand": "Ford",
+		# 	"model": "Mustang",
+		# 	"year": 1964
+		# 	}
+		# await self.join(thisdict)
 
 	
 	async def disconnect(self, close_code):
@@ -59,7 +65,7 @@ class PongConsumer(AsyncWebsocketConsumer):
 
 	async def join(self, msg: dict):
 		await self.channel_layer.send(
-			"lobby",
+			"game_engine",
 			{"type": "player.new", "channel": self.channel_name},
 		)
 
@@ -81,21 +87,25 @@ class PongConsumer(AsyncWebsocketConsumer):
 		await self.send(json.dumps(event))
 
 
+class Lobby(SyncConsumer)
+
+
 class GameConsumer(SyncConsumer):
 	def __init__(self, *args, **kwargs):
 		"""
 		Created on demand when the first player joins.
 		"""
 		super().__init__(*args, **kwargs)
-		# self.group_name = "tick_test"
+		self.group_name = "tick_test"
 		# self.engine = GameEngine(self.group_name)
-		print("hello")
 		log.info("GameConsumer constructor called")
 		# Runs the engine in a new thread (run method is called)
 		# self.engine.start()
+		print("constructor gameConsumer")
 
 	def player_new(self, event):
-		log.info("player new:", event)
+		engine = GameEngine(self.group_name)
+		engine.start()
 		# self.engine.join_queue(event["player"])
 
 	# def player_direction(self, event):
@@ -115,8 +125,10 @@ class GameEngine(threading.Thread):
 	def __init__(self, group_name, **kwargs):
 		super(GameEngine, self).__init__(daemon=True, name="GameEngine", **kwargs)
 		self.group_name = group_name
+		print('group_name', group_name)
 		self.channel_layer = get_channel_layer()
 		self.logger = logging.getLogger('game_engine')
+		print("hello")
 
 	def run(self) -> None:
 		self.logger.info('GameEngine loop started')
