@@ -61,6 +61,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		)
 
 		#send playerId to browser
+		#probably remove this as i see now reason why the browser would want
+		#or need to know the id that the server assigns
 		await self.send(
 			text_data=json.dumps({"type": "playerId", "playerId": self.player_id})
 		)
@@ -92,6 +94,9 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		message_type = text_data_json.get("type", "")
 		print("msg type", message_type)
 
+		#we dont need to actually obtain the id from the client
+		#we now it is our client because we are inside receive
+		#so we can just send self.player_id to process keypress
 		player_id = text_data_json["playerId"]
 		
 
@@ -124,6 +129,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		if "thrust" in event:
 			player_id = event["thrust"]
 			
+			#toggle keypress if entry already exists between True and False
+			#if it doesnt exist, create it and set it to True
 			if player_id in self.game_data and "thrusting" in self.game_data[player_id]:
 				self.game_data[player_id]["thrusting"] = not self.game_data[player_id]["thrusting"]
 			else:
