@@ -41,13 +41,17 @@ function tick_test(name) {
         
 			console.log(e.data);
 
-			if (data.type === "stateUpdate") {
-				const objects = data.objects;
-				if (objects.length > 0) {
-					ws.user_id = objects[0].id;
-					console.log("user id from server", ws.user_id);  // Logs the id to the console
-				}
+			if (data.type === "playerId") {
+				ws.user_id = data.playerId;
+				console.log("user id from server", ws.user_id);
 			}
+			// if (data.type === "stateUpdate") {
+			// 	const objects = data.objects;
+			// 	if (objects.length > 0) {
+			// 		ws.user_id = objects[0].id;
+			// 		console.log("user id from server", ws.user_id);  // Logs the id to the console
+			// 	}
+			// }
             // if (data.leftPaddleY !== undefined) {
             //     serverLeftPaddleY = data.leftPaddleY;
             // }
