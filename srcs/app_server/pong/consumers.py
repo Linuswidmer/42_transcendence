@@ -11,7 +11,9 @@ import json
 import asyncio
 from asgiref.sync import sync_to_async
 
-from .GameData import GameData
+from .GameDataCollector import GameDataCollector
+from django.contrib.auth.models import User
+
 
 WIDTH = 600
 HEIGHT = 400
@@ -19,6 +21,14 @@ PADDLE_WIDTH = 10
 PADDLE_HEIGHT = 60
 
 class GameState:
+
+    async def fetch_users(self):
+        self.user1 = await sync_to_async(User.objects.get)(pk=1)
+        self.user2 = await sync_to_async(User.objects.get)(pk=2)
+
+        # Initialize GameDataCollector after fetching users
+        self.game_data = GameDataCollector(self.user1, self.user2, 'local')
+    
     def __init__(self):
         self.leftPaddleY = HEIGHT / 2 - PADDLE_HEIGHT / 2
         self.rightPaddleY = HEIGHT / 2 - PADDLE_HEIGHT / 2
@@ -27,7 +37,8 @@ class GameState:
         self.ball_reset()
         self.game_over = False
 
-        self.game_data = GameData('Linus', 'Alex', 'local') # instance of game data
+        self.game_data = GameDataCollector()
+        self.fetch_users()
 
     def ball_reset(self):
         self.ballX = WIDTH / 2
@@ -148,7 +159,7 @@ class PongConsumer(AsyncWebsocketConsumer):
                     }))
 
                     # save and print GameData
-                    self.game_state.game_data.endGame()
+                    #self.game_state.game_data.endGame()
                     self.game_state.game_data.printData()
 
                     await self.close()

@@ -1,0 +1,79 @@
+import time
+import datetime
+from .models import Games
+from .models import UserGameStats
+from .models import Tournaments
+
+class GameDataCollector:
+	def __init__(self, user1=None, user2=None, type='', tournament=None):
+
+		self.django_games = Games.objects.create(
+			gameType = type,
+			matchDate = datetime.datetime.now().strftime("%Y-%m-%d"),
+			matchTime = datetime.datetime.now().strftime("%H:%M:%S"),
+			tournament = tournament
+		)
+
+		self.django_userstats_1 = UserGameStats.objects.create(
+			user = user1,
+			game = self.django_games
+		)
+		
+		self.django_userstats_2 = UserGameStats.objects.create(
+			user = user2,
+			game = self.django_games
+		)
+
+		self.gameStartTime = time.time()
+		self.currentRallyHits = 0
+		self.strikeCtrUser1 = 0
+		self.strikeCtrUser2 = 0
+
+
+	def endGame(self):
+		self.django_games.gameDuration = int(time.time() - self.gameStartTime)
+		self.django_userstats_1.ballMisses = self.django_userstats_2.score
+		self.django_userstats_2.ballMisses = self.django_userstats_1.score
+
+	def ballHit(self, left=True):
+		self.currentRallyHits += 1
+		if self.currentRallyHits > self.django_userstats_1.longestBallRallyHits:
+				self.django_userstats_1.longestBallRallyHits = self.currentRallyHits
+				self.django_userstats_2.longestBallRallyHits = self.currentRallyHits
+		if left:
+			self.django_userstats_1.ballHits += 1
+		else:
+			self.django_userstats_2.ballHits += 1
+		
+
+	def endRally(self, leftUserWon=True):
+		self.currentRallyHits = 0
+		if leftUserWon:
+			self.strikeCtrUser2 = 0
+			self.strikeCtrUser1 += 1
+			if self.strikeCtrUser1 > self.django_userstats_1.highestStreak:
+					self.django_userstats_1.highestStreak = self.strikeCtrUser1
+			self.django_userstats_1.score += 1
+		else:
+			self.strikeCtrUser1 = 0
+			self.strikeCtrUser2 += 1
+			if self.strikeCtrUser2 > self.django_userstats_2.highestStreak:
+					self.django_userstats_2.highestStreak = self.strikeCtrUser2
+			self.django_userstats_2.score += 1
+	
+	def printData(self):
+		print('-----------------------------------------')
+		print('COLLECTED GAME DATA:\n')
+		print('Game:')
+		attributes = vars(self.django_games)
+		for attribute, value in attributes.items():
+			print(f"{attribute}: {value}")
+		print('\n Stats User 1:')
+		attributes = vars(self.django_userstats_1)
+		for attribute, value in attributes.items():
+			print(f"{attribute}: {value}")
+			print('\n Stats User 2:')
+		attributes = vars(self.django_userstats_2)
+		for attribute, value in attributes.items():
+			print(f"{attribute}: {value}")
+		print('-----------------------------------------')
