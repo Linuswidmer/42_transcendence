@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{% static 'pong/styles.css' %}">
+    <title>Pong Game</title>
+</head>
+<body>
+    {% csrf_token %}
+
+    <!-- CONTENT -->
+    <div id="page">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script>
+        function showSection(section) {   
+            fetch(`/sections/${section}`)
+            .then(response => response.text())
+            .then(text => {
+                document.querySelector('#page').innerHTML = text;
+                addClickListeners();
+                console.log('Section loaded');
+            });
+
+            document.addEventListener('DOMContentLoaded', function() {
+                if (section === 'game') {
+                    const script = document.createElement('script');
+                    script.src = "{% static 'pong/pong_local.js' %}";
+                    document.body.appendChild(script);
+                
+                    console.log('Script loaded');
+                    const startButton = document.getElementById('startButton');
+                    if (startButton) {
+                        startButton.addEventListener('click', function() {
+                            startLocalGame('Player 1', 'Player 2');
+                            console.log('Start button clicked');
+                        });
+                    }
+                }
+            });
+        }
+
+        // Add click listeners to all buttons so that they can load the appropriate section
+        function addClickListeners() {
+            document.querySelectorAll('button.section').forEach(button => {
+                button.onclick = function() {
+                    console.log(`Button with section ${this.dataset.section} clicked.`);
+                    showSection(this.dataset.section)
+                }
+            })
+        
+            // const startButton = document.getElementById('startButton');
+            //     if (startButton) {
+            //         startButton.addEventListener('click', function() {
+            //             startLocalGame('Player 1', 'Player 2');
+            //             console.log('Start button clicked');
+            //         });
+            //     }
+        }
+    
+        // request the landing page content when the page loads
+        document.addEventListener("DOMContentLoaded", function() {
+            // Load the landing page content when the page loads
+            showSection('landing_page');
+    
+            document.querySelectorAll('button').forEach(button => {
+                button.onclick = function() {
+                    console.log(`Button with section ${this.dataset.section} clicked.`);
+                    showSection(this.dataset.section)
+                }
+            })
+        });
+
+        
+        </script>
+</body>
+</html>

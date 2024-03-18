@@ -5,7 +5,7 @@ from channels.auth import AuthMiddlewareStack
 import pong.consumers
 
 websocket_urlpatterns = [
-    path('ws/pong/', pong.consumers.WebSocketConsumer.as_asgi()),
+    path('ws/pong/<room_name>/', pong.consumers.PongConsumer.as_asgi()),
 ]
 
 application = ProtocolTypeRouter({
