@@ -16,19 +16,20 @@ while IFS= read -r line; do
         continue
     fi
 
-    # Split the line into variable name and value
-    var_name=$(echo "$line" | cut -d= -f1)
-    var_value=$(echo "$line" | cut -d= -f2-)
-
     # Export the variable
-    export "$var_name"="$var_value"
+    export "$line"
 
     # Echo the exported variable for confirmation
-    echo "Exported: $var_name=$var_value"
+    echo "Exported: $line"
 done < "$env_file"
 
-# Run Django makemigrations
-python3 manage.py makemigrations
+docker stop $(docker ps -aq) && docker rm $(docker ps -aq)
 
-# Run Django migrate
-python3 manage.py migrate
+docker run -d \
+    -p 127.0.0.1:5432:5432 \
+    --name postgres_container \
+    --env-file ../env.dev \
+    -v $(pwd)/../postgres_data:/var/lib/postgresql/data \
+    postgres:15
+
+python3 manage.py shell

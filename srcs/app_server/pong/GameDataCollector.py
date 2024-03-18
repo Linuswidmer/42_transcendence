@@ -1,6 +1,7 @@
 import time
 import datetime
-from models import Games
+from asgiref.sync import sync_to_async
+from .models import Games
 
 class GameData:
 	def __init__(self, initiatingPlayer, acceptingPlayer, gameType, tournament_id=-1):
@@ -14,10 +15,9 @@ class GameData:
 		self.games_instance.matchTime = datetime.datetime.now().strftime("%H:%M:%S") #
 		self.games_instance.initiatingPlayer = initiatingPlayer
 		self.games_instance.acceptingPlayer = acceptingPlayer
-		self.games_instance.tournament = tournament_id
 
-
-	def endGame(self):
+	async def endGame(self):
+		print('Hello')
 		self.games_instance.gameDuration = int(time.time() - self.gameStartTime)
 		if self.games_instance.scoreInitiatingPlayer < self.games_instance.scoreAcceptingPlayer:
 			self.games_instance.winner = self.games_instance.acceptingPlayer
@@ -28,12 +28,12 @@ class GameData:
 		else:
 			self.games_instance.winner = self.games_instance.initiatingPlayer
 			self.games_instance.loser = self.games_instance.initiatingPlayer
-
 		self.games_instance.ballMissesTotal = self.games_instance.scoreAcceptingPlayer + self.games_instance.scoreInitiatingPlayer
 		self.games_instance.ballMissesAcceptingPlayer = self.games_instance.scoreInitiatingPlayer
 		self.games_instance.ballMissesInitiatingPlayer = self.games_instance.scoreAcceptingPlayer
 
-		self.games_instance.save()
+		# Wrap the synchronous database operation using sync_to_async
+		await sync_to_async(self.games_instance.save)()
 
 	def ballHit(self, initiatingPlayer=True):
 		self.currentRallyHits += 1
@@ -60,11 +60,11 @@ class GameData:
 			if self.acceptingPlayerStrikeCtr > self.games_instance.longestStreakAcceptingPlayer:
 					self.games_instance.longestStreakAcceptingPlayer = self.acceptingPlayerStrikeCtr
 			self.games_instance.scoreAcceptingPlayer += 1
-	
+
 	def printData(self):
 		print('-----------------------------------------')
 		print('COLLECTED GAME DATA:\n')
-		attributes = vars(self)
+		attributes = vars(self.games_instance)
 		for attribute, value in attributes.items():
 			print(f"{attribute}: {value}")
 		print('-----------------------------------------')

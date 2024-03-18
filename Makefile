@@ -8,5 +8,9 @@ down:
 	cd srcs && docker compose down
 
 setup:
-	virtualenv venv && . venv/bin/activate
-	pip install -r ./srcs/requirements/app_server/requirements.txt
+	python3 -m venv venv
+	. venv/bin/activate && pip install -r ./srcs/app_server/requirements.txt
+
+#setup:
+#	virtualenv venv && . venv/bin/activate
+#	pip install -r ./srcs/requirements/app_server/requirements.txt
