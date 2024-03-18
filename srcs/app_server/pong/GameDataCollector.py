@@ -17,7 +17,6 @@ class GameData:
 		self.games_instance.acceptingPlayer = acceptingPlayer
 
 	async def endGame(self):
-		print('Hello')
 		self.games_instance.gameDuration = int(time.time() - self.gameStartTime)
 		if self.games_instance.scoreInitiatingPlayer < self.games_instance.scoreAcceptingPlayer:
 			self.games_instance.winner = self.games_instance.acceptingPlayer
