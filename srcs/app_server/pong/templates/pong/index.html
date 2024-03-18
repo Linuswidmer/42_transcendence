@@ -15,8 +15,10 @@
     <!-- Testing WebSocket -->
     <script>
         function connectWebSocket() {
+            const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
+
             const ws = new WebSocket(
-            'ws://'
+            protocol + '://'
             + window.location.host +
             '/ws/pong/'
             );

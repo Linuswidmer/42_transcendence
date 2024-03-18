@@ -9,6 +9,7 @@ services:
     command: sh -c "gunicorn app_server.wsgi:application --bind 0.0.0.0:8000 & daphne -b 0.0.0.0 -p 8001 app_server.asgi:application -v 0"
     volumes:
       - ./app_server:/usr/src/app
+      - static_volume:/usr/src/app/staticfiles
     expose:
       - 8000
       - 8001
@@ -28,6 +29,13 @@ services:
       - 8443:8443
     volumes:
       - ./nginx/certs:/etc/nginx/ssl
+      - static_volume:/usr/src/app/staticfiles
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6380:6379"
  
   db:
     image: postgres:15
@@ -39,3 +47,4 @@ services:
 
 volumes:
   postgres_data:
+  static_volume:
