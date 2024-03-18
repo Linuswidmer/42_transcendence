@@ -12,6 +12,7 @@ class Profile(models.Model):
         symmetrical=False, #you can follow without being followed back and vice versa
         blank=True #follows can be empty
     )
+    #avatar = models.ImageField(default='default.jpg', upload_to='profile_images')
     def __str__(self):
         return self.user.username
 

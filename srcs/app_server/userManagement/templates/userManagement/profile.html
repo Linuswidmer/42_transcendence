@@ -5,29 +5,30 @@
 {% block content %}
 
 <div class="column">
-
     <div class="block">
     <h1 class="title is-1">
-        {{profile.user.username|upper}}'s Profile
+        {{profile.user.username}}'s Profile
+        {% if profile.user.is_authenticated %}
+            <span style="color: green;">●</span> <!-- Green dot -->
+        {% else %}
+            <span style="color: red;">●</span> <!-- Red dot -->
+        {% endif %}
     </h1>
     </div>
+    {% if profile.user != request.user %}
 	<form method="post">
 		{% csrf_token %}
 		<div class="buttons has-addons">
 		{% if profile in user.profile.follows.all %}
 			<button class="button is-success is-static">Follow</button>
-			<button class="button is-danger" name="follow" value="unfollow">
-				Unfollow
-			</button>
+			<button class="button is-danger" name="follow" value="unfollow">Unfollow</button>
 		{% else %}
-			<button class="button is-success" name="follow" value="follow">
-				Follow
-			</button>
+			<button class="button is-success" name="follow" value="follow">Follow</button>
 			<button class="button is-danger is-static">Unfollow</button>
 		{% endif %}
 		</div>
 	</form>
-
+    {% endif %} 
     <div class="block">
         <h3 class="title is-4"><br>Personal Info:</h3>
         <div class="content">
@@ -35,10 +36,14 @@
                 <li>username: {{profile.user.username}}</li>
                 <li>first name: {{profile.user.first_name}}</li>
                 <li>last name: {{profile.user.last_name}}</li>
-                <li>favorite color: {{profile.favorite_color}}</li>
                 <li>registration date: {{profile.user.date_joined}}</li>
+                <li>last login: {{profile.user.last_login}}</li>
             </ul>
         </div>
+        {% if profile.user == request.user %}
+            <a href="{% url 'userManagement:update' %}">Update Profile Info</a>
+            <a href="{% url 'userManagement:password_reset' %}">Reset password</a>
+        {% endif %} 
     </div>
 </div>
 
@@ -59,11 +64,13 @@
         <div class="content">
             <ul>
             {% for following in profile.follows.all %}
-                <li>
-					<a href="{% url 'userManagement:profile' following.id %}">
-                        {{ following }}
-                    </a>
-                </li>
+                {% if profile.user != following.user %}
+                    <li>
+                        <a href="{% url 'userManagement:profile' following.id %}">
+                            {{ following }}
+                        </a>
+                    </li>
+                {% endif %} 
             {% endfor %}
             </ul>
         </div>
@@ -76,11 +83,13 @@
         <div class="content">
             <ul>
             {% for follower in profile.followed_by.all %}
-                <li>
-					<a href="{% url 'userManagement:profile' follower.id %}">
-                        {{ follower }}
-                    </a>
-                </li>
+                {% if profile.user != follower.user %}
+                    <li>
+					    <a href="{% url 'userManagement:profile' follower.id %}">
+                            {{ follower }}
+                        </a>
+                    </li>
+                {% endif %} 
             {% endfor %}
             </ul>
         </div>

@@ -21,7 +21,12 @@
               </div>
               <div class="media-content">
                 <p class="title is-4">
-                  {{ profile.user.username }}
+                  {{ profile.user.username }} 
+                  {% if profile.user.is_authenticated %}
+                    <span style="color: green;">●</span> <!-- Green dot -->
+                  {% else %}
+                    <span style="color: red;">●</span> <!-- Red dot -->
+                  {% endif %}
                 </p>
                 <p class="subtitle is-6">
                   @{{ profile.user.username|lower }}
