@@ -10,7 +10,7 @@ if [ ! -f "$env_file" ]; then
 fi
 
 # Read each line from the file and export variables
-while IFS= read -r line; do
+while IFS= read -r line || [[ -n "$line" ]]; do
     # Skip empty lines or lines starting with #
     if [[ -z "$line" || "$line" == \#* ]]; then
         continue
@@ -23,8 +23,6 @@ while IFS= read -r line; do
     echo "Exported: $line"
 done < "$env_file"
 
-docker stop $(docker ps -aq) && docker rm $(docker ps -aq)
-
 docker run -d \
     -p 127.0.0.1:5432:5432 \
     --name postgres_container \
@@ -32,6 +30,6 @@ docker run -d \
     -v $(pwd)/../postgres_data:/var/lib/postgresql/data \
     postgres:15
 
-# source ../venv/bin/activate
+source ../../venv/bin/activate
 
 python3 manage.py runserver 127.0.0.1:8443
