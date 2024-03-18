@@ -1,0 +1,18 @@
+<!--users/templates/users/dashboard.html-->
+
+{% extends 'base.html' %}
+
+{% block content %}
+Hello, {{ user.username|default:'Guest' }}!
+<div>
+    {% if user.is_authenticated %}
+		<form method="post" action="{% url 'userManagement:logout' %}">
+			{% csrf_token %}
+			<button type="submit">logout</button>
+		</form>
+		<a href="{% url 'userManagement:password_change' %}">Change password</a>
+    {% else %}
+        <a href="{% url 'userManagement:login' %}">Login</a>
+    {% endif %}
+</div>
+{% endblock %}
