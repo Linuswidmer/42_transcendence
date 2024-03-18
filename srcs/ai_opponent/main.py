@@ -8,7 +8,7 @@ game = Game(window, 700, 500)
 
 run = True
 clock = pygame.time.Clock()
-ai = AIPongOpponent(game.right_paddle.y, game.right_paddle.y, game.ball.x, game.ball.y, game.ball.x_vel, game.ball.y_vel, game.right_paddle.VEL, game.right_paddle.HEIGHT)
+ai = AIPongOpponent(game.right_paddle.y, game.right_paddle.y, game.ball.x, game.ball.y, game.ball.x_vel, game.ball.y_vel, game.right_paddle.VEL, game.right_paddle.HEIGHT, 9)
 ai.setGameState(game.right_paddle.y, game.right_paddle.x, game.ball.x, game.ball.y, game.ball.x_vel, game.ball.y_vel, game.right_paddle.VEL, game.right_paddle.HEIGHT)
 start_time = time.time()
 while run:

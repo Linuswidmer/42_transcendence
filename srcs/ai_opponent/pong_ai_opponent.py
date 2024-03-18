@@ -31,8 +31,8 @@ class AIPongOpponent:
 			return y_virtual_hit % W_HEIGT
 		elif ((y_virtual_hit // W_HEIGT) % 2 != 0):
 			return W_HEIGT - (y_virtual_hit % W_HEIGT)
-	
-	def __init__(self, paddleY, paddleX, ballX, ballY, ballVelocityX, ballVelocityY, paddleStepSize, paddleHeight):
+
+	def __init__(self, paddleY, paddleX, ballX, ballY, ballVelocityX, ballVelocityY, paddleStepSize, paddleHeight, level):
 		self.geometricPredictedY = 0
 		self.paddleY = paddleY
 		self.paddleX = paddleX
@@ -42,8 +42,16 @@ class AIPongOpponent:
 		self.ballY = ballY
 		self.ballVelocityX = ballVelocityX
 		self.ballVelocityY = ballVelocityY
-		#self.ai = self.__createAIOpponent()
+		# self.ai = self.__createAIOpponent()
 		self.aiDecision = 0
+		self.level = level
+		if level < 0:
+			self.level = 0
+		if level > 10:
+			self.level = 10
+		self.errorLevels = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0] #index 10 the hardest --> 0 error
+
+
 
 	def setGameState(self, paddleY, paddleX, ballX, ballY, ballVelocityX, ballVelocityY, paddleStepSize, paddleHeight):
 		self.paddleY = paddleY
@@ -64,8 +72,8 @@ class AIPongOpponent:
 		self.paddleX = paddleX
 		self.paddleY = paddleY
 		randomFactor = random.choice((1, -1)) * random.random() #random float between -1.0 and +1.0
-		#print(randomFactor)
-		self.geometricPredictedY = self.__predict_y_on_ai_paddleside() + randomFactor * self.paddleHeight / 2
+		error = self.errorLevels[self.level]
+		self.geometricPredictedY = self.__predict_y_on_ai_paddleside() + (W_HEIGT * random.uniform(-error, error)) + randomFactor * self.paddleHeight / 2
 
 	def getAIDecision(self):
 		# if (self.ballVelocityX < 0):
