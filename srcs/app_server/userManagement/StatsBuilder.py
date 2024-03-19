@@ -1,7 +1,7 @@
 from typing import Set
-from ..pong.models import Games
-from ..pong.models import UserGameStats
-from ..pong.models import Tournaments
+from pong.models import Games
+from pong.models import UserGameStats
+from pong.models import Tournaments
 from django.contrib.auth.models import User
 
 #private Helper class which stores data of game type (local, remote, ai) data

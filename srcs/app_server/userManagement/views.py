@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from .models import Profile
 from django.urls import reverse
 from userManagement.forms import CustomUserCreationForm
-from StatsBuilder import StatsBuilder
+from .StatsBuilder import StatsBuilder
 
 def dashboard(request):
 	return render(request, "userManagement/dashboard.html")
@@ -43,4 +43,4 @@ def profile(request, pk):
 		elif action == "unfollow":
 			current_user_profile.follows.remove(profile)
 		current_user_profile.save()
-	return render(request, "userManagement/profile.html", {"profile": profile}, {"stats", sb})
+	return render(request, "userManagement/profile.html", {"profile": profile}, {"stats": sb})
