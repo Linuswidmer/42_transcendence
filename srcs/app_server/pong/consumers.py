@@ -69,7 +69,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 		# print("n connected players", MultiplayerConsumer.n_connected_players)
 		if MultiplayerConsumer.n_connected_players % 2 == 1:
-			asyncio.create_task(self.game_loop(self.game_group_name))
+			asyncio.create_task(self.game_loop())
 
 		#broadcast group name to everyone
 		# await self.channel_layer.group_send(
@@ -78,14 +78,14 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		# )
 
 	async def disconnect(self, close_code):
-		async with self.update_lock:
-			if self.player_id in self.players:
-				del self.players[self.player_id]
+		# async with self.update_lock:
+		# 	if self.player_id in self.players:
+		# 		del self.players[self.player_id]
 
 		#TODO handle proper disconnecting from all groups
-		# await self.channel_layer.group_discard(
-		# 	self.game_group_name, self.channel_name
-		# )
+		await self.channel_layer.group_discard(
+			self.game_group_name, self.channel_name
+		)
 
 	async def receive(self, text_data):
 		text_data_json = json.loads(text_data)
@@ -138,8 +138,11 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 
 
-
-	async def game_loop(self, group_name):
+	#i dont think we need a lock here, as we work with the instances own game_data
+	#every instance has its own game_data
+	#when an update happens, all game_datas are updated
+	#here we could import the game from another file to keep things separated
+	async def game_loop(self):
 		print("new game loop started")
 		while 1:
 			# async with self.update_lock:
@@ -161,7 +164,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 					
 					# print(player)
 			await self.channel_layer.group_send(
-				group_name,
-				{"type": "state_update", "objects": list(self.game_data.values()), "groupName": group_name},
+				self.game_group_name,
+				{"type": "state_update", "objects": list(self.game_data.values()), "groupName": self.game_group_name},
 			)
 			await asyncio.sleep(3)
