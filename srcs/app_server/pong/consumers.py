@@ -1,207 +1,166 @@
-# consumers.py
-from channels.generic.websocket import AsyncWebsocketConsumer
 import json
-
-from channels.generic.websocket import WebsocketConsumer
-from channels.generic.websocket import AsyncWebsocketConsumer
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
-from asyncio import Lock
-import json
+import uuid
 import asyncio
-from asgiref.sync import sync_to_async
+import math
+import pygame
 
-from .GameData import GameData
+from channels.generic.websocket import AsyncWebsocketConsumer
+from asgiref.sync import async_to_sync
 
-WIDTH = 600
-HEIGHT = 400
-PADDLE_WIDTH = 10
-PADDLE_HEIGHT = 60
+from pong.pong_game import Pong
 
-class GameState:
-    def __init__(self):
-        self.leftPaddleY = HEIGHT / 2 - PADDLE_HEIGHT / 2
-        self.rightPaddleY = HEIGHT / 2 - PADDLE_HEIGHT / 2
-        self.scorePlayerLeft = 0
-        self.scorePlayerRight = 0
-        self.ball_reset()
-        self.game_over = False
+class MultiplayerConsumer(AsyncWebsocketConsumer):
+	#global class variable to try some things without the db
+	n_connected_players = 0
+	last_game_group_name = ""
 
-        self.game_data = GameData('Linus', 'Alex', 'local') # instance of game data
+	#remove later
+	players = {}
 
-    def ball_reset(self):
-        self.ballX = WIDTH / 2
-        self.ballY = HEIGHT / 2
-        self.ballSpeedX = 2
-        self.ballSpeedY = 2
+	#remove later
+	update_lock = asyncio.Lock()
 
-    def is_game_over(self):
-        return self.game_over
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		
+		#for now assign a uuid. maybe later session id or smth
+		self.player_id = str(uuid.uuid4())
 
-    def update_ball_position(self):
-        self.ballX += self.ballSpeedX
-        self.ballY += self.ballSpeedY
+		self.game_data = {}
 
-        # Bounce the ball off the top and bottom of the screen
-        if self.ballY < 0 or self.ballY > HEIGHT:
-            self.ballSpeedY = -self.ballSpeedY
+		# self.player_data = {
+		# 	"id": self.player_id,
+		# 	"thrusting": False,
+		# }
+		self.hosts_game = False
 
-        # Bounce the ball off the paddles
-        if (self.ballX <= PADDLE_WIDTH and self.ballY >= self.leftPaddleY and self.ballY <= self.leftPaddleY + PADDLE_HEIGHT):
-            self.ballSpeedX = -self.ballSpeedX
-            # update game data
-            self.game_data.ballHit(True)
+	#is called when connection from client to websocket (set up in routing.py) is
+	#established
+	async def connect(self):
+		#accept ws connection
+		await self.accept()
 
-        elif (self.ballX >= (WIDTH - PADDLE_WIDTH) and self.ballY >= self.rightPaddleY and self.ballY <= self.rightPaddleY + PADDLE_HEIGHT):
-            self.ballSpeedX = -self.ballSpeedX
-            # update game data
-            self.game_data.ballHit(False)
+		#assign user to its own group
+		#probably here we consult the db to see if other players are available
+		#in order to decide wether we join an already existing game or start
+		#a new one
+		async with self.update_lock:
+			MultiplayerConsumer.n_connected_players += 1
+		
+		#equal amount of player -> join existing game
+		if MultiplayerConsumer.n_connected_players % 2 == 0:
+			self.game_group_name = MultiplayerConsumer.last_game_group_name
+		else:
+			self.hosts_game = True
+			self.game_group_name = str(uuid.uuid4())
+			MultiplayerConsumer.last_game_group_name = self.game_group_name
+	
+		print("game_group_name:", self.game_group_name)
 
-        # Reset the ball if it goes out of bounds
-        if self.ballX < 0:
-            self.scorePlayerRight += 1
-            if self.scorePlayerRight == 3:
-                self.game_over = True
-            else:
-                self.ball_reset()
+		#needs to always happen
+		await self.channel_layer.group_add(
+			self.game_group_name, self.channel_name
+		)
 
-            # update game data
-            self.game_data.endRally(False)
-        if self.ballX > WIDTH:
-            self.scorePlayerLeft += 1
-            if self.scorePlayerLeft == 3:
-                self.game_over = True
-            else:
-                self.ball_reset()
-            
-            # update game data
-            self.game_data.endRally(True)
+		#send playerId to browser
+		#probably remove this as i see now reason why the browser would want
+		#or need to know the id that the server assigns
+		await self.send(
+			text_data=json.dumps({"type": "playerId", "playerId": self.player_id})
+		)
 
-# Create a single instance of the game state
+		# print("n connected players", MultiplayerConsumer.n_connected_players)
+		if MultiplayerConsumer.n_connected_players % 2 == 1:
+			asyncio.create_task(self.game_loop())
 
-class PongConsumer(AsyncWebsocketConsumer):
-    ready   = False
-    lock = Lock()
+		#broadcast group name to everyone
+		# await self.channel_layer.group_send(
+		# 	self.game_group_name,
+		# 	{"type": "register_opponent", "playerId": self.player_id},
+		# )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.game_state = GameState()
+	async def disconnect(self, close_code):
+		# async with self.update_lock:
+		# 	if self.player_id in self.players:
+		# 		del self.players[self.player_id]
 
-    async def connect(self):
-        self.room_group_name = 'test'
-        await self.channel_layer.group_add(
-            self.room_group_name,
-            self.channel_name
-        )
-        await self.accept()
+		#TODO handle proper disconnecting from all groups
+		await self.channel_layer.group_discard(
+			self.game_group_name, self.channel_name
+		)
 
-        # send the initial game state to the client (only one not the entire group/channel)
-        await self.send(text_data=json.dumps({
-            'leftPaddleY': self.game_state.leftPaddleY,
-            'rightPaddleY': self.game_state.rightPaddleY,
-            'ballX': self.game_state.ballX,
-            'ballY': self.game_state.ballY,
-            'scorePlayerLeft': self.game_state.scorePlayerLeft,
-            'scorePlayerRight': self.game_state.scorePlayerRight
-        }))
-    
-    async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
+	async def receive(self, text_data):
+		text_data_json = json.loads(text_data)
+		print(text_data_json)
 
-    async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        leftPaddleY = text_data_json.get('leftPaddleY')
-        rightPaddleY = text_data_json.get('rightPaddleY')
-        ready = text_data_json.get('ready')
+		message_type = text_data_json.get("type", "")
+		print("msg type", message_type)
 
-        # Update the game state with the received paddle positions
-        async with PongConsumer.lock:
-            if leftPaddleY is not None:
-                self.game_state.leftPaddleY = leftPaddleY
-            if rightPaddleY is not None:
-                self.game_state.rightPaddleY = rightPaddleY
+		#we dont need to actually obtain the id from the client
+		#we now it is our client because we are inside receive
+		#so we can just send self.player_id to process keypress
+		player_id = text_data_json["playerId"]
+		
 
-            #Update player state
-            if ready is not None:
-                self.ready = ready
-
-            # If both players are ready, start the game
-            if self.ready is True:
-                # Update the game state with the received paddle positions
-                if leftPaddleY is not None:
-                    self.game_state.leftPaddleY = leftPaddleY
-                if rightPaddleY is not None:
-                    self.game_state.rightPaddleY = rightPaddleY
-
-                # Update the ball position
-                self.game_state.update_ball_position()
-
-                if self.game_state.is_game_over():
-                    # Send a game over message to the client
-                    await self.send(text_data=json.dumps({
-                        'gameOver': True,
-                        'scorePlayerLeft': self.game_state.scorePlayerLeft,
-                        'scorePlayerRight': self.game_state.scorePlayerRight
-                    }))
-
-                    # save and print GameData
-                    self.game_state.game_data.endGame()
-                    self.game_state.game_data.printData()
-
-                    await self.close()
-                else:
-                    # Send the updated game state to the client
-                    await self.send(text_data=json.dumps({
-                        'leftPaddleY': self.game_state.leftPaddleY,
-                        'rightPaddleY': self.game_state.rightPaddleY,
-                        'ballX': self.game_state.ballX,
-                        'ballY': self.game_state.ballY,
-                        'scorePlayerLeft': self.game_state.scorePlayerLeft,
-                        'scorePlayerRight': self.game_state.scorePlayerRight
-                    }))
+		if message_type == "thrust":
+			await self.channel_layer.group_send(
+				self.game_group_name,
+				{"type": "process_keypress", message_type: player_id},
+			)
 
 
-# ONLY FOR TESTING
-class WebSocketConsumer(AsyncWebsocketConsumer):
-    async def connect(self):
-        # Join a group
-        await self.channel_layer.group_add(
-            "chat",
-            self.channel_name
-        )
+	async def state_update(self, event):
+		await self.send(
+			# text_data=json.dumps(
+			# 	{
+			# 		"type": "stateUpdate",
+			# 		"objects": event["objects"],
+			# 		"groupName": event["groupName"],
+			# 	}
+			# )
+			text_data=json.dumps(event)
+		)
+	
+	# async def register_opponent(self, event):
+	# 	if "playerId" in event:
+	# 		opponent_id = event["playerId"]
+	# 		self.game_data[opponent_id] = {}
 
-        # Accept the WebSocket connection
-        await self.accept()
 
-    async def disconnect(self, close_code):
-        # Leave the group
-        await self.channel_layer.group_discard(
-            "chat",
-            self.channel_name
-        )
+	async def process_keypress(self, event):
+		if "thrust" in event:
+			player_id = event["thrust"]
+			
+			#toggle keypress if entry already exists between True and False
+			#if it doesnt exist, create it and set it to True
+			if player_id in self.game_data and "thrusting" in self.game_data[player_id]:
+				self.game_data[player_id]["thrusting"] = not self.game_data[player_id]["thrusting"]
+			else:
+				self.game_data.setdefault(player_id, {})["thrusting"] = True
 
-    # Receive message from WebSocket
-    async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message = text_data_json['message']
 
-        # Send message to group
-        await self.channel_layer.group_send(
-            "chat",
-            {
-                'type': 'chat_message',
-                'message': message
-            }
-        )
 
-    # Receive message from group
-    async def chat_message(self, event):
-        message = event['message']
+	#i dont think we need a lock here, as we work with the instances own game_data
+	#every instance has its own game_data
+	#when an update happens, all game_datas are updated
+	#here we could import the game from another file to keep things separated
+	async def game_loop(self):
+		print("new game loop started")
+		clock = pygame.time.Clock()
+		pong_instance = Pong()
+		FPS = 30
+		while 1:
+			#this determines the tickrate that our server can send updated
+			#also dt enables us to see if our server can keep up with the tick rate
+			#or if smth is slowing it down
+			dt = clock.tick(FPS) / 1000  # Amount of seconds between each loop
+			margin = 0.1
+			if dt > (1/FPS * (1 + margin)):
+				print("Warning: Server cannot keep up with the desired framerate.")
+			positions = pong_instance.update_entities(dt)
 
-        # Send message to WebSocket
-        await self.send(text_data=json.dumps({
-            'message': message
-        }))
+			await self.channel_layer.group_send(
+				self.game_group_name,
+				{"type": "state_update", "object_positions": positions},
+			)
+			# await asyncio.sleep(60)

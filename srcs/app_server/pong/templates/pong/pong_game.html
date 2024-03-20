@@ -27,16 +27,16 @@
         <button id="startButton">Start game</button>
     </div>
     
-    <script src="{% static 'pong/pong_local.js' %}"></script>
+    <script src="{% static 'pong/pong_online.js' %}"></script>
     
-    <script>
+    <!-- <script>
             const startButton = document.getElementById('startButton');
                 if (startButton) {
                     startButton.addEventListener('click', function() {
-                        startLocalGame('Player 1', 'Player 2');
+                        join_game("");
                         console.log('Start button clicked');
                     });
                 }
-    </script>
+    </script> -->
 </body>
 </html>
