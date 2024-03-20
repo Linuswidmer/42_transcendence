@@ -2,12 +2,12 @@ import json
 import uuid
 import asyncio
 import math
-import pygame
+# import pygame
 
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import async_to_sync
 
-from pong.pong_game import Pong
+# from pong.pong_game import Pong
 
 class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#global class variable to try some things without the db
@@ -146,21 +146,21 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#here we could import the game from another file to keep things separated
 	async def game_loop(self):
 		print("new game loop started")
-		clock = pygame.time.Clock()
-		pong_instance = Pong()
+		# clock = pygame.time.Clock()
+		# pong_instance = Pong()
 		FPS = 30
 		while 1:
 			#this determines the tickrate that our server can send updated
 			#also dt enables us to see if our server can keep up with the tick rate
 			#or if smth is slowing it down
-			dt = clock.tick(FPS) / 1000  # Amount of seconds between each loop
+			# dt = clock.tick(FPS) / 1000  # Amount of seconds between each loop
 			margin = 0.1
-			if dt > (1/FPS * (1 + margin)):
-				print("Warning: Server cannot keep up with the desired framerate.")
-			positions = pong_instance.update_entities(dt)
+			# if dt > (1/FPS * (1 + margin)):
+				# print("Warning: Server cannot keep up with the desired framerate.")
+			# positions = pong_instance.update_entities(dt)
 
-			await self.channel_layer.group_send(
-				self.game_group_name,
-				{"type": "state_update", "object_positions": positions},
-			)
+			# await self.channel_layer.group_send(
+			# 	self.game_group_name,
+			# 	{"type": "state_update", "object_positions": positions},
+			# )
 			await asyncio.sleep(60)
