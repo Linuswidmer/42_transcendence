@@ -2,8 +2,10 @@ from django.contrib.auth import login
 from django.shortcuts import render, redirect
 from .models import Profile
 from django.urls import reverse
-from userManagement.forms import CustomUserCreationForm, CustomUserChangeForm
+from userManagement.forms import CustomUserCreationForm, CustomUserChangeForm, CustomProfileChangeForm
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
+import os
 
 def dashboard(request):
     return render(request, "userManagement/dashboard.html")
@@ -21,22 +23,51 @@ def register(request):
             login(request, user)
             return redirect(reverse('userManagement:profile', args=[user.profile.id]))
 
-def update(request):
+def update_user(request):
     if request.method == "GET":
         form = CustomUserChangeForm(instance=request.user)
         return render(
-            request, "userManagement/update.html",
+            request, "userManagement/update_user.html",
             {"form": form}
         )
     elif request.method == "POST":
         form = CustomUserChangeForm(request.POST, instance=request.user)
         if form.is_valid():
             user = form.save()
-            return redirect(reverse('userManagement:profile', args=[user.profile.id]))
+            return redirect(reverse('userManagement:profile', args=[user.id]))
+        else:
+            return render(
+            request, "userManagement/update_user.html",
+            {"form": form}
+        )
+
+def update_profile(request):
+    if request.method == "GET":
+        form = CustomProfileChangeForm(instance=request.user.profile)
+        return render(
+            request, "userManagement/update_profile.html",
+            {"form": form}
+        )
+    elif request.method == "POST":
+        current_avatar = request.user.profile.avatar
+        #delete the current avatar if there is a new one
+        if current_avatar and request.FILES and current_avatar is not "profile_images/default.jpg":
+            avatar_path = os.path.join(settings.MEDIA_ROOT, str(current_avatar))
+            if os.path.exists(avatar_path):
+                os.remove(avatar_path)
+        form = CustomProfileChangeForm(request.POST, request.FILES, instance=request.user.profile)
+        if form.is_valid():
+            form.save()
+            return redirect(reverse('userManagement:profile', args=[request.user.id]))
+        else:
+            return render(
+            request, "userManagement/update_profile.html",
+            {"form": form}
+        )
 
 @login_required
 def profile_list(request):
-    profiles = Profile.objects.exclude(user=request.user)
+    profiles = Profile.objects.all()
     return render(request, "userManagement/profile_list.html", {"profiles": profiles})
 
 @login_required

@@ -6,12 +6,21 @@
 
 <div class="column">
     <div class="block">
+        <div class="media-left">
+            <figure class="image is-128x128">
+              <img src="{{ profile.avatar.url }}"
+                   alt="Placeholder image">
+            </figure>
+        </div>
+        {% if profile.user == request.user %}
+            <a href="{% url 'userManagement:update_profile' %}">Change Profile Picture</a>
+        {% endif %} 
     <h1 class="title is-1">
         {{profile.user.username}}'s Profile
-        {% if profile.user.is_authenticated %}
-            <span style="color: green;">●</span> <!-- Green dot -->
+        {% if profile.logged_in is True  %}
+            <span style="color: green; margin-left: 5px; font-size: 0.5em;">Online</span>
         {% else %}
-            <span style="color: red;">●</span> <!-- Red dot -->
+            <span style="color: red; margin-left: 5px; font-size: 0.5em;">Offline</span>    
         {% endif %}
     </h1>
     </div>
@@ -41,14 +50,21 @@
             </ul>
         </div>
         {% if profile.user == request.user %}
-            <a href="{% url 'userManagement:update' %}">Update Profile Info</a>
+            <a href="{% url 'userManagement:update_user' %}">Update Profile Info</a>
             <a href="{% url 'userManagement:password_reset' %}">Reset password</a>
         {% endif %} 
     </div>
 </div>
 
 <div class="column is-one-third">
-
+    {% if profile.user == request.user %}
+    <div class="block">
+        <form method="post" action="{% url 'userManagement:logout' %}">
+			{% csrf_token %}
+			<button type="submit">logout</button>
+		</form>
+    </div>
+    {% endif %} 
     <div class="block">
 		<a href="{% url 'userManagement:profile_list' %}">
             <button class="button is-dark is-outlined is-fullwidth">

@@ -2,6 +2,9 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.contrib.auth.signals import user_logged_out, user_logged_in
+from django.utils import timezone
+
 
 class Profile(models.Model):
 
@@ -12,7 +15,10 @@ class Profile(models.Model):
         symmetrical=False, #you can follow without being followed back and vice versa
         blank=True #follows can be empty
     )
-    #avatar = models.ImageField(default='default.jpg', upload_to='profile_images')
+    last_activity = models.DateTimeField(auto_now=True)
+    logged_in = models.BooleanField(default=False)
+    avatar = models.ImageField(default='profile_images/default.jpg', upload_to='profile_images')
+   
     def __str__(self):
         return self.user.username
 
@@ -22,5 +28,15 @@ def create_profile(sender, instance, created, **kwargs):
     if created:
         user_profile = Profile(user=instance)
         user_profile.save()
-        user_profile.follows.add(instance.profile)
-        user_profile.save()
+        #user_profile.follows.add(instance.profile)
+        #user_profile.save()
+
+@receiver(user_logged_in)
+def log_user_in(sender, request, user, **kwargs):
+    user.profile.logged_in = True
+    user.profile.save()
+
+@receiver(user_logged_out)
+def log_user_logout(sender, request, user, **kwargs):
+    user.profile.logged_in = False
+    user.profile.save()

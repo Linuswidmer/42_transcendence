@@ -15,21 +15,21 @@
             <div class="media">
               <div class="media-left">
                 <figure class="image is-48x48">
-                  <img src="https://bulma.io/images/placeholders/96x96.png"
+                  <img src="{{ profile.avatar.url }}"
                        alt="Placeholder image">
                 </figure>
               </div>
               <div class="media-content">
                 <p class="title is-4">
                   {{ profile.user.username }} 
-                  {% if profile.user.is_authenticated %}
-                    <span style="color: green;">●</span> <!-- Green dot -->
-                  {% else %}
-                    <span style="color: red;">●</span> <!-- Red dot -->
-                  {% endif %}
                 </p>
                 <p class="subtitle is-6">
                   @{{ profile.user.username|lower }}
+                  {% if profile.logged_in is True  %}
+                    <span style="color: green; font-size: 0.8em;">●</span> <!-- Green dot -->
+                  {% else %}
+                    <span style="color: red; font-size: 0.8em;">●</span> <!-- Red dot -->
+                  {% endif %}
                 </p>
               </div>
             </div>
