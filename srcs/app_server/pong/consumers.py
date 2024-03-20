@@ -21,7 +21,6 @@ PADDLE_WIDTH = 10
 PADDLE_HEIGHT = 60
 
 class GameState:
-
 	def __init__(self):
 		self.leftPaddleY = HEIGHT / 2 - PADDLE_HEIGHT / 2
 		self.rightPaddleY = HEIGHT / 2 - PADDLE_HEIGHT / 2
@@ -153,7 +152,7 @@ class PongConsumer(AsyncWebsocketConsumer):
 					}))
 
 					# save and print GameData
-					#self.game_state.game_data.endGame()
+					# self.game_state.game_data.endGame()
 					# self.game_state.game_data.printData()
 
 					await self.close()
