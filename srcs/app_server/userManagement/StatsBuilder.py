@@ -31,7 +31,6 @@ class StatsBuilder:
 		self.totalHits = 0#
 		self.totalWins = 0#
 		self.totalDefeats = 0#
-		self.totalDraws = 0#
 
 		#game type dependent data
 		self.gameTypeStats = {
@@ -42,24 +41,27 @@ class StatsBuilder:
 
 	#This helper method returns a tupel: first is winner, second is loser. Both the same, when draw.
 	def _getWinnerLoser(self, game: Games):
-		stats = UserGameStats.objects.filter(game=game)
+		stats = UserGameStats.objects.filter(game_id=game.id).order_by('id')
 		if stats[0].score > stats[1].score:
-			return (stats[0].user, stats[1].user)
+			return stats[0].user, stats[1].user
 		elif stats[0].score < stats[1].score:
-			return (stats[1].user, stats[0].user)
-		return (stats[0].user, stats[0].user)
+			return stats[1].user, stats[0].user
+		return stats[0].user, stats[1].user #change later, draws not possible
 
 	#This helper method goes through all tournaments and their games for the user
 	# and set the best rank of the user in all these tournaments
 	def _setBestTournamentRank(self, tournaments: Set[Tournaments]):
 		#go through each tournament
 		for tm in tournaments:
-			games = Games.objects.filter(tournaments=tm)
+			print('Tournament ID: ', tm.id)
+			print('USER: ', self.user)
+			games = Games.objects.filter(tournament_id=tm)
 			#dictionary that has the users as key and the amount of their won gmaes as values
 			playerWins = {}
 			#go through every game of this tournament
 			for game in games:
 				winner, loser = self._getWinnerLoser(game)
+				print('Winner Loser: ', winner, loser)
 				#set the loser in order to be visible in the dictinary
 				if loser not in playerWins:
 					playerWins[loser] = 0
@@ -69,8 +71,8 @@ class StatsBuilder:
 				#if winner is not in dict initialize with 1
 				elif winner not in playerWins:
 					playerWins[winner] = 1
-			#create a sorted list of all wins of all users
-			winList = sorted(playerWins.values())
+			#create a sorted list of all wins of all users, with the highst amount of wins in the begining
+			winList = sorted(playerWins.values(), reverse=True)
 			#since we know the wins of our user, its rank is just the index of all sorted wins (+1)
 			rank = winList.index(playerWins[self.user]) + 1
 			#update the stats
@@ -95,12 +97,10 @@ class StatsBuilder:
 			if stat.game.tournament != None:
 				tournaments.append(stat.game.tournament)
 
-			winner, loser = self._getWinnerLoser(stat.game)[0]
-			if winner == loser:
-				self.totalDraws += 1
+			winner, loser = self._getWinnerLoser(stat.game)
 			if winner == self.user:
 				self.totalWins += 1
-			if loser == self.user:
+			elif loser == self.user:
 				self.totalDefeats += 1
 
 			#work on the gameTypeStat instance in order tp update the right stats
@@ -122,4 +122,6 @@ class StatsBuilder:
 		#since we used the averagePointsPErGame to Sum up all scores,
 		# we now need to divide them through all the games of the gameType (remote, local, ai)
 		for key, gameTypeStat in self.gameTypeStats.items():
-			gameTypeStat.averagePointsPerGame /= len(gameTypeStat.games)
+			numGames = len(gameTypeStat.games)
+			if numGames > 0:
+				gameTypeStat.averagePointsPerGame /= len(gameTypeStat.games)

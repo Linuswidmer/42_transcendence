@@ -5,29 +5,29 @@ from .models import UserGameStats
 from .models import Tournaments
 
 class GameDataCollector:
-	def __init__(self, user1=None, user2=None, type='', tournament=None):
+	def __init__(self, user1, user2, type='', tournament=None):
 
 		self.django_games = Games.objects.create(
 			gameType = type,
 			matchDate = datetime.datetime.now().strftime("%Y-%m-%d"),
 			matchTime = datetime.datetime.now().strftime("%H:%M:%S"),
-			tournament = tournament
+			tournament_id = tournament.id
 		)
 
 		self.django_userstats_1 = UserGameStats.objects.create(
-			user = user1,
-			game = self.django_games
+			user_id = user1.id,
+			game = self.django_games.id
 		)
 		
 		self.django_userstats_2 = UserGameStats.objects.create(
-			user = user2,
-			game = self.django_games
+			user_id = user2.id,
+			game = self.django_games.id
 		)
 
 		self.gameStartTime = time.time()
 		self.currentRallyHits = 0
-		self.strikeCtrUser1 = 0
-		self.strikeCtrUser2 = 0
+		self.streakCtrUser1 = 0
+		self.streakCtrUser2 = 0
 
 
 	def endGame(self):
@@ -49,16 +49,16 @@ class GameDataCollector:
 	def endRally(self, leftUserWon=True):
 		self.currentRallyHits = 0
 		if leftUserWon:
-			self.strikeCtrUser2 = 0
-			self.strikeCtrUser1 += 1
-			if self.strikeCtrUser1 > self.django_userstats_1.highestStreak:
-					self.django_userstats_1.highestStreak = self.strikeCtrUser1
+			self.streakCtrUser2 = 0
+			self.streakCtrUser1 += 1
+			if self.streakCtrUser1 > self.django_userstats_1.highestStreak:
+					self.django_userstats_1.highestStreak = self.streakCtrUser1
 			self.django_userstats_1.score += 1
 		else:
-			self.strikeCtrUser1 = 0
-			self.strikeCtrUser2 += 1
-			if self.strikeCtrUser2 > self.django_userstats_2.highestStreak:
-					self.django_userstats_2.highestStreak = self.strikeCtrUser2
+			self.streakCtrUser1 = 0
+			self.streakCtrUser2 += 1
+			if self.streakCtrUser2 > self.django_userstats_2.highestStreak:
+					self.django_userstats_2.highestStreak = self.streakCtrUser2
 			self.django_userstats_2.score += 1
 	
 	def printData(self):

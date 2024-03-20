@@ -23,17 +23,17 @@ def register(request):
 
 
 def profile_list(request):
-	profiles = Profile.objects.exclude(user=request.user)
+	profiles = Profile.objects.all()
 	return render(request, "userManagement/profile_list.html", {"profiles": profiles})
 
 def profile(request, pk):
-	sb = StatsBuilder(request.user)
-	sb.build()
 	if not hasattr(request.user, 'profile'):
 		missing_profile = Profile(user=request.user)
 		missing_profile.save()
 
 	profile = Profile.objects.get(pk=pk)
+	sb = StatsBuilder(profile.user)
+	sb.build()
 	if request.method == "POST":
 		current_user_profile = request.user.profile
 		data = request.POST
@@ -43,4 +43,4 @@ def profile(request, pk):
 		elif action == "unfollow":
 			current_user_profile.follows.remove(profile)
 		current_user_profile.save()
-	return render(request, "userManagement/profile.html", {"profile": profile}, {"stats": sb})
+	return render(request, "userManagement/profile.html", {"profile": profile, "stats": sb})
