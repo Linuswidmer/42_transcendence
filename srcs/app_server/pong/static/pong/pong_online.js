@@ -1,4 +1,59 @@
-function tick_test(name) {
+///////////////////////////////
+// Define Constants
+const   BALL_RADIUS = 10;
+
+
+///////////////////////////////
+// General Setup
+const canvas = document.getElementById('pongCanvas');
+const ctx = canvas.getContext('2d');
+
+///////////////////////////////
+// Setup Game Objects
+let     ballX;
+let     ballY;
+
+/*****************************************************************************/
+/*                               Game functions                              */
+/*****************************************************************************/
+function drawBall() {
+    ctx.beginPath();
+    ctx.arc(ballX, ballY, BALL_RADIUS, 0, Math.PI*2);
+    ctx.fillStyle = "#fff";
+    ctx.fill();
+    ctx.closePath();
+}
+
+function draw() {
+    // Clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBall();
+}
+
+// function gameLoop() {
+//     update();
+//     draw();
+//     requestAnimationFrame(gameLoop);
+// }
+
+//update entities in game with informaation sent by server tick
+function update(data) {
+	try{
+		if (data.object_positions !== undefined) {
+            if (data.object_positions.ballX !== undefined) {
+                ballX = data.object_positions.ballX;
+            }
+            if (data.object_positions.ballY !== undefined) {
+                ballY = data.object_positions.ballY;
+            }
+			console.log("ballX:", ballX, " ballY:", ballY);
+        }
+	} catch (error) {
+		console.log('Error parsing JSON:', error);
+	}
+}
+
+function join_game(name) {
 
     const roomName = "my_room";
     const wsUrl = `ws://${window.location.host}/ws/pong/${roomName}/`; // this has to be modified to be a unique identifier
@@ -39,39 +94,17 @@ function tick_test(name) {
         try{
             const data = JSON.parse(e.data);
         
-			console.log(e.data);
+			// console.log(e.data);
 
 			if (data.type === "playerId") {
 				ws.user_id = data.playerId;
 				console.log("user id from server", ws.user_id);
 			}
-			// if (data.type === "stateUpdate") {
-			// 	const objects = data.objects;
-			// 	if (objects.length > 0) {
-			// 		ws.user_id = objects[0].id;
-			// 		console.log("user id from server", ws.user_id);  // Logs the id to the console
-			// 	}
-			// }
-            // if (data.leftPaddleY !== undefined) {
-            //     serverLeftPaddleY = data.leftPaddleY;
-            // }
-            // if (data.rightPaddleY !== undefined) {
-            //     serverRightPaddleY = data.rightPaddleY;
-            // }
-            // if (data.ballX !== undefined) {
-            //     ballX = data.ballX;
-            // }
-            // if (data.ballY !== undefined) {
-            //     ballY = data.ballY;
-            // }
-            // if (data.scorePlayerLeft !== undefined) {
-            //     leftScore = data.scorePlayerLeft;
-            //     leftScoreElement.textContent = leftScore;
-            // }
-            // if (data.scorePlayerRight !== undefined) {
-            //     rightScore = data.scorePlayerRight;
-            //     rightScoreElement.textContent = rightScore;
-            // }
+			if (data.type === "state_update") {
+				update(data)
+			}
+			draw()
+			
         } catch (error) {
             console.log('Error parsing JSON:', error);
         }
@@ -83,5 +116,5 @@ document.getElementById('nameForm').addEventListener('submit', function(event) {
 
 	var name = document.getElementById('nameInput').value;
     // Start the game
-    tick_test(name);
+   join_game(name);
 });

@@ -7,6 +7,8 @@ import pygame
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import async_to_sync
 
+from pong.pong_game import Pong
+
 class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#global class variable to try some things without the db
 	n_connected_players = 0
@@ -116,7 +118,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			# 		"groupName": event["groupName"],
 			# 	}
 			# )
-			text_data=json.dumps(self.game_data)
+			text_data=json.dumps(event)
 		)
 	
 	# async def register_opponent(self, event):
@@ -144,27 +146,21 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#here we could import the game from another file to keep things separated
 	async def game_loop(self):
 		print("new game loop started")
+		clock = pygame.time.Clock()
+		pong_instance = Pong()
+		FPS = 30
 		while 1:
-			# async with self.update_lock:
-			# 	for player in self.players.values():
-			# 		if player["thrusting"]:
-			# 			dx = self.THRUST * math.cos(player["facing"])
-			# 			dy = self.THRUST * math.sin(player["facing"])
-			# 			player["dx"] += dx
-			# 			player["dy"] += dy
+			#this determines the tickrate that our server can send updated
+			#also dt enables us to see if our server can keep up with the tick rate
+			#or if smth is slowing it down
+			dt = clock.tick(FPS) / 1000  # Amount of seconds between each loop
+			margin = 0.1
+			if dt > (1/FPS * (1 + margin)):
+				print("Warning: Server cannot keep up with the desired framerate.")
+			positions = pong_instance.update_entities(dt)
 
-			# 			speed = math.sqrt(player["dx"] ** 2 + player["dy"] ** 2)
-			# 			if speed > self.MAX_SPEED:
-			# 				ratio = self.MAX_SPEED / speed
-			# 				player["dx"] *= ratio
-			# 				player["dy"] *= ratio
-
-			# 		player["x"] += player["dx"]
-			# 		player["y"] += player["dy"]
-					
-					# print(player)
 			await self.channel_layer.group_send(
 				self.game_group_name,
-				{"type": "state_update", "objects": list(self.game_data.values()), "groupName": self.game_group_name},
+				{"type": "state_update", "object_positions": positions},
 			)
-			await asyncio.sleep(3)
+			await asyncio.sleep(60)
