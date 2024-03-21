@@ -47,16 +47,14 @@ class Paddle(Entity):
 		self.height = height
 		self.color = color
 		self.hitbox = pygame.Rect(self.x, self.y,self.width, self.height)
-		self.isMoving = False
-		self.direction = 0
 
 	def update_pos(self, x: int):
 		self.x = x
 		self.hitbox = pygame.Rect(self.x, self.y,self.width, self.height)
 
-	def move(self, dt) -> None:
-		if (self.isMoving):
-			new_x = self.x + (self.dx * dt * self.direction)
+	def move(self, dt, direction) -> None:
+		if (direction):
+			new_x = self.x + (self.dx * dt * direction)
 
 	   		# Check if the new position would be outside the screen
 			if new_x < 0:
@@ -101,9 +99,18 @@ class Pong:
 		# 	elif (paddle.isMoving and paddle.direction == -1):
 		# 		ball.dx = ball.dx * (0.5 if ball.dx > 0 else 1.5)
 	
-	def	update_entities(self, dt):
+	def	update_entities(self, dt, game_data):
+		player1_data, player2_data = list(game_data.values())
+		player1_id, player2_id = list(game_data.keys())
+		player1_direction = player1_data["direction"]
+		player2_direction = player2_data["direction"]
+
+		self.topPaddle.move(dt, player1_direction)
+		self.bottomPaddle.move(dt, player2_direction)
 		self.ball.move(dt)
-		return {'ballX': self.ball.x, 'ballY': self.ball.y}
+		return {'ballX': self.ball.x, 'ballY': self.ball.y,
+		  player1_id: {"x": self.topPaddle.x, "y": self.topPaddle.y},
+		  player2_id: {"x": self.bottomPaddle.x, "y": self.bottomPaddle.y}}
 
 def main():
 	# Initialize Pygame

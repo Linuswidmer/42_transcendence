@@ -61,16 +61,39 @@ function join_game(name) {
         protocol + '://' + window.location.host + '/ws/pong/game/'
     );
 
-	window.addEventListener('keydown', function(event) {
-		// Check if the space key was pressed
-		if (event.code === 'Space') {
-			// Create the message
-			let data = {'playerId': ws.user_id, 'type': 'thrust'};
+	//prevents client from sending a lot of messages when holding a button pressed
+	let keys = {
+		'KeyA': false,
+		'KeyD': false
+	};
 
-			// Send the message if the WebSocket connection is open
-			if (ws.readyState === WebSocket.OPEN) {
-				ws.send(JSON.stringify(data));
-			}
+	window.addEventListener('keydown', function(event) {
+		let data = undefined;
+		if (event.code === 'KeyA' && !keys[event.code]) {
+			keys[event.code] = true;
+			data = {'playerId': ws.user_id, 'type': 'keypress', 'action': 'moveLeft'};
+		} else if (event.code === 'KeyD'  && !keys[event.code]) {
+			keys[event.code] = true;
+			data = {'playerId': ws.user_id, 'type': 'keypress', 'action': 'moveRight'};
+		}
+	
+		if (typeof data !== 'undefined' && ws.readyState === WebSocket.OPEN) {
+			ws.send(JSON.stringify(data));
+		}
+	});
+	
+	window.addEventListener('keyup', function(event) {
+		let data = undefined;
+		if (event.code === 'KeyA') {
+			keys[event.code] = false;
+			data = {'playerId': ws.user_id, 'type': 'keypress', 'action': 'stopMove'};
+		} else if (event.code === 'KeyD') {
+			keys[event.code] = false;
+			data = {'playerId': ws.user_id, 'type': 'keypress', 'action': 'stopMove'};
+		}
+	
+		if (typeof data !== 'undefined' && ws.readyState === WebSocket.OPEN) {
+			ws.send(JSON.stringify(data));
 		}
 	});
 
@@ -95,7 +118,7 @@ function join_game(name) {
         try{
             const data = JSON.parse(e.data);
         
-			// console.log(e.data);
+			console.log(e.data);
 
 			if (data.type === "playerId") {
 				ws.user_id = data.playerId;

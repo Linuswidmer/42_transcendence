@@ -2,7 +2,12 @@ import json
 import uuid
 import asyncio
 import math
+import time
 import pygame
+import logging
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import async_to_sync
@@ -14,8 +19,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	n_connected_players = 0
 	last_game_group_name = ""
 
-	#remove later
-	players = {}
+
 
 	#remove later
 	update_lock = asyncio.Lock()
@@ -26,7 +30,17 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		#for now assign a uuid. maybe later session id or smth
 		self.player_id = str(uuid.uuid4())
 
-		self.game_data = {}
+		self.game_data = {
+			self.player_id: {
+				"score": 0,
+				"direction": 0,
+			},
+			"player2": {
+				"score": 0,
+				"direction": 0,
+
+			}
+		}
 
 		# self.player_data = {
 		# 	"id": self.player_id,
@@ -99,13 +113,15 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		#we dont need to actually obtain the id from the client
 		#we now it is our client because we are inside receive
 		#so we can just send self.player_id to process keypress
-		player_id = text_data_json["playerId"]
+		# player_id = text_data_json["playerId"]
 		
 
-		if message_type == "thrust":
+		if message_type == "keypress":
 			await self.channel_layer.group_send(
 				self.game_group_name,
-				{"type": "process_keypress", message_type: player_id},
+				{"type": "process_keypress",
+				"playerId": text_data_json.get("playerId", ""),
+	 			"action": text_data_json.get("action", "")},
 			)
 
 
@@ -127,17 +143,31 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	# 		self.game_data[opponent_id] = {}
 
 
-	async def process_keypress(self, event):
-		if "thrust" in event:
-			player_id = event["thrust"]
-			
-			#toggle keypress if entry already exists between True and False
-			#if it doesnt exist, create it and set it to True
-			if player_id in self.game_data and "thrusting" in self.game_data[player_id]:
-				self.game_data[player_id]["thrusting"] = not self.game_data[player_id]["thrusting"]
-			else:
-				self.game_data.setdefault(player_id, {})["thrusting"] = True
+	async def process_keypress(self, keypress):
+		if not self.hosts_game:
+			return
 
+		if "action" not in keypress or "playerId" not in keypress:
+			logger.warning("action are playerid need to be contained for process keypress to work")
+			return
+		
+		action = keypress["action"]
+		player_id = keypress["playerId"]
+		
+		#update dictionary with other playerId the first time we receive a keypress
+		if player_id not in self.game_data:
+			self.game_data[player_id] = self.game_data["player2"] 
+			del self.game_data["player2"]
+
+		if action == "moveLeft":
+			self.game_data[player_id]["direction"] = -1
+		elif action == "moveRight":
+			self.game_data[player_id]["direction"] = 1
+		elif action == "stopMove":
+			self.game_data[player_id]["direction"] = 0
+			self.game_data[player_id]["direction"] = 0
+
+			
 
 
 	#i dont think we need a lock here, as we work with the instances own game_data
@@ -148,19 +178,24 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		print("new game loop started")
 		clock = pygame.time.Clock()
 		pong_instance = Pong()
-		FPS = 30
+		FPS = 0.5
+		iteration_time = 1 / FPS
 		while 1:
+			start_time = time.time()
 			#this determines the tickrate that our server can send updated
 			#also dt enables us to see if our server can keep up with the tick rate
 			#or if smth is slowing it down
 			# dt = clock.tick(FPS) / 1000  # Amount of seconds between each loop
-			# margin = 0.1
-			# if dt > (1/FPS * (1 + margin)):
-			# 	print("Warning: Server cannot keep up with the desired framerate.")
-			positions = pong_instance.update_entities(0.01)
+			positions = pong_instance.update_entities(iteration_time, self.game_data)
 
 			await self.channel_layer.group_send(
 				self.game_group_name,
-				{"type": "state_update", "object_positions": positions},
+				{"type": "state_update", "object_positions": positions, "game_data": self.game_data},
 			)
-			await asyncio.sleep(0.005)
+			await asyncio.sleep(1 / FPS)
+
+			end_time = time.time()  # End time of the iteration
+			iteration_time_measured = end_time - start_time
+			margin = 0.1
+			if iteration_time_measured  > (iteration_time * (1 + margin)):
+				print("Warning: Server cannot keep up with the desired framerate.")
