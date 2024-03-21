@@ -105,10 +105,10 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 	async def receive(self, text_data):
 		text_data_json = json.loads(text_data)
-		print(text_data_json)
+		# print(text_data_json)
 
 		message_type = text_data_json.get("type", "")
-		print("msg type", message_type)
+		# print("msg type", message_type)
 
 		#we dont need to actually obtain the id from the client
 		#we now it is our client because we are inside receive
@@ -176,26 +176,21 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#here we could import the game from another file to keep things separated
 	async def game_loop(self):
 		print("new game loop started")
-		clock = pygame.time.Clock()
 		pong_instance = Pong()
-		FPS = 0.5
+		FPS = 120
 		iteration_time = 1 / FPS
 		while 1:
-			start_time = time.time()
-			#this determines the tickrate that our server can send updated
-			#also dt enables us to see if our server can keep up with the tick rate
-			#or if smth is slowing it down
-			# dt = clock.tick(FPS) / 1000  # Amount of seconds between each loop
+			# start_time = time.time()
 			positions = pong_instance.update_entities(iteration_time, self.game_data)
 
 			await self.channel_layer.group_send(
 				self.game_group_name,
 				{"type": "state_update", "object_positions": positions, "game_data": self.game_data},
 			)
-			await asyncio.sleep(1 / FPS)
+			await asyncio.sleep(iteration_time)
 
-			end_time = time.time()  # End time of the iteration
-			iteration_time_measured = end_time - start_time
-			margin = 0.1
-			if iteration_time_measured  > (iteration_time * (1 + margin)):
-				print("Warning: Server cannot keep up with the desired framerate.")
+			# end_time = time.time()  # End time of the iteration
+			# iteration_time_measured = end_time - start_time
+			# margin = 0.1
+			# if iteration_time_measured  > (iteration_time * (1 + margin)):
+			# 	print("Warning: Server cannot keep up with the desired framerate.", iteration_time_measured, ">", iteration_time)

@@ -53,6 +53,7 @@ class Paddle(Entity):
 		self.hitbox = pygame.Rect(self.x, self.y,self.width, self.height)
 
 	def move(self, dt, direction) -> None:
+		self.direction = direction
 		if (direction):
 			new_x = self.x + (self.dx * dt * direction)
 
@@ -82,22 +83,22 @@ class Pong:
 		paddle = self.topPaddle if ball.dy < 0 else self.bottomPaddle
 
 		# Check if the ball's hitbox collides with the paddle's hitbox
-		# if (ball.hitbox.colliderect(paddle.hitbox)):
-		# 	# If the ball's new y-position is within its radius of the top or bottom of the paddle,
-   		# 	# it means the ball has hit the top or bottom of the paddle.
-		# 	# In this case, we reverse the y-direction of the ball to simulate a bounce.
-		# 	if abs((ball.y + ball.dy * dt) - paddle.y) < ball.radius or abs((ball.y + ball.dy * dt) - (paddle.y + paddle.height)) < ball.radius:
-		#    		ball.dy *= -1
-		# 	else:
-		# 		# The ball hit the side of the paddle
-		# 		ball.dx *= -1
+		if (ball.hitbox.colliderect(paddle.hitbox)):
+			# If the ball's new y-position is within its radius of the top or bottom of the paddle,
+   			# it means the ball has hit the top or bottom of the paddle.
+			# In this case, we reverse the y-direction of the ball to simulate a bounce.
+			if abs((ball.y + ball.dy * dt) - paddle.y) < ball.radius or abs((ball.y + ball.dy * dt) - (paddle.y + paddle.height)) < ball.radius:
+		   		ball.dy *= -1
+			else:
+				# The ball hit the side of the paddle
+				ball.dx *= -1
 		
-		# 	# increase or decrease dx of the ball if the paddle is moving
-		# 	# the same/ or opposite direction respectively
-		# 	if (paddle.isMoving and paddle.direction == 1):
-		# 		ball.dx = ball.dx * (0.5 if ball.dx < 0 else 1.5)
-		# 	elif (paddle.isMoving and paddle.direction == -1):
-		# 		ball.dx = ball.dx * (0.5 if ball.dx > 0 else 1.5)
+			# increase or decrease dx of the ball if the paddle is moving
+			# the same/ or opposite direction respectively
+			if (paddle.direction == 1):
+				ball.dx = ball.dx * (0.8 if ball.dx < 0 else 1.2)
+			elif (paddle.direction == -1):
+				ball.dx = ball.dx * (0.8 if ball.dx > 0 else 1.2)
 	
 	def	update_entities(self, dt, game_data):
 		player1_data, player2_data = list(game_data.values())
@@ -108,6 +109,7 @@ class Pong:
 		self.topPaddle.move(dt, player1_direction)
 		self.bottomPaddle.move(dt, player2_direction)
 		self.ball.move(dt)
+		self.check_ball_paddle_collision(dt)
 		return {'ballX': self.ball.x, 'ballY': self.ball.y,
 		  player1_id: {"x": self.topPaddle.x, "y": self.topPaddle.y},
 		  player2_id: {"x": self.bottomPaddle.x, "y": self.bottomPaddle.y}}

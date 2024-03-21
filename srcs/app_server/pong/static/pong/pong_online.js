@@ -1,7 +1,8 @@
 ///////////////////////////////
 // Define Constants
-const   BALL_RADIUS = 10;
-
+const   BALL_RADIUS = 5;
+const	PADDLE_WIDTH = 70;
+const	PADDLE_HEIGHT = 15;
 
 ///////////////////////////////
 // General Setup
@@ -12,6 +13,11 @@ const ctx = canvas.getContext('2d');
 // Setup Game Objects
 let     ballX;
 let     ballY;
+
+let     topPaddleX = 0;
+let     topPaddleY = 0;
+let     bottomPaddleX = 0
+let     bottomPaddleY = 0
 
 /*****************************************************************************/
 /*                               Game functions                              */
@@ -24,10 +30,17 @@ function drawBall() {
     ctx.closePath();
 }
 
+function drawPaddle(x, y) {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(x, y, PADDLE_WIDTH, PADDLE_HEIGHT);
+}
+
 function draw() {
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBall();
+	drawPaddle(topPaddleX, topPaddleY);
+    drawPaddle(bottomPaddleX, bottomPaddleY);
 }
 
 // function gameLoop() {
@@ -37,7 +50,7 @@ function draw() {
 // }
 
 //update entities in game with informaation sent by server tick
-function update(data) {
+function update(user_id, data) {
 	try{
 		if (data.object_positions !== undefined) {
             if (data.object_positions.ballX !== undefined) {
@@ -46,7 +59,16 @@ function update(data) {
             if (data.object_positions.ballY !== undefined) {
                 ballY = data.object_positions.ballY;
             }
-			console.log("ballX:", ballX, " ballY:", ballY);
+			if (data.object_positions[user_id] !== undefined) {
+                topPaddleX = data.object_positions[user_id].x;
+                topPaddleY = data.object_positions[user_id].y;
+            }
+			for (let id in data.object_positions) {
+                if (id !== "ballX" && id !== "ballY" && id !== user_id) {
+                    bottomPaddleX = data.object_positions[id].x;
+                    bottomPaddleY = data.object_positions[id].y;
+                }
+            }
         }
 	} catch (error) {
 		console.log('Error parsing JSON:', error);
@@ -125,7 +147,7 @@ function join_game(name) {
 				console.log("user id from server", ws.user_id);
 			}
 			if (data.type === "state_update") {
-				update(data)
+				update(ws.user_id, data)
 			}
 			draw()
 			
