@@ -3,8 +3,10 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth.signals import user_logged_out, user_logged_in
+from django.db.models.signals import pre_delete
 from django.utils import timezone
-
+from django.conf import settings
+import os
 
 class Profile(models.Model):
 
@@ -15,7 +17,7 @@ class Profile(models.Model):
         symmetrical=False, #you can follow without being followed back and vice versa
         blank=True #follows can be empty
     )
-    last_activity = models.DateTimeField(auto_now=True)
+    #last_activity = models.DateTimeField(auto_now=True)
     logged_in = models.BooleanField(default=False)
     avatar = models.ImageField(default='profile_images/default.jpg', upload_to='profile_images')
    
@@ -40,3 +42,11 @@ def log_user_in(sender, request, user, **kwargs):
 def log_user_logout(sender, request, user, **kwargs):
     user.profile.logged_in = False
     user.profile.save()
+
+@receiver(pre_delete, sender=User)
+def pre_delete_user(sender, instance, **kwargs):
+    current_avatar = instance.profile.avatar
+    if current_avatar and str(current_avatar) != "profile_images/default.jpg":
+        avatar_path = os.path.join(settings.MEDIA_ROOT, str(current_avatar))
+        if os.path.exists(avatar_path):
+            os.remove(avatar_path)

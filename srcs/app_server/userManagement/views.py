@@ -51,7 +51,7 @@ def update_profile(request):
     elif request.method == "POST":
         current_avatar = request.user.profile.avatar
         #delete the current avatar if there is a new one
-        if current_avatar and request.FILES and current_avatar is not "profile_images/default.jpg":
+        if current_avatar and request.FILES and str(current_avatar) != "profile_images/default.jpg":
             avatar_path = os.path.join(settings.MEDIA_ROOT, str(current_avatar))
             if os.path.exists(avatar_path):
                 os.remove(avatar_path)
