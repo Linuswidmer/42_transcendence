@@ -159,12 +159,12 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			# start_time = time.time()
 
 			#update entities with the iteration_time and keypresses
-			positions = pong_instance.update_entities(iteration_time, self.game_data)
+			entity_data = pong_instance.update_entities(iteration_time, self.game_data)
 
 			#send all entity data to clients, so they can render the game
 			await self.channel_layer.group_send(
 				self.game_group_name,
-				{"type": "state_update", "object_positions": positions},
+				{"type": "state_update", "entity_data": entity_data},
 			)
 			await asyncio.sleep(iteration_time)
 

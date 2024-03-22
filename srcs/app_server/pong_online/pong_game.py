@@ -2,8 +2,17 @@ import pygame
 import time
 import random
 
+############## CONSTANTS ###############
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 400
+
+PADDLE_WIDTH = 15
+PADDLE_HEIGHT = 70
+PADDLE_DY = 300
+
+BALL_DX = 200
+BALL_DY = 200
+BALL_RADIUS = 5
 
 class Entity:
 	def __init__(self, x, y, dx, dy) -> None:
@@ -117,12 +126,12 @@ class Paddle(Entity):
 class Pong:
 	# change initial properties of entities here
 	def __init__(self) -> None:
-		self.leftPaddle = Paddle(0, SCREEN_HEIGHT / 2 - 70,
-						0, 200, 15, 70, (255, 255, 255))
-		self.rightPaddle = Paddle(SCREEN_WIDTH - 15, SCREEN_HEIGHT / 2 - 70,
-						0, 200, 15, 70, (255, 255, 255))
+		self.leftPaddle = Paddle(0, SCREEN_HEIGHT / 2 - PADDLE_HEIGHT,
+						0, PADDLE_DY, PADDLE_WIDTH, PADDLE_HEIGHT, (255, 255, 255))
+		self.rightPaddle = Paddle(SCREEN_WIDTH - PADDLE_WIDTH, SCREEN_HEIGHT / 2 - PADDLE_HEIGHT,
+						0, PADDLE_DY, PADDLE_WIDTH, PADDLE_HEIGHT, (255, 255, 255))
 		self.ball = Ball(0, 0,
-						200, 200, 5, (255, 255, 255))
+						BALL_DX, BALL_DY, BALL_RADIUS, (255, 255, 255))
 	
 	
 
@@ -137,9 +146,14 @@ class Pong:
 		self.leftPaddle.move(dt, player1_direction)
 		self.rightPaddle.move(dt, player2_direction)
 		self.ball.move(dt, self.leftPaddle, self.rightPaddle)
-		return {'ballX': self.ball.x, 'ballY': self.ball.y,
-		  player1_id: {"x": self.leftPaddle.x, "y": self.leftPaddle.y, "score": self.leftPaddle.score},
-		  player2_id: {"x": self.rightPaddle.x, "y": self.rightPaddle.y, "score": self.rightPaddle.score}}
+		return {'relativeBallX': self.ball.x / SCREEN_WIDTH,
+		  		'relativeBallY': self.ball.y / SCREEN_HEIGHT,
+		  		player1_id: {"relativeX": self.leftPaddle.x / SCREEN_WIDTH,
+							"relativeY": self.leftPaddle.y / SCREEN_HEIGHT,
+							"score": self.leftPaddle.score},
+		  		player2_id: {"relativeX": self.rightPaddle.x / SCREEN_WIDTH,
+							"relativeY": self.rightPaddle.y / SCREEN_HEIGHT,
+							"score": self.rightPaddle.score}}
 
 def main():
 	# Initialize Pygame

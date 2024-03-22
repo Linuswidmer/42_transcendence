@@ -60,27 +60,35 @@ function gameOver() {
     // document.getElementById('reloadPlayOptions').style.display = 'block';
 }
 
+function norm2height(relativeY) {
+	return (relativeY * canvas.height)
+}
+
+function norm2width(relativeX) {
+	return (relativeX * canvas.width)
+}
+
 //update entities in game with informaation sent by server tick
 function update(user_id, data) {
 	try{
-		if (data.object_positions !== undefined) {
-            if (data.object_positions.ballX !== undefined) {
-                ballX = data.object_positions.ballX;
+		if (data.entity_data !== undefined) {
+            if (data.entity_data.relativeBallX !== undefined) {
+                ballX = norm2width(data.entity_data.relativeBallX);
             }
-            if (data.object_positions.ballY !== undefined) {
-                ballY = data.object_positions.ballY;
+            if (data.entity_data.relativeBallY !== undefined) {
+                ballY = norm2height(data.entity_data.relativeBallY);
             }
-			if (data.object_positions[user_id] !== undefined) {
-                leftPaddleX = data.object_positions[user_id].x;
-                leftPaddleY = data.object_positions[user_id].y;
-				leftScore = data.object_positions[user_id].score;
+			if (data.entity_data[user_id] !== undefined) {
+                leftPaddleX = norm2width(data.entity_data[user_id].relativeX);
+                leftPaddleY = norm2height(data.entity_data[user_id].relativeY);
+				leftScore = data.entity_data[user_id].score;
 				leftScoreElement.textContent = leftScore;
             }
-			for (let id in data.object_positions) {
-                if (id !== "ballX" && id !== "ballY" && id != "score" && id !== user_id) {
-                    rightPaddleX = data.object_positions[id].x;
-                    rightPaddleY = data.object_positions[id].y;
-					rightScore = data.object_positions[id].score;
+			for (let id in data.entity_data) {
+                if (id !== "relativeBallX" && id !== "relativeBallY" && id != "score" && id !== user_id) {
+                    rightPaddleX = norm2width(data.entity_data[id].relativeX);
+                    rightPaddleY = norm2height(data.entity_data[id].relativeY);
+					rightScore = data.entity_data[id].score;
 					rightScoreElement.textContent = rightScore;
                 }
             }
