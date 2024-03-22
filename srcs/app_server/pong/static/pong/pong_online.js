@@ -1,8 +1,8 @@
 ///////////////////////////////
 // Define Constants
 const   BALL_RADIUS = 5;
-const	PADDLE_WIDTH = 70;
-const	PADDLE_HEIGHT = 15;
+const	PADDLE_WIDTH = 15;
+const	PADDLE_HEIGHT = 70;
 
 ///////////////////////////////
 // General Setup
@@ -93,10 +93,10 @@ function join_game(name) {
 		let data = undefined;
 		if (event.code === 'KeyA' && !keys[event.code]) {
 			keys[event.code] = true;
-			data = {'playerId': ws.user_id, 'type': 'keypress', 'action': 'moveLeft'};
+			data = {'playerId': ws.user_id, 'type': 'keypress', 'action': 'moveUp'};
 		} else if (event.code === 'KeyD'  && !keys[event.code]) {
 			keys[event.code] = true;
-			data = {'playerId': ws.user_id, 'type': 'keypress', 'action': 'moveRight'};
+			data = {'playerId': ws.user_id, 'type': 'keypress', 'action': 'moveDown'};
 		}
 	
 		if (typeof data !== 'undefined' && ws.readyState === WebSocket.OPEN) {
@@ -108,10 +108,10 @@ function join_game(name) {
 		let data = undefined;
 		if (event.code === 'KeyA') {
 			keys[event.code] = false;
-			data = {'playerId': ws.user_id, 'type': 'keypress', 'action': 'stopMoveLeft'};
+			data = {'playerId': ws.user_id, 'type': 'keypress', 'action': 'stopMoveUp'};
 		} else if (event.code === 'KeyD') {
 			keys[event.code] = false;
-			data = {'playerId': ws.user_id, 'type': 'keypress', 'action': 'stopMoveRight'};
+			data = {'playerId': ws.user_id, 'type': 'keypress', 'action': 'stopMoveDown'};
 		}
 	
 		if (typeof data !== 'undefined' && ws.readyState === WebSocket.OPEN) {

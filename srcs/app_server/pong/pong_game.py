@@ -1,5 +1,6 @@
 import pygame
 import time
+import random
 
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 400
@@ -18,6 +19,7 @@ class Ball(Entity):
 		self.color = color
 		self.hitbox = pygame.Rect(self.x - self.radius, self.y - self.radius,
 							2 * self.radius, 2 * self.radius)
+		self.random_spawn()
 	
 	def update_pos(self, x: int, y: int):
 		self.x = x
@@ -25,20 +27,66 @@ class Ball(Entity):
 		self.hitbox = pygame.Rect(self.x - self.radius, self.y - self.radius,
 							2 * self.radius, 2 * self.radius)
 
-	def move(self, dt: int) -> None:
+	def random_spawn(self):
+		self.dx = random.choice([-1, 1]) * (self.dx + random.uniform(-0.5, 0.5))
+		self.dy = random.choice([-1, 1]) * (self.dy + random.uniform(-0.5, 0.5))
+		self.update_pos(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+
+	def move(self, dt: int, leftPaddle, rightPaddle) -> None:
+		#calculate theoretical position of ball for next timestep
 		new_x = self.x + (self.dx * dt)
 		new_y = self.y + (self.dy * dt)
 
+		#adjust dx,dy in case there is a collision
+		self.check_ball_paddle_collision(new_x, new_y, leftPaddle, rightPaddle)
+		self.check_ball_sidewalls_collision(new_x, new_y, leftPaddle.score, rightPaddle.score)
+		
+		#calculate the actual position with adjusted dx, dy
+		new_x = self.x + (self.dx * dt)
+		new_y = self.y + (self.dy * dt)
+
+		self.update_pos(new_x, new_y)
+
+	def check_ball_paddle_collision(self, new_x, new_y, leftPaddle, rightPaddle):
+
+		# if the ball is moving right (positive dx) the possible 
+		# collision will be with the right paddle
+		paddle = rightPaddle if self.dx > 0 else leftPaddle
+
+		# Create a new rect for the ball's new position
+		new_ball_rect = pygame.Rect(new_x, new_y, self.radius, self.radius)
+
+		# Check if the new ball rect collides with the paddle's rect
+		if new_ball_rect.colliderect(paddle.hitbox):
+			# If the new x-position is within its radius of the left or right of the paddle,
+			# it means the ball has hit the left or right of the paddle.
+			# In this case, we reverse the x-direction of the ball to simulate a bounce.
+			if abs(new_x - paddle.x) < self.radius or abs(new_x - (paddle.x + paddle.width)) < self.radius:
+				self.dx *= -1
+			else: # The ball hit the top or bottom of the paddle
+				self.dy *= -1
+
+			# increase or decrease dy of the ball if the paddle is moving
+			# the same/ or opposite direction respectively
+			if (paddle.direction == 1):
+				self.dy = self.dy * (0.8 if self.dy < 0 else 1.2)
+			elif (paddle.direction == -1):
+				self.dy = self.dy * (0.8 if self.dy > 0 else 1.2)
+
+
+	def check_ball_sidewalls_collision(self, new_x, new_y, leftPaddleScore, rightPaddleScore):
 		# If the ball is at the left or right boundary, reverse its x direction
 		if new_x - self.radius < 0 or new_x + self.radius > SCREEN_WIDTH:
-			self.dx *= -1
+			if self.dx < 0: #left side wall hit -> point for right player
+				rightPaddleScore += 1
+			if self.dx > 0:
+				leftPaddleScore += 1
+			self.random_spawn()
+			return
 
 		# If the ball is at the top or bottom boundary, reverse its y direction
 		if new_y - self.radius < 0 or new_y + self.radius > SCREEN_HEIGHT:
 			self.dy *= -1
-
-		self.update_pos(new_x, new_y)
-
 
 class Paddle(Entity):
 	def __init__(self, x, y, dx, dy, width, height, color) -> None:
@@ -47,57 +95,38 @@ class Paddle(Entity):
 		self.height = height
 		self.color = color
 		self.hitbox = pygame.Rect(self.x, self.y,self.width, self.height)
+		self.score = 0
 
-	def update_pos(self, x: int):
-		self.x = x
+	def update_pos(self, y: int):
+		self.y = y
 		self.hitbox = pygame.Rect(self.x, self.y,self.width, self.height)
 
 	def move(self, dt, direction) -> None:
 		self.direction = direction
 		if (direction):
-			new_x = self.x + (self.dx * dt * direction)
+			new_y = self.y + (self.dy * dt * direction)
 
-	   		# Check if the new position would be outside the screen
-			if new_x < 0:
-				new_x = 0
-			elif new_x + self.width > SCREEN_WIDTH:
-				new_x = SCREEN_WIDTH - self.width
+			# Check if the new position would be outside the screen
+			if new_y < 0:
+				new_y = 0
+			elif new_y + self.height > SCREEN_HEIGHT:
+				new_y = SCREEN_HEIGHT - self.height
 
-			self.update_pos(new_x)
+			self.update_pos(new_y)
 
 class Pong:
 	# change initial properties of entities here
 	def __init__(self) -> None:
-		self.topPaddle = Paddle(SCREEN_WIDTH / 2 - 70, 0,
-						200, 0, 70, 15, (255, 255, 255))
-		self.bottomPaddle = Paddle(SCREEN_WIDTH / 2 - 70, SCREEN_HEIGHT - 15,
-						200, 0, 70, 15, (255, 255, 255))
-		self.ball = Ball(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2,
-				   		200, 200, 5, (255, 255, 255))
-		
-	def check_ball_paddle_collision(self, dt):
-		ball = self.ball
+		self.leftPaddle = Paddle(0, SCREEN_HEIGHT / 2 - 70,
+						0, 200, 15, 70, (255, 255, 255))
+		self.rightPaddle = Paddle(SCREEN_WIDTH - 15, SCREEN_HEIGHT / 2 - 70,
+						0, 200, 15, 70, (255, 255, 255))
+		self.ball = Ball(0, 0,
+						200, 200, 5, (255, 255, 255))
+	
+	
 
-		# if the ball is moving up (negative dy) the possible 
-		# collision will be with the top paddle
-		paddle = self.topPaddle if ball.dy < 0 else self.bottomPaddle
 
-		# Check if the ball's hitbox collides with the paddle's hitbox
-		if (ball.hitbox.colliderect(paddle.hitbox)):
-			# If the ball's new y-position is within its radius of the top or bottom of the paddle,
-   			# it means the ball has hit the top or bottom of the paddle.
-			# In this case, we reverse the y-direction of the ball to simulate a bounce.
-			if abs((ball.y + ball.dy * dt) - paddle.y) < ball.radius or abs((ball.y + ball.dy * dt) - (paddle.y + paddle.height)) < ball.radius:
-		   		ball.dy *= -1
-			else: # The ball hit the side of the paddle
-				ball.dx *= -1
-		
-			# increase or decrease dx of the ball if the paddle is moving
-			# the same/ or opposite direction respectively
-			if (paddle.direction == 1):
-				ball.dx = ball.dx * (0.8 if ball.dx < 0 else 1.2)
-			elif (paddle.direction == -1):
-				ball.dx = ball.dx * (0.8 if ball.dx > 0 else 1.2)
 	
 	def	update_entities(self, dt, game_data):
 		player1_data, player2_data = list(game_data.values())
@@ -105,13 +134,12 @@ class Pong:
 		player1_direction = player1_data["direction"]
 		player2_direction = player2_data["direction"]
 
-		self.topPaddle.move(dt, player1_direction)
-		self.bottomPaddle.move(dt, player2_direction)
-		self.ball.move(dt)
-		self.check_ball_paddle_collision(dt)
+		self.leftPaddle.move(dt, player1_direction)
+		self.rightPaddle.move(dt, player2_direction)
+		self.ball.move(dt, self.leftPaddle, self.rightPaddle)
 		return {'ballX': self.ball.x, 'ballY': self.ball.y,
-		  player1_id: {"x": self.topPaddle.x, "y": self.topPaddle.y},
-		  player2_id: {"x": self.bottomPaddle.x, "y": self.bottomPaddle.y}}
+		  player1_id: {"x": self.leftPaddle.x, "y": self.leftPaddle.y, "score": self.leftPaddle.score},
+		  player2_id: {"x": self.rightPaddle.x, "y": self.rightPaddle.y, "score": self.rightPaddle.score}}
 
 def main():
 	# Initialize Pygame

@@ -29,14 +29,14 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		self.game_data = {
 			self.player_id: {
 				"score": 0,
-				"moveLeft": False,
-				"moveRight": False,
+				"moveUp": False,
+				"moveDown": False,
 				"direction": 0,
 			},
 			"player2": {
 				"score": 0,
-				"moveLeft": False,
-				"moveRight": False,
+				"moveUp": False,
+				"moveDown": False,
 				"direction": 0,
 			}
 		}
@@ -130,18 +130,18 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			self.game_data[player_id] = self.game_data["player2"] 
 			del self.game_data["player2"]
 
-		if action == "moveLeft":
-			self.game_data[player_id]["moveLeft"] = True
-		elif action == "moveRight":
-			self.game_data[player_id]["moveRight"] = True
-		elif action == "stopMoveLeft":
-			self.game_data[player_id]["moveLeft"] = False
-		elif action == "stopMoveRight":
-			self.game_data[player_id]["moveRight"] = False
+		if action == "moveUp":
+			self.game_data[player_id]["moveUp"] = True
+		elif action == "moveDown":
+			self.game_data[player_id]["moveDown"] = True
+		elif action == "stopMoveUp":
+			self.game_data[player_id]["moveUp"] = False
+		elif action == "stopMoveDown":
+			self.game_data[player_id]["moveDown"] = False
 
-		if self.game_data[player_id]["moveLeft"] and not self.game_data[player_id]["moveRight"]:
+		if self.game_data[player_id]["moveUp"] and not self.game_data[player_id]["moveDown"]:
 			self.game_data[player_id]["direction"] = -1
-		elif self.game_data[player_id]["moveRight"] and not self.game_data[player_id]["moveLeft"]:
+		elif self.game_data[player_id]["moveDown"] and not self.game_data[player_id]["moveUp"]:
 			self.game_data[player_id]["direction"] = 1
 		else:
 			self.game_data[player_id]["direction"] = 0
