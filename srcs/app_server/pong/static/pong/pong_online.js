@@ -108,10 +108,10 @@ function join_game(name) {
 		let data = undefined;
 		if (event.code === 'KeyA') {
 			keys[event.code] = false;
-			data = {'playerId': ws.user_id, 'type': 'keypress', 'action': 'stopMove'};
+			data = {'playerId': ws.user_id, 'type': 'keypress', 'action': 'stopMoveLeft'};
 		} else if (event.code === 'KeyD') {
 			keys[event.code] = false;
-			data = {'playerId': ws.user_id, 'type': 'keypress', 'action': 'stopMove'};
+			data = {'playerId': ws.user_id, 'type': 'keypress', 'action': 'stopMoveRight'};
 		}
 	
 		if (typeof data !== 'undefined' && ws.readyState === WebSocket.OPEN) {
@@ -140,7 +140,7 @@ function join_game(name) {
         try{
             const data = JSON.parse(e.data);
         
-			console.log(e.data);
+			// console.log(e.data);
 
 			if (data.type === "playerId") {
 				ws.user_id = data.playerId;

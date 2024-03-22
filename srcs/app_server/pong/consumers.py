@@ -19,11 +19,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	n_connected_players = 0
 	last_game_group_name = ""
 
-
-
-	#remove later
 	update_lock = asyncio.Lock()
-
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		
@@ -33,19 +29,18 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		self.game_data = {
 			self.player_id: {
 				"score": 0,
+				"moveLeft": False,
+				"moveRight": False,
 				"direction": 0,
 			},
 			"player2": {
 				"score": 0,
+				"moveLeft": False,
+				"moveRight": False,
 				"direction": 0,
-
 			}
 		}
-
-		# self.player_data = {
-		# 	"id": self.player_id,
-		# 	"thrusting": False,
-		# }
+		#set to true later for consumer that runs the game loop
 		self.hosts_game = False
 
 	#is called when connection from client to websocket (set up in routing.py) is
@@ -53,11 +48,18 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	async def connect(self):
 		#accept ws connection
 		await self.accept()
+		#send playerId to browser
+		#probably remove this as i see now reason why the browser would want
+		#or need to know the id that the server assigns
+		await self.send(
+			text_data=json.dumps({"type": "playerId", "playerId": self.player_id})
+		)
 
 		#assign user to its own group
 		#probably here we consult the db to see if other players are available
 		#in order to decide wether we join an already existing game or start
-		#a new one
+		#a new one -> should defenitely go to its own function. maybe even own file,
+		#for matchmaking
 		async with self.update_lock:
 			MultiplayerConsumer.n_connected_players += 1
 		
@@ -68,85 +70,54 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			self.hosts_game = True
 			self.game_group_name = str(uuid.uuid4())
 			MultiplayerConsumer.last_game_group_name = self.game_group_name
-	
-		print("game_group_name:", self.game_group_name)
 
-		#needs to always happen
+		#add player to group to send/receive updates
 		await self.channel_layer.group_add(
 			self.game_group_name, self.channel_name
 		)
 
-		#send playerId to browser
-		#probably remove this as i see now reason why the browser would want
-		#or need to know the id that the server assigns
-		await self.send(
-			text_data=json.dumps({"type": "playerId", "playerId": self.player_id})
-		)
 
-		# print("n connected players", MultiplayerConsumer.n_connected_players)
-		if MultiplayerConsumer.n_connected_players % 2 == 1:
+		#start game_loop if player is hosting
+		if self.hosts_game:
 			asyncio.create_task(self.game_loop())
 
-		#broadcast group name to everyone
-		# await self.channel_layer.group_send(
-		# 	self.game_group_name,
-		# 	{"type": "register_opponent", "playerId": self.player_id},
-		# )
-
 	async def disconnect(self, close_code):
-		# async with self.update_lock:
-		# 	if self.player_id in self.players:
-		# 		del self.players[self.player_id]
-
-		#TODO handle proper disconnecting from all groups
 		await self.channel_layer.group_discard(
 			self.game_group_name, self.channel_name
 		)
 
 	async def receive(self, text_data):
 		text_data_json = json.loads(text_data)
-		# print(text_data_json)
-
 		message_type = text_data_json.get("type", "")
-		# print("msg type", message_type)
 
 		#we dont need to actually obtain the id from the client
 		#we now it is our client because we are inside receive
 		#so we can just send self.player_id to process keypress
-		# player_id = text_data_json["playerId"]
 		
-
+		#we call process keypress to update the keypress in our
+		#game_data. if one client sends a keypress. the process_keypress
+		#function is called in both consumers
 		if message_type == "keypress":
 			await self.channel_layer.group_send(
 				self.game_group_name,
 				{"type": "process_keypress",
-				"playerId": text_data_json.get("playerId", ""),
+				"playerId": self.player_id,
 	 			"action": text_data_json.get("action", "")},
 			)
 
 
 	async def state_update(self, event):
 		await self.send(
-			# text_data=json.dumps(
-			# 	{
-			# 		"type": "stateUpdate",
-			# 		"objects": event["objects"],
-			# 		"groupName": event["groupName"],
-			# 	}
-			# )
 			text_data=json.dumps(event)
 		)
 	
-	# async def register_opponent(self, event):
-	# 	if "playerId" in event:
-	# 		opponent_id = event["playerId"]
-	# 		self.game_data[opponent_id] = {}
-
-
+	#update game_data with keypress, if we are in a consumer that
+	#is not hosting the game, we ignore it
 	async def process_keypress(self, keypress):
 		if not self.hosts_game:
 			return
 
+		#triggered if this function is called with wrong argument for keypress
 		if "action" not in keypress or "playerId" not in keypress:
 			logger.warning("action are playerid need to be contained for process keypress to work")
 			return
@@ -160,14 +131,20 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			del self.game_data["player2"]
 
 		if action == "moveLeft":
-			self.game_data[player_id]["direction"] = -1
+			self.game_data[player_id]["moveLeft"] = True
 		elif action == "moveRight":
-			self.game_data[player_id]["direction"] = 1
-		elif action == "stopMove":
-			self.game_data[player_id]["direction"] = 0
-			self.game_data[player_id]["direction"] = 0
+			self.game_data[player_id]["moveRight"] = True
+		elif action == "stopMoveLeft":
+			self.game_data[player_id]["moveLeft"] = False
+		elif action == "stopMoveRight":
+			self.game_data[player_id]["moveRight"] = False
 
-			
+		if self.game_data[player_id]["moveLeft"] and not self.game_data[player_id]["moveRight"]:
+			self.game_data[player_id]["direction"] = -1
+		elif self.game_data[player_id]["moveRight"] and not self.game_data[player_id]["moveLeft"]:
+			self.game_data[player_id]["direction"] = 1
+		else:
+			self.game_data[player_id]["direction"] = 0
 
 
 	#i dont think we need a lock here, as we work with the instances own game_data
@@ -175,17 +152,20 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#when an update happens, all game_datas are updated
 	#here we could import the game from another file to keep things separated
 	async def game_loop(self):
-		print("new game loop started")
+		logger.debug("new game loop started")
 		pong_instance = Pong()
-		FPS = 120
+		FPS = 60
 		iteration_time = 1 / FPS
 		while 1:
 			# start_time = time.time()
+
+			#update entities with the iteration_time and keypresses
 			positions = pong_instance.update_entities(iteration_time, self.game_data)
 
+			#send all entity data to clients, so they can render the game
 			await self.channel_layer.group_send(
 				self.game_group_name,
-				{"type": "state_update", "object_positions": positions, "game_data": self.game_data},
+				{"type": "state_update", "object_positions": positions},
 			)
 			await asyncio.sleep(iteration_time)
 

@@ -89,8 +89,7 @@ class Pong:
 			# In this case, we reverse the y-direction of the ball to simulate a bounce.
 			if abs((ball.y + ball.dy * dt) - paddle.y) < ball.radius or abs((ball.y + ball.dy * dt) - (paddle.y + paddle.height)) < ball.radius:
 		   		ball.dy *= -1
-			else:
-				# The ball hit the side of the paddle
+			else: # The ball hit the side of the paddle
 				ball.dx *= -1
 		
 			# increase or decrease dx of the ball if the paddle is moving
@@ -204,4 +203,4 @@ def main():
 	pygame.quit()
 
 if __name__ == "__main__":
-    main()
+	main()
