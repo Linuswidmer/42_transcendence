@@ -49,14 +49,11 @@ def profile(request, pk):
 	return render(request, "userManagement/profile.html", {"profile": profile, "stats": sb})
 
 def single_game_stats(request):
-	game_id = request.GET.get('gameID')
-	user_id = request.GET.get('userID')
-	user = User.objects.filter(id=user_id)
-	print(user)
+	game_id = int(request.GET.get('gameID'))
+	user_id = int(request.GET.get('userID'))
+	user = User.objects.get(id=user_id)
 	sb = StatsBuilder(user)
 	sb.build()
-	game_list_data = sb.gameListData[0]
 	for gld in sb.gameListData:
 		if gld.game.id == game_id:
-			game_list_data = gld
-	return render(request, "userManagement/single_game_stats.html", {"gld": game_list_data})
+			return render(request, "userManagement/single_game_stats.html", {"gld": gld})
