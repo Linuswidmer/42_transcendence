@@ -8,6 +8,11 @@ class CustomUserCreationForm(UserCreationForm):
         model = User
         fields = UserCreationForm.Meta.fields + ("email", "first_name", "last_name",)
 
+class CustomGuestCreationForm(forms.ModelForm):
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = ("username",)
+
 class CustomUserChangeForm(UserChangeForm):
     password = None
     class Meta(UserChangeForm):

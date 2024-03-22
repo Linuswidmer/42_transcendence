@@ -1,16 +1,18 @@
 from django.contrib.auth import login
 from django.shortcuts import render, redirect
+from django.contrib.auth.models import User, Group
 from .models import Profile
 from django.urls import reverse
-from userManagement.forms import CustomUserCreationForm, CustomUserChangeForm, CustomProfileChangeForm
+from userManagement.forms import CustomUserCreationForm, CustomUserChangeForm, CustomProfileChangeForm, CustomGuestCreationForm
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 import os
+import uuid
 
 def dashboard(request):
     return render(request, "userManagement/dashboard.html")
 
-def register(request):
+def register_user(request):
     if request.method == "GET":
         return render(
             request, "userManagement/register.html",
@@ -19,15 +21,45 @@ def register(request):
     elif request.method == "POST":
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
+            registered_users = Group.objects.get(name='registered_users')
             user = form.save()
+            user.groups.add(registered_users)
+            user.save()
             login(request, user)
             return redirect(reverse('userManagement:profile', args=[user.profile.id]))
+        else:
+            return render(
+            request, "userManagement/register.html",
+            {"form": form}
+        )
+
+def register_guest(request):
+    if request.method == "GET":
+        return render(
+            request, "userManagement/register.html",
+            {"form": CustomGuestCreationForm}
+        )
+    elif request.method == "POST":
+        form = CustomGuestCreationForm(request.POST)
+        if form.is_valid():
+            guest_users = Group.objects.get(name='guest_users')
+            user = form.save()
+            user.groups.add(guest_users)
+            user.set_unusable_password()
+            user.save()
+            login(request, user)
+            return redirect("userManagement:profile_list")
+        else:
+            return render(
+            request, "userManagement/register.html",
+            {"form": form}
+        )
 
 def update_user(request):
     if request.method == "GET":
         form = CustomUserChangeForm(instance=request.user)
         return render(
-            request, "userManagement/update_user.html",
+            request, "userManagement/register.html",
             {"form": form}
         )
     elif request.method == "POST":
@@ -37,7 +69,7 @@ def update_user(request):
             return redirect(reverse('userManagement:profile', args=[user.id]))
         else:
             return render(
-            request, "userManagement/update_user.html",
+            request, "userManagement/register.html",
             {"form": form}
         )
 
@@ -45,7 +77,7 @@ def update_profile(request):
     if request.method == "GET":
         form = CustomProfileChangeForm(instance=request.user.profile)
         return render(
-            request, "userManagement/update_profile.html",
+            request, "userManagement/register.html",
             {"form": form}
         )
     elif request.method == "POST":
@@ -61,21 +93,16 @@ def update_profile(request):
             return redirect(reverse('userManagement:profile', args=[request.user.id]))
         else:
             return render(
-            request, "userManagement/update_profile.html",
+            request, "userManagement/register.html",
             {"form": form}
         )
 
-@login_required
 def profile_list(request):
-    profiles = Profile.objects.all()
-    return render(request, "userManagement/profile_list.html", {"profiles": profiles})
+    registered_user_group = Group.objects.get(name='registered_users')
+    registered_users = registered_user_group.user_set.all()
+    return render(request, "userManagement/profile_list.html", {"registered_users": registered_users})
 
-@login_required
 def profile(request, pk):
-    
-    if not hasattr(request.user, 'profile'):
-        missing_profile = Profile(user=request.user)
-        missing_profile.save()
     
     profile = Profile.objects.get(pk=pk)
     if request.method == "POST":

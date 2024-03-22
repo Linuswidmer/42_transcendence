@@ -5,27 +5,27 @@
 {% block content %}
 
 <div class="column">
-
-{% for profile in profiles %}
+  <h1 class="title is-1">All registered users</h1>
+{% for user in registered_users %}
 
     <div class="block">
       <div class="card">
-		<a href="{% url 'userManagement:profile' profile.id %}">
+		<a href="{% url 'userManagement:profile' user.id %}">
           <div class="card-content">
             <div class="media">
               <div class="media-left">
                 <figure class="image is-48x48">
-                  <img src="{{ profile.avatar.url }}"
+                  <img src="{{ user.profile.avatar.url }}"
                        alt="Placeholder image">
                 </figure>
               </div>
               <div class="media-content">
                 <p class="title is-4">
-                  {{ profile.user.username }} 
+                  {{ user.username }} 
                 </p>
                 <p class="subtitle is-6">
-                  @{{ profile.user.username|lower }}
-                  {% if profile.logged_in is True  %}
+                  @{{ user.username|lower }}
+                  {% if user.profile.logged_in is True  %}
                     <span style="color: green; font-size: 0.8em;">●</span> <!-- Green dot -->
                   {% else %}
                     <span style="color: red; font-size: 0.8em;">●</span> <!-- Red dot -->
