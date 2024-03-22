@@ -72,8 +72,10 @@ class AIPongOpponent:
 		self.paddleX = paddleX
 		self.paddleY = paddleY
 		randomFactor = random.choice((1, -1)) * random.random() #random float between -1.0 and +1.0
-		error = self.errorLevels[self.level]
-		self.geometricPredictedY = self.__predict_y_on_ai_paddleside() + (W_HEIGT * random.uniform(-error, error)) + randomFactor * self.paddleHeight / 2
+		errorFactor = random.uniform(0 ,self.errorLevels[self.level])
+		if self.paddleY > ballY:
+			errorFactor *= -1
+		self.geometricPredictedY = self.__predict_y_on_ai_paddleside() + (W_HEIGT * errorFactor) + randomFactor * self.paddleHeight / 2
 
 	def getAIDecision(self):
 		# if (self.ballVelocityX < 0):
