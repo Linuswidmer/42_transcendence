@@ -94,6 +94,19 @@
         </div>
     </div>
 
+     <!-- New section for All Games -->
+     <div class="block">
+        <h3 class="title is-4">All Games:</h3>
+        <div class="content">
+            <ul>
+                <!-- Loop through all games and display relevant information -->
+                {% for gld in stats.gameListData %}
+                    <li><a href="/singleGameStats?gameID={{ gld.game.id }}&userID={{ gld.userGameStats.user.id }}"> {{ gld.game.matchDate }} || {{ gld.game.matchTime }} || against: {{ gld.opponentGameStats.user }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
 
 <div class="column is-one-third">
 

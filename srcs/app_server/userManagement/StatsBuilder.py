@@ -4,6 +4,12 @@ from pong.models import UserGameStats
 from pong.models import Tournaments
 from django.contrib.auth.models import User
 
+class GameListData:
+	def __init__(self, game, userGameStats, opponentGameStats) -> None:
+		self.game = game
+		self.userGameStats = userGameStats
+		self.opponentGameStats = opponentGameStats
+	
 #private Helper class which stores data of game type (local, remote, ai) data
 # because they exist for each game type in order to create the statistics.
 # Used in a dictionary with the game type as key
@@ -39,6 +45,8 @@ class StatsBuilder:
 			'ai': _GameTypeStats()
 		}
 
+		self.gameListData = []
+
 	#This helper method returns a tupel: first is winner, second is loser. Both the same, when draw.
 	def _getWinnerLoser(self, game: Games):
 		stats = UserGameStats.objects.filter(game_id=game.id).order_by('id')
@@ -53,15 +61,12 @@ class StatsBuilder:
 	def _setBestTournamentRank(self, tournaments: Set[Tournaments]):
 		#go through each tournament
 		for tm in tournaments:
-			print('Tournament ID: ', tm.id)
-			print('USER: ', self.user)
 			games = Games.objects.filter(tournament_id=tm)
 			#dictionary that has the users as key and the amount of their won gmaes as values
 			playerWins = {}
 			#go through every game of this tournament
 			for game in games:
 				winner, loser = self._getWinnerLoser(game)
-				print('Winner Loser: ', winner, loser)
 				#set the loser in order to be visible in the dictinary
 				if loser not in playerWins:
 					playerWins[loser] = 0
@@ -96,6 +101,14 @@ class StatsBuilder:
 
 			if stat.game.tournament != None:
 				tournaments.append(stat.game.tournament)
+			
+			#Get bot stats from user and opponent and store it grouped in an objec
+			# for displaying later
+			gamStats = UserGameStats.objects.filter(game_id=stat.game.id).order_by('id')
+			if gamStats[0].user == self.user:
+				self.gameListData.append(GameListData(stat.game, gamStats[0], gamStats[1]))
+			else:
+				self.gameListData.append(GameListData(stat.game, gamStats[1], gamStats[0]))
 
 			winner, loser = self._getWinnerLoser(stat.game)
 			if winner == self.user:

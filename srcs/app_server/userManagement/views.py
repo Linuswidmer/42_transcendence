@@ -1,9 +1,12 @@
 from django.contrib.auth import login
 from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
 from .models import Profile
 from django.urls import reverse
 from userManagement.forms import CustomUserCreationForm
-from .StatsBuilder import StatsBuilder
+from .StatsBuilder import StatsBuilder, GameListData
+from pong.models import UserGameStats
+
 
 def dashboard(request):
 	return render(request, "userManagement/dashboard.html")
@@ -44,3 +47,16 @@ def profile(request, pk):
 			current_user_profile.follows.remove(profile)
 		current_user_profile.save()
 	return render(request, "userManagement/profile.html", {"profile": profile, "stats": sb})
+
+def single_game_stats(request):
+	game_id = request.GET.get('gameID')
+	user_id = request.GET.get('userID')
+	user = User.objects.filter(id=user_id)
+	print(user)
+	sb = StatsBuilder(user)
+	sb.build()
+	game_list_data = sb.gameListData[0]
+	for gld in sb.gameListData:
+		if gld.game.id == game_id:
+			game_list_data = gld
+	return render(request, "userManagement/single_game_stats.html", {"gld": game_list_data})

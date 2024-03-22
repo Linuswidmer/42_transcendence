@@ -1,0 +1,14 @@
+<!-- users/templates/users/dashboard.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Games from {{ user.username|default:'Guest' }}</h1>
+<hr> <!-- This adds a horizontal line -->
+<ul>
+  {% for gameStat in userGameStats %}
+    <li>{{ gameStat.game.matchDate }} - {{ gameStat.game.matchTime }} - </li>
+    <!-- Add more information about the game as needed -->
+  {% endfor %}
+</ul>
+{% endblock %}
