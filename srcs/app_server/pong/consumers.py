@@ -117,7 +117,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		if not self.hosts_game:
 			return
 
-		#triggered if this function is called with wrong argument for keypress
+		# triggered if this function is called with wrong argument for keypress
 		if "action" not in keypress or "playerId" not in keypress:
 			logger.warning("action are playerid need to be contained for process keypress to work")
 			return
@@ -145,7 +145,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			self.game_data[player_id]["direction"] = 1
 		else:
 			self.game_data[player_id]["direction"] = 0
-
 
 	#i dont think we need a lock here, as we work with the instances own game_data
 	#every instance has its own game_data

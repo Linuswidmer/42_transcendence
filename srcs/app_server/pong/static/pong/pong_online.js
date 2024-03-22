@@ -3,6 +3,7 @@
 const   BALL_RADIUS = 5;
 const	PADDLE_WIDTH = 15;
 const	PADDLE_HEIGHT = 70;
+const	WINNING_SCORE = 3;
 
 ///////////////////////////////
 // General Setup
@@ -10,14 +11,23 @@ const canvas = document.getElementById('pongCanvas');
 const ctx = canvas.getContext('2d');
 
 ///////////////////////////////
+// Setup Scoreboard
+
+let     leftScore = 0;
+let     rightScore = 0;
+const   leftScoreElement = document.getElementById('leftScore');
+const   rightScoreElement = document.getElementById('rightScore');
+
+
+///////////////////////////////
 // Setup Game Objects
 let     ballX;
 let     ballY;
 
-let     topPaddleX = 0;
-let     topPaddleY = 0;
-let     bottomPaddleX = 0
-let     bottomPaddleY = 0
+let     leftPaddleX = 0;
+let     leftPaddleY = 0;
+let     rightPaddleX = 0
+let     rightPaddleY = 0
 
 /*****************************************************************************/
 /*                               Game functions                              */
@@ -39,15 +49,16 @@ function draw() {
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBall();
-	drawPaddle(topPaddleX, topPaddleY);
-    drawPaddle(bottomPaddleX, bottomPaddleY);
+	drawPaddle(leftPaddleX, leftPaddleY);
+    drawPaddle(rightPaddleX, rightPaddleY);
 }
 
-// function gameLoop() {
-//     update();
-//     draw();
-//     requestAnimationFrame(gameLoop);
-// }
+function gameOver() {
+    console.log('Game Over');
+    // document.getElementById('gameOverMessage').style.display = 'block';
+    // document.getElementById('reloadLocalGame').style.display = 'block';
+    // document.getElementById('reloadPlayOptions').style.display = 'block';
+}
 
 //update entities in game with informaation sent by server tick
 function update(user_id, data) {
@@ -60,16 +71,22 @@ function update(user_id, data) {
                 ballY = data.object_positions.ballY;
             }
 			if (data.object_positions[user_id] !== undefined) {
-                topPaddleX = data.object_positions[user_id].x;
-                topPaddleY = data.object_positions[user_id].y;
+                leftPaddleX = data.object_positions[user_id].x;
+                leftPaddleY = data.object_positions[user_id].y;
+				leftScore = data.object_positions[user_id].score;
+				leftScoreElement.textContent = leftScore;
             }
 			for (let id in data.object_positions) {
-                if (id !== "ballX" && id !== "ballY" && id !== user_id) {
-                    bottomPaddleX = data.object_positions[id].x;
-                    bottomPaddleY = data.object_positions[id].y;
+                if (id !== "ballX" && id !== "ballY" && id != "score" && id !== user_id) {
+                    rightPaddleX = data.object_positions[id].x;
+                    rightPaddleY = data.object_positions[id].y;
+					rightScore = data.object_positions[id].score;
+					rightScoreElement.textContent = rightScore;
                 }
             }
         }
+		if (leftScore == WINNING_SCORE || rightScore == WINNING_SCORE)
+			gameOver()
 	} catch (error) {
 		console.log('Error parsing JSON:', error);
 	}

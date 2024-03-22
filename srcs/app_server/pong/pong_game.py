@@ -39,7 +39,7 @@ class Ball(Entity):
 
 		#adjust dx,dy in case there is a collision
 		self.check_ball_paddle_collision(new_x, new_y, leftPaddle, rightPaddle)
-		self.check_ball_sidewalls_collision(new_x, new_y, leftPaddle.score, rightPaddle.score)
+		self.check_ball_sidewalls_collision(new_x, new_y, leftPaddle, rightPaddle)
 		
 		#calculate the actual position with adjusted dx, dy
 		new_x = self.x + (self.dx * dt)
@@ -74,13 +74,13 @@ class Ball(Entity):
 				self.dy = self.dy * (0.8 if self.dy > 0 else 1.2)
 
 
-	def check_ball_sidewalls_collision(self, new_x, new_y, leftPaddleScore, rightPaddleScore):
+	def check_ball_sidewalls_collision(self, new_x, new_y, leftPaddle, rightPaddle):
 		# If the ball is at the left or right boundary, reverse its x direction
 		if new_x - self.radius < 0 or new_x + self.radius > SCREEN_WIDTH:
 			if self.dx < 0: #left side wall hit -> point for right player
-				rightPaddleScore += 1
+				rightPaddle.score += 1
 			if self.dx > 0:
-				leftPaddleScore += 1
+				leftPaddle.score += 1
 			self.random_spawn()
 			return
 
