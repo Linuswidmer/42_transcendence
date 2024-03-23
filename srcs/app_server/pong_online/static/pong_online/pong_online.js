@@ -23,6 +23,11 @@ const   rightScoreElement = document.getElementById('rightScore');
 // Setup Game Objects
 let     ballX;
 let     ballY;
+let		ballRadiusX;
+let		ballRadiusY;
+
+let		paddleWidth;
+let		paddleHeight;
 
 let     leftPaddleX = 0;
 let     leftPaddleY = 0;
@@ -34,7 +39,8 @@ let     rightPaddleY = 0
 /*****************************************************************************/
 function drawBall() {
     ctx.beginPath();
-    ctx.arc(ballX, ballY, BALL_RADIUS, 0, Math.PI*2);
+    // ctx.arc(ballX, ballY, ballRadius, 0, Math.PI*2);
+	ctx.ellipse(ballX, ballY, ballRadiusX, ballRadiusY, 0, 0, Math.PI*2);
     ctx.fillStyle = "#000";
     ctx.fill();
     ctx.closePath();
@@ -42,7 +48,7 @@ function drawBall() {
 
 function drawPaddle(x, y) {
     ctx.fillStyle = '#000';
-    ctx.fillRect(x, y, PADDLE_WIDTH, PADDLE_HEIGHT);
+    ctx.fillRect(x, y, paddleWidth, paddleHeight);
 }
 
 function draw() {
@@ -72,6 +78,20 @@ function norm2width(relativeX) {
 function update(user_id, data) {
 	try{
 		if (data.entity_data !== undefined) {
+			if (data.entity_data.relBallRadiusY !== undefined) {
+                ballRadiusY = norm2height(data.entity_data.relBallRadiusY);
+            }
+			if (data.entity_data.relBallRadiusX !== undefined) {
+                ballRadiusX = norm2width(data.entity_data.relBallRadiusX);
+            }
+			if (data.entity_data.relPaddleHeight !== undefined) {
+                paddleHeight = norm2height(data.entity_data.relPaddleHeight);
+            }
+			if (data.entity_data.relPaddleWidth !== undefined) {
+                paddleWidth = norm2width(data.entity_data.relPaddleWidth);
+            }
+
+
             if (data.entity_data.relativeBallX !== undefined) {
                 ballX = norm2width(data.entity_data.relativeBallX);
             }

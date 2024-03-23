@@ -133,10 +133,6 @@ class Pong:
 		self.ball = Ball(0, 0,
 						BALL_DX, BALL_DY, BALL_RADIUS, (255, 255, 255))
 	
-	
-
-
-	
 	def	update_entities(self, dt, game_data):
 		player1_data, player2_data = list(game_data.values())
 		player1_id, player2_id = list(game_data.keys())
@@ -146,8 +142,12 @@ class Pong:
 		self.leftPaddle.move(dt, player1_direction)
 		self.rightPaddle.move(dt, player2_direction)
 		self.ball.move(dt, self.leftPaddle, self.rightPaddle)
-		return {'relativeBallX': self.ball.x / SCREEN_WIDTH,
+		return {'relativeBallX': self.ball.x / SCREEN_HEIGHT,
 		  		'relativeBallY': self.ball.y / SCREEN_HEIGHT,
+				"relPaddleHeight": PADDLE_HEIGHT / SCREEN_HEIGHT,
+		   		"relPaddleWidth": PADDLE_WIDTH / SCREEN_WIDTH, 
+		   		"relBallRadiusX": BALL_RADIUS / SCREEN_WIDTH,
+				   "relBallRadiusY": BALL_RADIUS / SCREEN_HEIGHT,
 		  		player1_id: {"relativeX": self.leftPaddle.x / SCREEN_WIDTH,
 							"relativeY": self.leftPaddle.y / SCREEN_HEIGHT,
 							"score": self.leftPaddle.score},
