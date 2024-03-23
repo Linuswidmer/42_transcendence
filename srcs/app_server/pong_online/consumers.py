@@ -14,6 +14,32 @@ from asgiref.sync import async_to_sync
 
 from pong_online.pong_game import Pong
 
+class apiConsumer(AsyncWebsocketConsumer):
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+		self.id = str(uuid.uuid4())
+
+	async def connect(self):
+		await self.accept()
+
+		await self.send(
+			text_data=json.dumps({"type": "connect", "api_id": self.id})
+		)
+
+	async def disconnect(self, close_code):
+		await self.send(
+			text_data=json.dumps({"type": "disconnect", "api_id": self.id})
+		)
+
+	async def receive(self, text_data):
+		print(text_data)
+		await self.send(
+			text_data=json.dumps({"type": "receive", "api_id": self.id, "data": text_data})
+		)
+
+
+
+
 class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#global class variable to try some things without the db
 	n_connected_players = 0

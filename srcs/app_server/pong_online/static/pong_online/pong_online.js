@@ -104,6 +104,7 @@ function join_game(name) {
 	const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
     // const wsUrl = protocol + `://${window.location.host}/ws/pong/${roomName}/`; // this has to be modified to be a unique identifier
 
+	console.log(protocol + '://' + window.location.host + '/ws/pong_online/game/')
     const ws = new WebSocket(
         protocol + '://' + window.location.host + '/ws/pong_online/game/'
     );

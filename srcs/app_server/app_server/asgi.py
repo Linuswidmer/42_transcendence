@@ -9,12 +9,13 @@ from django.core.asgi import get_asgi_application
 
 from django.urls import path
 from pong.consumers import WebSocketConsumer, PongConsumer
-from pong_online.consumers import MultiplayerConsumer
+from pong_online.consumers import MultiplayerConsumer, apiConsumer
 
 websocket_urlpatterns = [
     path('ws/pong/', WebSocketConsumer.as_asgi()),
     path('ws/pong/game/', PongConsumer.as_asgi()),
 	path('ws/pong_online/game/', MultiplayerConsumer.as_asgi()),
+	path('ws/pong_online/api/', apiConsumer.as_asgi()),
 ]
 
 
