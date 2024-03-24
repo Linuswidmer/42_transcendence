@@ -38,31 +38,36 @@ class AIPongOpponent:
 		self.ballY = ballY
 		self.ballVelocityX = ballVelocityX
 		self.ballVelocityY = ballVelocityY
-		self.geometricPredictedY = self.__predict_y_on_ai_paddleside()
-		# randomFactor = random.choice((1, -1)) * random.random() #random float between -1.0 and +1.0
-		# errorFactor = random.uniform(0 , self.errorLevels[self.level])
-		# if self.paddleY > ballY:
-		# 	errorFactor *= -1
-		# self.geometricPredictedY = self.__predict_y_on_ai_paddleside() + (W_HEIGT * errorFactor) + randomFactor * self.paddleHeight / 2
+		randomFactor = random.choice((1, -1)) * random.random() #random float between -1.0 and +1.0
+		errorFactor = random.uniform(0 , self.errorLevels[self.level])
+		if self.paddleY > ballY:
+			errorFactor *= -1
+		self.geometricPredictedY = self.__predict_y_on_ai_paddleside() + (W_HEIGT * errorFactor) + randomFactor * self.paddleHeight / 2
 
 	def getAIDecision(self):
 		paddleCenterY = self.paddleY + self.paddleHeight / 2
 		screenCenterY = W_HEIGT / 2
+		#ball moves away from the ai paddle
 		if (self.ballVelocityX < 0):
+			#move up to the screen center if the paddle is below the screen center
 			if (paddleCenterY > screenCenterY):
 				self.paddleY -= (self.paddleStepSize * self.dt)
-				return 1
+				return -1
+			#move down to the screen center if the paddle is above the screen center
 			elif(paddleCenterY < screenCenterY):
 				self.paddleY += (self.paddleStepSize * self.dt)
-				return -1
+				return 1
 			else:
 				return 0
+		#ball moves towards the ai paddle
 		else:
+			#move up to the prediction if the paddle is below the prediction
 			if ((paddleCenterY > self.geometricPredictedY) and (self.paddleY > 0)):
-				self.paddleY  -= (self.paddleStepSize * self.dt)
-				return 1
+				self.paddleY -= (self.paddleStepSize * self.dt)
+				return -1
+			#move down to the prediction if the paddle is above the prediction
 			elif((paddleCenterY < self.geometricPredictedY) and (self.paddleY < W_HEIGT - self.paddleHeight)):
 				self.paddleY += (self.paddleStepSize * self.dt)
-				return -1
+				return 1
 			else:
 				return 0

@@ -9,7 +9,7 @@ clean:
 	-docker rm $(shell docker ps -aq)
 
 setup:
-#	virtualenv venv
-#	. venv/bin/activate && pip install -r ./srcs/app_server/requirements.txt
-	python3 -m venv venv
+	virtualenv venv
 	. venv/bin/activate && pip install -r ./srcs/app_server/requirements.txt
+#	python3 -m venv venv
+#	. venv/bin/activate && pip install -r ./srcs/app_server/requirements.txt

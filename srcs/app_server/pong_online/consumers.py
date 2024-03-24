@@ -166,21 +166,11 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			pong_instance.rightPaddle.dy,
 			pong_instance.rightPaddle.height,
 			iteration_time,
-			9)
+			10)
 		ai_refresh_timer = time.time()
 		while 1:
 			# start_time = time.time()
 			if (time.time() - ai_refresh_timer >= 1):
-				# print('Update AI :)')
-				# print("Right Paddle Y position:", pong_instance.rightPaddle.y)
-				# print("Right Paddle X position:", pong_instance.rightPaddle.x)
-				# print("Ball X position:", pong_instance.ball.x)
-				# print("Ball Y position:", pong_instance.ball.y)
-				# print("Ball X velocity:", pong_instance.ball.dx)
-				# print("Ball Y velocity:", pong_instance.ball.dy)
-				# print("Right Paddle Y velocity:", pong_instance.rightPaddle.dy)
-				# print("Right Paddle Height:", pong_instance.rightPaddle.height)
-				print('Passed: ', pong_instance.ball.dx)
 				ai.setGameState(
 					pong_instance.rightPaddle.y,
 					pong_instance.rightPaddle.x,
@@ -190,7 +180,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 					pong_instance.ball.dy,
 					pong_instance.rightPaddle.dy,
 					pong_instance.rightPaddle.height)
-				print('predicted Y: ', ai.geometricPredictedY)
 				ai_refresh_timer = time.time()
 
 			#update entities with the iteration_time and keypresses
