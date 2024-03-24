@@ -77,7 +77,7 @@ function update(user_id, data) {
 				leftScoreElement.textContent = leftScore;
             }
 			for (let id in data.object_positions) {
-                if (id !== "ballX" && id !== "ballY" && id != "score" && id !== user_id) {
+                if (id !== "ballX" && id !== "ballY" && id != "score" && id !== user_id && id != "game_over") {
                     rightPaddleX = data.object_positions[id].x;
                     rightPaddleY = data.object_positions[id].y;
 					rightScore = data.object_positions[id].score;

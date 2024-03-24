@@ -6,6 +6,13 @@ import time
 import pygame
 import logging
 from .pong_ai_opponent import AIPongOpponent
+from .GameDataCollector import GameDataCollector
+from django.contrib.auth.models import User
+import asyncio
+from asgiref.sync import sync_to_async
+
+
+
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -19,7 +26,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#global class variable to try some things without the db
 	n_connected_players = 0
 	last_game_group_name = ""
-
 	update_lock = asyncio.Lock()
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -151,9 +157,14 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#every instance has its own game_data
 	#when an update happens, all game_datas are updated
 	#here we could import the game from another file to keep things separated
+	
+	def create_data_collector(self):
+		return GameDataCollector(User.objects.get(pk=1), User.objects.get(pk=2), 'local')
+
 	async def game_loop(self):
+		gdc = await sync_to_async(self.create_data_collector)()
 		logger.debug("new game loop started")
-		pong_instance = Pong()
+		pong_instance = Pong(gdc)
 		FPS = 60
 		iteration_time = 1 / FPS
 		ai = AIPongOpponent(
@@ -166,9 +177,10 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			pong_instance.rightPaddle.dy,
 			pong_instance.rightPaddle.height,
 			iteration_time,
-			10)
+			8)
 		ai_refresh_timer = time.time()
-		while 1:
+		should_run = True
+		while should_run:
 			# start_time = time.time()
 			if (time.time() - ai_refresh_timer >= 1):
 				ai.setGameState(
@@ -186,7 +198,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			ai_decision = ai.getAIDecision()
 			self.game_data["player2"]["direction"] = ai_decision
 
-			positions = pong_instance.update_entities(iteration_time, self.game_data)
+			positions = await pong_instance.update_entities(iteration_time, self.game_data)
+			should_run = not positions["game_over"]
 			#send all entity data to clients, so they can render the game
 			await self.channel_layer.group_send(
 				self.game_group_name,
