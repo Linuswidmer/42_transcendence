@@ -13,6 +13,7 @@ ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(',')
 INSTALLED_APPS = [
     'userManagement',
     'pong',
+	'pong_online',
     'channels',
     'daphne',
     'django.contrib.admin',

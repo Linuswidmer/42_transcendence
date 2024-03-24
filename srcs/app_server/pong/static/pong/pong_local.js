@@ -117,10 +117,12 @@ function startLocalGame(localPlayer1Name, localPlayer2Name) {
 
     console.log('Starting local game');
 
-    const roomName = "my_room";
-    const wsUrl = `ws://${window.location.host}/ws/pong/${roomName}/`; // this has to be modified to be a unique identifier
+    const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
+    // const wsUrl = protocol + `://${window.location.host}/ws/pong/${roomName}/`; // this has to be modified to be a unique identifier
 
-    const ws = new WebSocket(wsUrl);
+    const ws = new WebSocket(
+        protocol + '://' + window.location.host + '/ws/pong/game/'
+    );
 
     ws.onopen = function(e) {
         // telling the server that the client is ready

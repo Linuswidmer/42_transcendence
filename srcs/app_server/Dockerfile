@@ -1,14 +1,24 @@
-FROM python:3.11.4-alpine
+#leon: i changed the image, in order to get pygame working (+pygame added to requirements.txt)
+FROM ubuntu:latest
 
 WORKDIR /usr/src/app
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-RUN pip install --upgrade pip
+# install x11
+RUN apt-get update && apt-get install -qqy x11-apps
+
+# install python and pip
+RUN apt-get install -y python3 python3-pip
+
+# upgrade pip
+RUN pip3 install --upgrade pip
+
 COPY ./requirements.txt /usr/src/app/requirements.txt
 
-RUN pip install -r requirements.txt
+# install requirements
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 #entry point file
 COPY ./entrypoint.sh /usr/src/app/entrypoint.sh
