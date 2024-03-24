@@ -123,17 +123,14 @@ class Pong:
 						0, 200, 15, 70, (255, 255, 255))
 		self.ball = Ball(0, 0,
 						200, 200, 5, (255, 255, 255))
-	
-	
 
 
-	
 	def	update_entities(self, dt, game_data):
 		player1_data, player2_data = list(game_data.values())
 		player1_id, player2_id = list(game_data.keys())
 		player1_direction = player1_data["direction"]
 		player2_direction = player2_data["direction"]
-
+		
 		self.leftPaddle.move(dt, player1_direction)
 		self.rightPaddle.move(dt, player2_direction)
 		self.ball.move(dt, self.leftPaddle, self.rightPaddle)
@@ -204,7 +201,7 @@ def main():
 
 	while running:
 		#this determines the tickrate that our server can send updated
-		
+		print('Blah')
 		dt = clock.tick(60) / 1000  # Amount of seconds between each loop
 
 		# Event handling for keyboard

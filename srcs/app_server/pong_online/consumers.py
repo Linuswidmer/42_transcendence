@@ -5,6 +5,7 @@ import math
 import time
 import pygame
 import logging
+from .pong_ai_opponent import AIPongOpponent
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -155,12 +156,48 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		pong_instance = Pong()
 		FPS = 60
 		iteration_time = 1 / FPS
+		ai = AIPongOpponent(
+			pong_instance.rightPaddle.y,
+			pong_instance.rightPaddle.x,
+			pong_instance.ball.x,
+			pong_instance.ball.y,
+			pong_instance.ball.dx,
+			pong_instance.ball.dy,
+			pong_instance.rightPaddle.dy,
+			pong_instance.rightPaddle.height,
+			iteration_time,
+			9)
+		ai_refresh_timer = time.time()
 		while 1:
 			# start_time = time.time()
+			if (time.time() - ai_refresh_timer >= 1):
+				# print('Update AI :)')
+				# print("Right Paddle Y position:", pong_instance.rightPaddle.y)
+				# print("Right Paddle X position:", pong_instance.rightPaddle.x)
+				# print("Ball X position:", pong_instance.ball.x)
+				# print("Ball Y position:", pong_instance.ball.y)
+				# print("Ball X velocity:", pong_instance.ball.dx)
+				# print("Ball Y velocity:", pong_instance.ball.dy)
+				# print("Right Paddle Y velocity:", pong_instance.rightPaddle.dy)
+				# print("Right Paddle Height:", pong_instance.rightPaddle.height)
+				print('Passed: ', pong_instance.ball.dx)
+				ai.setGameState(
+					pong_instance.rightPaddle.y,
+					pong_instance.rightPaddle.x,
+					pong_instance.ball.x,
+					pong_instance.ball.y,
+					pong_instance.ball.dx,
+					pong_instance.ball.dy,
+					pong_instance.rightPaddle.dy,
+					pong_instance.rightPaddle.height)
+				print('predicted Y: ', ai.geometricPredictedY)
+				ai_refresh_timer = time.time()
 
 			#update entities with the iteration_time and keypresses
-			positions = pong_instance.update_entities(iteration_time, self.game_data)
+			ai_decision = ai.getAIDecision()
+			self.game_data["player2"]["direction"] = ai_decision
 
+			positions = pong_instance.update_entities(iteration_time, self.game_data)
 			#send all entity data to clients, so they can render the game
 			await self.channel_layer.group_send(
 				self.game_group_name,
