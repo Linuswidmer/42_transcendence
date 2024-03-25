@@ -23,3 +23,8 @@ class CustomProfileChangeForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = ['avatar',]
+
+class PasswordChangeForm(UserCreationForm):
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = ("password1", "password2",)
