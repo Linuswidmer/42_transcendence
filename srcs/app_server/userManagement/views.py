@@ -22,7 +22,7 @@ def register_user(request):
     elif request.method == "POST":
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            registered_users = Group.objects.get(name='registered_users')
+            registered_users, created = Group.objects.get_or_create(name='registered_users')
             user = form.save()
             user.groups.add(registered_users)
             user.save()
@@ -44,7 +44,7 @@ def register_guest(request):
     elif request.method == "POST":
         form = CustomGuestCreationForm(request.POST)
         if form.is_valid():
-            guest_users = Group.objects.get(name='guest_users')
+            guest_users, created = Group.objects.get_or_create(name='guest_users')
             user = form.save()
             user.groups.add(guest_users)
             user.set_unusable_password()
