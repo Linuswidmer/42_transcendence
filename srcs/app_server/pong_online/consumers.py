@@ -54,8 +54,9 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		self.player_id = str(uuid.uuid4())
 
 		self.lobby = Lobby()
-		self.match = self.lobby.get_match_by_player_id()
+		# self.match = self.lobby.get_match_by_player_id()
 
+		self.in_game = False
 
 		self.game_data = {
 			self.player_id: {
@@ -86,7 +87,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			text_data=json.dumps({"type": "playerId", "playerId": self.player_id})
 		)
 
-		print(self.singleton_test.test)
 
 		#assign user to its own group
 		#probably here we consult the db to see if other players are available
@@ -109,10 +109,16 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			self.game_group_name, self.channel_name
 		)
 
+		#add player to lobby
+		await self.channel_layer.group_add(
+			"lobby", self.channel_name
+		)
+
+
 
 		#start game_loop if player is hosting
-		if self.hosts_game:
-			asyncio.create_task(self.game_loop())
+		# if self.hosts_game:
+		# 	asyncio.create_task(self.game_loop())
 
 	async def disconnect(self, close_code):
 		await self.channel_layer.group_discard(
@@ -127,6 +133,13 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		#we now it is our client because we are inside receive
 		#so we can just send self.player_id to process keypress
 		
+		if not self.in_game and message_type == "lobby_update":
+			await self.channel_layer.group_send(
+				"lobby",
+				{"type": "lobby_update"},
+			)
+
+
 		#we call process keypress to update the keypress in our
 		#game_data. if one client sends a keypress. the process_keypress
 		#function is called in both consumers
@@ -137,6 +150,12 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				"playerId": self.player_id,
 	 			"action": text_data_json.get("action", "")},
 			)
+
+
+	async def lobby_update(self, event):
+		await self.send(
+			text_data=json.dumps(event)
+		)
 
 
 	async def state_update(self, event):

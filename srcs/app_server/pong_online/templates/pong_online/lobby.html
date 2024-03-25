@@ -1,16 +1,19 @@
 {% load static %}
-<div>
-{% for match_id, registered_users in matches_info.items %}
-    <h2>Match ID: {{ match_id }}</h2>
-    <p>Registered Users: {{ registered_users|join:", " }}</p>
-	<button class="register" data-match-id="{{ match_id }}">Register</button>
-    <button class="join" data-match-id="{{ match_id }}">Join Game</button>
-{% endfor %}
+
+<div id="lobby">
+	<div>
+		<!-- {% for match_id, registered_users in matches_info.items %}
+			<h2>Match ID: {{ match_id }}</h2>
+			<p>Registered Users: {{ registered_users|join:", " }}</p>
+			<button class="register" data-match-id="{{ match_id }}">Register</button>
+			<button class="join" data-match-id="{{ match_id }}">Join Game</button>
+		{% endfor %}
+		</div>
+		
+		<div>
+			<button id="createGame">Create game</button>
+		</div>	 -->
+		
+		
+		<script src="{% static 'pong_online/lobby.js' %}"></script>
 </div>
-
-<div>
-	<button id="createGame">Create game</button>
-</div>	
-
-
-<script src="{% static 'pong_online/lobby.js' %}"></script>
