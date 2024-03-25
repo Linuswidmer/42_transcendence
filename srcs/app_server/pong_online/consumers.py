@@ -13,6 +13,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import async_to_sync
 
 from pong_online.pong_game import Pong
+from pong_online.lobby import Lobby
 
 class apiConsumer(AsyncWebsocketConsumer):
 	def __init__(self, *args, **kwargs):
@@ -52,6 +53,10 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		#for now assign a uuid. maybe later session id or smth
 		self.player_id = str(uuid.uuid4())
 
+		self.lobby = Lobby()
+		self.match = self.lobby.get_match_by_player_id()
+
+
 		self.game_data = {
 			self.player_id: {
 				"score": 0,
@@ -80,6 +85,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		await self.send(
 			text_data=json.dumps({"type": "playerId", "playerId": self.player_id})
 		)
+
+		print(self.singleton_test.test)
 
 		#assign user to its own group
 		#probably here we consult the db to see if other players are available
