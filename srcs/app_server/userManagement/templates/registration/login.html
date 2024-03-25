@@ -3,15 +3,16 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>Login</h2>
+<div  class="block">
+    <h2>Login</h2>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="Login">
-</form>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Login">
+    </form>
 
-<a href="{% url 'userManagement:dashboard' %}">Back to dashboard</a>
-<a href="{% url 'userManagement:password_reset' %}">Reset password</a>
-<a href="{% url 'userManagement:register' %}">Register</a>
+    <a href="{% url 'userManagement:dashboard' %}">Back to dashboard</a>
+    <a href="{% url 'userManagement:register_user' %}">Register</a>
+</div>
 {% endblock %}

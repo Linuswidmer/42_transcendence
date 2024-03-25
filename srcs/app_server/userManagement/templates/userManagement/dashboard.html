@@ -3,16 +3,17 @@
 {% extends 'base.html' %}
 
 {% block content %}
-Hello, {{ user.username|default:'Guest' }}!
-<div>
+<div  class="block">
+	<h1 class="title is-1">Hello, {{ user.username|default:'Guest' }}!</h1>
     {% if user.is_authenticated %}
 		<form method="post" action="{% url 'userManagement:logout' %}">
 			{% csrf_token %}
 			<button type="submit">logout</button>
 		</form>
-		<a href="{% url 'userManagement:password_change' %}">Change password</a>
-    {% else %}
-        <a href="{% url 'userManagement:login' %}">Login</a>
+	{% else %}
+		<a href="{% url 'userManagement:login' %}">Login</a>
+		<a href="{% url 'userManagement:register_user' %}">Register</a>
+		<a href="{% url 'userManagement:register_guest' %}">Continue as Guest</a>
     {% endif %}
 </div>
 {% endblock %}
