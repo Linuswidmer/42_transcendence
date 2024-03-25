@@ -96,6 +96,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	async def receive(self, text_data):
 		text_data_json = json.loads(text_data)
 		message_type = text_data_json.get("type", "")
+		received_id = text_data_json.get("playerId", "")
 
 		#we dont need to actually obtain the id from the client
 		#we now it is our client because we are inside receive
@@ -108,7 +109,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			await self.channel_layer.group_send(
 				self.game_group_name,
 				{"type": "process_keypress",
-				"playerId": self.player_id,
+				"playerId": received_id,
 	 			"action": text_data_json.get("action", "")},
 			)
 
@@ -121,6 +122,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#update game_data with keypress, if we are in a consumer that
 	#is not hosting the game, we ignore it
 	async def process_keypress(self, keypress):
+		print(keypress)
 		if not self.hosts_game:
 			return
 
@@ -128,7 +130,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		if "action" not in keypress or "playerId" not in keypress:
 			logger.warning("action are playerid need to be contained for process keypress to work")
 			return
-		
+
 		action = keypress["action"]
 		player_id = keypress["playerId"]
 		

@@ -51,7 +51,7 @@ class GameDataCollector:
 		else:
 			print("GameDataCollector: Paddle Hit Right")
 			self.django_userstats_2.ballHits += 1
-		
+
 
 	def endRally(self, leftUserWon=True):
 		self.currentRallyHits = 0

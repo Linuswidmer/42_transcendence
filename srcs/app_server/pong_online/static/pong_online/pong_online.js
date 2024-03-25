@@ -103,7 +103,9 @@ function join_game(name) {
 	//prevents client from sending a lot of messages when holding a button pressed
 	let keys = {
 		'KeyA': false,
-		'KeyD': false
+		'KeyD': false,
+		'KeyJ': false,
+		'KeyL': false
 	};
 
 	window.addEventListener('keydown', function(event) {
@@ -114,6 +116,12 @@ function join_game(name) {
 		} else if (event.code === 'KeyD'  && !keys[event.code]) {
 			keys[event.code] = true;
 			data = {'playerId': ws.user_id, 'type': 'keypress', 'action': 'moveDown'};
+		} else if (event.code === 'KeyJ' && !keys[event.code]) {
+			keys[event.code] = true;
+			data = {'playerId': 'local_opponent', 'type': 'keypress', 'action': 'moveUp'};
+		} else if (event.code === 'KeyL'  && !keys[event.code]) {
+			keys[event.code] = true;
+			data = {'playerId': 'local_opponent', 'type': 'keypress', 'action': 'moveDown'};
 		}
 	
 		if (typeof data !== 'undefined' && ws.readyState === WebSocket.OPEN) {
@@ -129,12 +137,20 @@ function join_game(name) {
 		} else if (event.code === 'KeyD') {
 			keys[event.code] = false;
 			data = {'playerId': ws.user_id, 'type': 'keypress', 'action': 'stopMoveDown'};
+		} else if (event.code === 'KeyJ') {
+			keys[event.code] = false;
+			data = {'playerId': 'local_opponent', 'type': 'keypress', 'action': 'stopMoveUp'};
+		} else if (event.code === 'KeyL') {
+			keys[event.code] = false;
+			data = {'playerId': 'local_opponent', 'type': 'keypress', 'action': 'stopMoveDown'};
 		}
 	
 		if (typeof data !== 'undefined' && ws.readyState === WebSocket.OPEN) {
 			ws.send(JSON.stringify(data));
 		}
 	});
+
+
 
     ws.onopen = function(e) {
         // telling the server that the client is ready
