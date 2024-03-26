@@ -120,14 +120,16 @@ function update(user_id, data) {
 	}
 }
 
+let ws = window.ws
 function join_game(name) {
-	const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
-    // const wsUrl = protocol + `://${window.location.host}/ws/pong/${roomName}/`; // this has to be modified to be a unique identifier
 
-	console.log(protocol + '://' + window.location.host + '/ws/pong_online/game/')
-    const ws = new WebSocket(
-        protocol + '://' + window.location.host + '/ws/pong_online/game/'
-    );
+	// const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
+    // // const wsUrl = protocol + `://${window.location.host}/ws/pong/${roomName}/`; // this has to be modified to be a unique identifier
+
+	// console.log(protocol + '://' + window.location.host + '/ws/pong_online/game/')
+    // const ws = new WebSocket(
+    //     protocol + '://' + window.location.host + '/ws/pong_online/game/'
+    // );
 
 	//prevents client from sending a lot of messages when holding a button pressed
 	let keys = {
@@ -165,21 +167,21 @@ function join_game(name) {
 		}
 	});
 
-    ws.onopen = function(e) {
-        // telling the server that the client is ready
-        console.log('WebSocket connection established');
-        let data = {'playerId': name};
-        ws.send(JSON.stringify(data));
+    // ws.onopen = function(e) {
+    //     // telling the server that the client is ready
+    //     console.log('WebSocket connection established');
+    //     let data = {'playerId': name};
+    //     ws.send(JSON.stringify(data));
 
-        // gameLoop();
+    //     // gameLoop();
 		
-        // setInterval(function() {
-        //     let data = {'leftPaddleY': clientLeftPaddleY,
-        //                 'rightPaddleY': clientRightPaddleY};
-        //     if (ws.readyState === WebSocket.OPEN)
-        //         ws.send(JSON.stringify(data));
-        // }, GAME_REFRESH_RATE);
-    }; 
+    //     // setInterval(function() {
+    //     //     let data = {'leftPaddleY': clientLeftPaddleY,
+    //     //                 'rightPaddleY': clientRightPaddleY};
+    //     //     if (ws.readyState === WebSocket.OPEN)
+    //     //         ws.send(JSON.stringify(data));
+    //     // }, GAME_REFRESH_RATE);
+    // }; 
 
     // Handle messages sent by the server
     ws.onmessage = function(e) {
@@ -207,9 +209,11 @@ function join_game(name) {
 const startButton = document.getElementById('startButton');
 if (startButton) {
 	startButton.addEventListener('click', function() {
+		ws.send(JSON.stringify({'type': 'start'}));
 		join_game("");
 		console.log('Start button clicked pong online');
 	});
+
 }
 
 // document.getElementById('nameForm').addEventListener('submit', function(event) {

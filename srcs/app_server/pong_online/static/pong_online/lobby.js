@@ -58,9 +58,11 @@ const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
     // const wsUrl = protocol + `://${window.location.host}/ws/pong/${roomName}/`; // this has to be modified to be a unique identifier
 
 console.log(protocol + '://' + window.location.host + '/ws/pong_online/game/')
-const ws = new WebSocket(
+window.ws = new WebSocket(
 	protocol + '://' + window.location.host + '/ws/pong_online/game/'
 );
+
+
 
 ws.onopen = function(e) {
 	// telling the server that the client is ready
@@ -74,7 +76,7 @@ ws.onopen = function(e) {
 ws.onmessage = function(e) {
 	try{
 		const data = JSON.parse(e.data);
-	
+		console.log("ws.onmessage:", data);
 
 		if (data.type === "lobby_update") {
 			updateLobby(data);

@@ -45,14 +45,17 @@ class apiConsumer(AsyncWebsocketConsumer):
 class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#global class variable to try some things without the db
 	n_connected_players = 0
-	last_game_group_name = ""
+	# last_game_group_name = ""
 
 	update_lock = asyncio.Lock()
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
-		
+		MultiplayerConsumer.n_connected_players += 1
+		print("n connected:", MultiplayerConsumer.n_connected_players)
 		#for now assign a uuid. maybe later session id or smth
-		self.player_id = str(uuid.uuid4())
+		# self.player_id = str(uuid.uuid4())
+		self.username = ""
+		self.game_group_name = ""
 
 		self.lobby = Lobby()
 		# self.match = self.lobby.get_match_by_player_id()
@@ -60,18 +63,18 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		self.in_game = False
 
 		self.game_data = {
-			self.player_id: {
-				"score": 0,
-				"moveUp": False,
-				"moveDown": False,
-				"direction": 0,
-			},
-			"player2": {
-				"score": 0,
-				"moveUp": False,
-				"moveDown": False,
-				"direction": 0,
-			}
+			# self.username: {
+			# 	"score": 0,
+			# 	"moveUp": False,
+			# 	"moveDown": False,
+			# 	"direction": 0,
+			# },
+			# "player2": {
+			# 	"score": 0,
+			# 	"moveUp": False,
+			# 	"moveDown": False,
+			# 	"direction": 0,
+			# }
 		}
 		#set to true later for consumer that runs the game loop
 		self.hosts_game = False
@@ -81,12 +84,16 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	async def connect(self):
 		#accept ws connection
 		await self.accept()
+
+		await self.channel_layer.group_add(
+			"lobby", self.channel_name
+		)
 		#send playerId to browser
 		#probably remove this as i see now reason why the browser would want
 		#or need to know the id that the server assigns
-		await self.send(
-			text_data=json.dumps({"type": "playerId", "playerId": self.player_id})
-		)
+		# await self.send(
+		# 	text_data=json.dumps({"type": "playerId", "playerId": self.player_id})
+		# )
 
 
 		#assign user to its own group
@@ -94,32 +101,29 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		#in order to decide wether we join an already existing game or start
 		#a new one -> should defenitely go to its own function. maybe even own file,
 		#for matchmaking
-		async with self.update_lock:
-			MultiplayerConsumer.n_connected_players += 1
+		# async with self.update_lock:
+		# 	MultiplayerConsumer.n_connected_players += 1
 		
-		#equal amount of player -> join existing game
-		if MultiplayerConsumer.n_connected_players % 2 == 0:
-			self.game_group_name = MultiplayerConsumer.last_game_group_name
-		else:
-			self.hosts_game = True
-			self.game_group_name = str(uuid.uuid4())
-			MultiplayerConsumer.last_game_group_name = self.game_group_name
+		# #equal amount of player -> join existing game
+		# if MultiplayerConsumer.n_connected_players % 2 == 0:
+		# 	self.game_group_name = MultiplayerConsumer.last_game_group_name
+		# else:
+		# 	self.hosts_game = True
+		# 	self.game_group_name = str(uuid.uuid4())
+		# 	MultiplayerConsumer.last_game_group_name = self.game_group_name
 
 		#add player to group to send/receive updates
-		await self.channel_layer.group_add(
-			self.game_group_name, self.channel_name
-		)
+		# await self.channel_layer.group_add(
+		# 	self.game_group_name, self.channel_name
+		# )
 
 		#add player to lobby
-		await self.channel_layer.group_add(
-			"lobby", self.channel_name
-		)
 
 
 
 		#start game_loop if player is hosting
-		if self.hosts_game:
-			asyncio.create_task(self.game_loop())
+		# if self.hosts_game:
+		# 	asyncio.create_task(self.game_loop())
 
 	async def disconnect(self, close_code):
 		await self.channel_layer.group_discard(
@@ -127,6 +131,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		)
 
 	async def receive(self, text_data):
+		print(text_data)
 		text_data_json = json.loads(text_data)
 		message_type = text_data_json.get("type", "")
 
@@ -138,6 +143,10 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			self.username = text_data_json.get("username", "")
 			print(self.username)
 
+		if message_type == "start" and self.hosts_game:
+			print("start game")
+			asyncio.create_task(self.game_loop())
+
 		if not self.in_game and message_type == "lobby_update":
 			if text_data_json["action"] == "register":
 				success, message = self.lobby.register_player_match(
@@ -145,20 +154,24 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				)
 				if not success:
 					text_data_json["error"] = message
+				if success:
+					self.game_group_name = text_data_json["match_id"]
+					
+					await self.channel_layer.group_add(
+						self.game_group_name, self.channel_name
+					)
 
 			if text_data_json["action"] == "create":
 				print("Create")
-				success, message = self.lobby.add_match(generate())
+				success, message = self.lobby.add_match(str(generate()))
 				if not success:
 					text_data_json["error"] = message
 
 			if text_data_json["action"] == "join":
 				success, message = self.lobby.join(self.username, text_data_json["match_id"])
 				if success:
-					self.game_group_name = text_data_json["match_id"]
-					if self.lobby.should_host_game(self.username, text_data_json["match_id"]):
-						print("host")
-					return await self.send(text_data=json.dumps({"type": "join"}))
+					await self.join_game(text_data_json["match_id"])
+					return
 				else:
 					text_data_json["error"] = message
 			await self.channel_layer.group_send(
@@ -170,12 +183,30 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		#game_data. if one client sends a keypress. the process_keypress
 		#function is called in both consumers
 		if message_type == "keypress":
+			print("game group name keypress", self.username, self.game_group_name, type(self.game_group_name))
 			await self.channel_layer.group_send(
 				self.game_group_name,
 				{"type": "process_keypress",
-				"playerId": self.player_id,
+				"playerId": self.username,
 	 			"action": text_data_json.get("action", "")},
 			)
+
+	async def join_game(self, match_id):
+		# self.game_group_name = "alex"
+		if self.lobby.should_host_game(self.username, match_id):
+			self.hosts_game = True
+		match = self.lobby.get_match(match_id)
+		players = match.get_registered_players()
+		for player in players:
+			self.game_data[player] = {
+				"score": 0,
+				"moveUp": False,
+				"moveDown": False,
+				"direction": 0,
+				}
+		print("game_data", self.game_data)
+		
+		await self.send(text_data=json.dumps({"type": "join"}))
 
 
 	async def lobby_update(self, event):
@@ -212,11 +243,11 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		
 		action = keypress["action"]
 		player_id = keypress["playerId"]
-		
+		print("keypress:", keypress)
 		#update dictionary with other playerId the first time we receive a keypress
-		if player_id not in self.game_data:
-			self.game_data[player_id] = self.game_data["player2"] 
-			del self.game_data["player2"]
+		# if player_id not in self.game_data:
+		# 	self.game_data[player_id] = self.game_data["player2"] 
+		# 	del self.game_data["player2"]
 
 		if action == "moveUp":
 			self.game_data[player_id]["moveUp"] = True
@@ -241,7 +272,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	async def game_loop(self):
 		logger.debug("new game loop started")
 		pong_instance = Pong()
-		FPS = 60
+		FPS = 3
 		iteration_time = 1 / FPS
 		while 1:
 			# start_time = time.time()

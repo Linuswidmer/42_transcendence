@@ -9,7 +9,7 @@ class Lobby:
 			cls._instance = super(Lobby, cls).__new__(cls, *args, **kwargs)
 			cls._instance.matches = {}
 			cls._instance.registered_players_total = []
-			nameMatch1 = generate()
+			nameMatch1 = "1"
 			cls._instance.add_match(nameMatch1)
 			match1 = cls._instance.get_match(nameMatch1)
 			match1.register_player("yann")
