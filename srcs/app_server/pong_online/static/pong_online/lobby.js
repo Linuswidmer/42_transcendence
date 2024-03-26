@@ -33,25 +33,25 @@
 //     });
 // }
 
-document.addEventListener('DOMContentLoaded', (event) => {
-    let registerButtons = document.querySelectorAll('.register');
-    registerButtons.forEach((button) => {
-        button.addEventListener('click', function() {
-            let match_id = this.getAttribute('data-match-id');
-            console.log("Register button clicked for match id: ", match_id);
-            // Your code here...
-        });
-    });
+// document.addEventListener('DOMContentLoaded', (event) => {
+//     let registerButtons = document.querySelectorAll('.register');
+//     registerButtons.forEach((button) => {
+//         button.addEventListener('click', function() {
+//             let match_id = this.getAttribute('data-match-id');
+//             console.log("Register button clicked for match id: ", match_id);
+//             // Your code here...
+//         });
+//     });
 
-    let joinButtons = document.querySelectorAll('.join');
-    joinButtons.forEach((button) => {
-        button.addEventListener('click', function() {
-            let match_id = this.getAttribute('data-match-id');
-            console.log("Join button clicked for match id: ", match_id);
-            // Your code here...
-        });
-    });
-});
+//     let joinButtons = document.querySelectorAll('.join');
+//     joinButtons.forEach((button) => {
+//         button.addEventListener('click', function() {
+//             let match_id = this.getAttribute('data-match-id');
+//             console.log("Join button clicked for match id: ", match_id);
+//             // Your code here...
+//         });
+//     });
+// });
 
 
 const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
@@ -79,6 +79,17 @@ ws.onmessage = function(e) {
 		if (data.type === "lobby_update") {
 			updateLobby(data);
 		}
+		if (data.type === "join") {
+			fetch('/pong_online')
+				.then(response => response.text())
+				.then(data => {
+					// Use the fetched HTML data
+					document.body.innerHTML = data;
+				})
+				.catch((error) => {
+					console.error('Error:', error);
+				});
+		}
 		
 	} catch (error) {
 		console.log('Error parsing JSON:', error);
@@ -104,7 +115,7 @@ function updateLobby(data) {
 
 	createGameButton.addEventListener('click', function() {
 		console.log("Create game button clicked");
-		ws.send(JSON.stringify({type: 'lobby_update', 'action': 'create'}));
+		ws.send(JSON.stringify({type: 'lobby_update', 'action': 'create', 'username': username}));
 	});
 	
 
@@ -128,13 +139,13 @@ function updateLobby(data) {
 		let registerButton = matchElement.querySelector('.register');
 		registerButton.addEventListener('click', function() {
 			console.log("Register button clicked for match id: ", id);
-			ws.send(JSON.stringify({type: 'lobby_update', 'action': 'register', 'match_id': id}));
+			ws.send(JSON.stringify({type: 'lobby_update', 'action': 'register', 'match_id': id, 'username': username}));
 		});
 
 		let joinButton = matchElement.querySelector('.join');
 		joinButton.addEventListener('click', function() {
 			console.log("Join button clicked for match id: ", id);
-			// Your code here...
+			ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join', 'match_id': id, 'username': username}));
 		});
 	})(match_id);
 	}

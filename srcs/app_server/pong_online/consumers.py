@@ -118,8 +118,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 
 		#start game_loop if player is hosting
-		# if self.hosts_game:
-		# 	asyncio.create_task(self.game_loop())
+		if self.hosts_game:
+			asyncio.create_task(self.game_loop())
 
 	async def disconnect(self, close_code):
 		await self.channel_layer.group_discard(
@@ -138,8 +138,29 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			self.username = text_data_json.get("username", "")
 			print(self.username)
 
-
 		if not self.in_game and message_type == "lobby_update":
+			if text_data_json["action"] == "register":
+				success, message = self.lobby.register_player_match(
+					self.username, text_data_json["match_id"]
+				)
+				if not success:
+					text_data_json["error"] = message
+
+			if text_data_json["action"] == "create":
+				print("Create")
+				success, message = self.lobby.add_match(generate())
+				if not success:
+					text_data_json["error"] = message
+
+			if text_data_json["action"] == "join":
+				success, message = self.lobby.join(self.username, text_data_json["match_id"])
+				if success:
+					self.game_group_name = text_data_json["match_id"]
+					if self.lobby.should_host_game(self.username, text_data_json["match_id"]):
+						print("host")
+					return await self.send(text_data=json.dumps({"type": "join"}))
+				else:
+					text_data_json["error"] = message
 			await self.channel_layer.group_send(
 				"lobby",
 				text_data_json,
@@ -159,19 +180,11 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 	async def lobby_update(self, event):
 		basic_update = {"type": "lobby_update"}
-		print(event)
 		
-		if event["action"] == "register":
-			success, message = self.lobby.register_player_match(
-				self.username, event["match_id"]
-			)
-			if not success:
-				basic_update["error"] = message
-
-		if event["action"] == "create":
-			success, message = self.lobby.add_match(generate())
-			if not success:
-				basic_update["error"] = message
+		if "error" in event and self.username in event["username"]:
+			basic_update["error"] = event["error"]
+		
+		
 
 		#return all matches with registered players to display the lobby in the fronend
 		matches_info = self.lobby.get_all_matches()

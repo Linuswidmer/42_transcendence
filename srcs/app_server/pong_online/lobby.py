@@ -9,6 +9,10 @@ class Lobby:
 			cls._instance = super(Lobby, cls).__new__(cls, *args, **kwargs)
 			cls._instance.matches = {}
 			cls._instance.registered_players_total = []
+			nameMatch1 = generate()
+			cls._instance.add_match(nameMatch1)
+			match1 = cls._instance.get_match(nameMatch1)
+			match1.register_player("yann")
 		return cls._instance
 
 	#return correct match instance to consumer
@@ -31,7 +35,23 @@ class Lobby:
 			return False, "game full"
 		self.registered_players_total.append(username)
 		return True, ""
-		
+	
+	def	join(self, username, match_id):
+		match = self.get_match(match_id)
+		if not match:
+			return False, "match does not exist"
+		elif username not in match.get_registered_players():
+			return False, "player not registered for this match"
+		elif len(match.get_registered_players()) != 2:
+			return False, "not enough players registered"
+		return True, ""
+	
+	#player in first position in registered players hosts the game
+	def	should_host_game(self, username, match_id):
+		match = self.get_match(match_id)
+		if username == match.get_registered_players()[0]:
+			return True
+		return False
 	
 	def add_match(self, match_id) -> bool:
 		if match_id in self.matches:
