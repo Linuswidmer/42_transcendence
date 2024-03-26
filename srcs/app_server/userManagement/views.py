@@ -81,7 +81,7 @@ def update_profile(request):
     if request.method == "GET":
         form = CustomProfileChangeForm(instance=request.user.profile)
         return render(
-            request, "userManagement/register.html",
+            request, "userManagement/update_profile.html",
             {"form": form}
         )
     elif request.method == "POST":
@@ -97,7 +97,7 @@ def update_profile(request):
             return redirect(reverse('userManagement:profile', args=[request.user.username]))
         else:
             return render(
-            request, "userManagement/register.html",
+            request, "userManagement/update_profile.html",
             {"form": form}
         )
 
