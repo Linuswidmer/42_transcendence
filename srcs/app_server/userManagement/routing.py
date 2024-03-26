@@ -1,0 +1,8 @@
+# userManagement/routing.py
+from django.urls import re_path
+
+from . import consumers
+
+websocket_urlpatterns = [
+    re_path(r"ws/profile/(?P<username>\w+)/$", consumers.OnlineStatusConsumer.as_asgi()),
+]

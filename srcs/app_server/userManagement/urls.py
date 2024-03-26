@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import dashboard, profile_list, profile, register_user, register_guest, update_user, update_profile, change_password
+from .views import dashboard, profile_list, profile, register_user, register_guest, update_user, update_profile, change_password #user_websocket
 
 app_name = "userManagement"
 
@@ -13,5 +13,6 @@ urlpatterns = [
     path("profile_list/", profile_list, name="profile_list"),
     path('profile/<str:username>/', profile, name='profile'),
     path("change_password/", change_password, name="change_password"),
+	#path("user_websocket/", user_websocket, name="user_websocket"),
 
 ]

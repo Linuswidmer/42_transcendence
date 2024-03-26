@@ -12,6 +12,10 @@ import uuid
 def dashboard(request):
     return render(request, "userManagement/dashboard.html")
 
+#def user_websocket(request):
+#    username = request.user.username
+#    return render(request, 'usermanagememt/', {"username": username})
+
 #view for registering a new user
 def register_user(request):
     if request.method == "GET":
@@ -27,7 +31,8 @@ def register_user(request):
             user.groups.add(registered_users)
             user.save()
             login(request, user)
-            return redirect(reverse('userManagement:profile', args=[user.username]))
+            return render(request, 'usermanagememt/user_websocket', {"username": user.username})
+            #return redirect(reverse('userManagement:profile', args=[user.username]))
         else:
             return render(
             request, "userManagement/register.html",
