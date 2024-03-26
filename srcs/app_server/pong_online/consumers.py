@@ -183,7 +183,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		#game_data. if one client sends a keypress. the process_keypress
 		#function is called in both consumers
 		if message_type == "keypress":
-			print("game group name keypress", self.username, self.game_group_name, type(self.game_group_name))
+			# print("game group name keypress", self.username, self.game_group_name, type(self.game_group_name))
 			await self.channel_layer.group_send(
 				self.game_group_name,
 				{"type": "process_keypress",
@@ -204,7 +204,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				"moveDown": False,
 				"direction": 0,
 				}
-		print("game_data", self.game_data)
+		# print("game_data", self.game_data)
 		
 		await self.send(text_data=json.dumps({"type": "join"}))
 
@@ -226,6 +226,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 
 	async def state_update(self, event):
+		# print("game_state:", " leon:", event["entity_data"]["leon"]["relativeY"], " alex:", event["entity_data"]["alex"]["relativeY"])
 		await self.send(
 			text_data=json.dumps(event)
 		)
@@ -243,7 +244,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		
 		action = keypress["action"]
 		player_id = keypress["playerId"]
-		print("keypress:", keypress)
+		# print("keypress:", keypress)
 		#update dictionary with other playerId the first time we receive a keypress
 		# if player_id not in self.game_data:
 		# 	self.game_data[player_id] = self.game_data["player2"] 
@@ -272,7 +273,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	async def game_loop(self):
 		logger.debug("new game loop started")
 		pong_instance = Pong()
-		FPS = 3
+		FPS = 60
 		iteration_time = 1 / FPS
 		while 1:
 			# start_time = time.time()

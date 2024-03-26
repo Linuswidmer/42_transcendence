@@ -195,7 +195,7 @@ function join_game(name) {
 				console.log("user id from server", ws.user_id);
 			}
 			if (data.type === "state_update") {
-				update(ws.user_id, data)
+				update(ws.username, data)
 			}
 			draw()
 			

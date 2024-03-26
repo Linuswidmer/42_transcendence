@@ -69,6 +69,7 @@ ws.onopen = function(e) {
 	console.log('WebSocket connection established');
 	// let data = {'playerId': 'SESSION ID HERE?????'};
 	// ws.send(JSON.stringify(data));
+	ws.username = username
 	ws.send(JSON.stringify({type: 'username', 'username': username}));
 	ws.send(JSON.stringify({type: 'lobby_update', 'action': 'display'}));
 };
