@@ -5,6 +5,7 @@ import math
 import time
 import pygame
 import logging
+from adjectiveanimalnumber import generate
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -132,13 +133,17 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		#we dont need to actually obtain the id from the client
 		#we now it is our client because we are inside receive
 		#so we can just send self.player_id to process keypress
-		
+
+		if message_type == "username":
+			self.username = text_data_json.get("username", "")
+			print(self.username)
+
+
 		if not self.in_game and message_type == "lobby_update":
 			await self.channel_layer.group_send(
 				"lobby",
-				{"type": "lobby_update"},
+				text_data_json,
 			)
-
 
 		#we call process keypress to update the keypress in our
 		#game_data. if one client sends a keypress. the process_keypress
@@ -153,8 +158,26 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 
 	async def lobby_update(self, event):
+		basic_update = {"type": "lobby_update"}
+		print(event)
+		
+		if event["action"] == "register":
+			success, message = self.lobby.register_player_match(
+				self.username, event["match_id"]
+			)
+			if not success:
+				basic_update["error"] = message
+
+		if event["action"] == "create":
+			success, message = self.lobby.add_match(generate())
+			if not success:
+				basic_update["error"] = message
+
+		#return all matches with registered players to display the lobby in the fronend
+		matches_info = self.lobby.get_all_matches()
+		basic_update["matches_info"] = matches_info
 		await self.send(
-			text_data=json.dumps(event)
+			text_data=json.dumps(basic_update)
 		)
 
 

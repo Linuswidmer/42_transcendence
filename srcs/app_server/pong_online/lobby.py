@@ -1,4 +1,5 @@
 from uuid import uuid4
+from adjectiveanimalnumber import generate
 
 class Lobby:
 	_instance = None
@@ -7,15 +8,7 @@ class Lobby:
 		if not cls._instance:
 			cls._instance = super(Lobby, cls).__new__(cls, *args, **kwargs)
 			cls._instance.matches = {}
-			cls._instance.add_match(1)
-			cls._instance.add_match(2)
-			match1 = cls._instance.get_match(1)
-			match1.register_player("leon")
-			# match1.register_player("alex")
-			match2 = cls._instance.get_match(2)
-			match2.register_player("marie")
-			match2.register_player("yann")
-			cls._instance.test = "hello from GameData"
+			cls._instance.registered_players_total = []
 		return cls._instance
 
 	#return correct match instance to consumer
@@ -28,12 +21,27 @@ class Lobby:
 	def get_all_matches(self):
 		return {match_id: match.get_registered_players() for match_id, match in self.matches.items()}
 	
+	def register_player_match(self, username, match_id):
+		match = self.get_match(match_id)
+		if not match:
+			return False, "match does not exist"
+		elif username in self.registered_players_total:
+			return False, "player already registered"
+		elif not (match.register_player(username)):
+			return False, "game full"
+		self.registered_players_total.append(username)
+		return True, ""
+		
 	
-	def add_match(self, match_id):
+	def add_match(self, match_id) -> bool:
+		if match_id in self.matches:
+			return False, "match name already exists"
 		self.matches[match_id] = Match(match_id)
+		return True, ""
 
 	def get_match(self, match_id):
 		return self.matches.get(match_id)
+	
 
 	# 	#generate unique identifier for match_id
 	# 	#will also be used for group communication

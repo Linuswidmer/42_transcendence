@@ -9,11 +9,7 @@ def pong_online(request):
 	return render(request, "pong_online/pong_game.html")
 
 def display_lobby(request):
-	print("user:", request.user.username)
-	lobby = Lobby()
-	matches_info = lobby.get_all_matches()
-	print(matches_info)
-	return render(request, "pong_online/lobby.html", {"matches_info": matches_info})
+	return render(request, "pong_online/lobby.html", {"username": request.user.username})
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
