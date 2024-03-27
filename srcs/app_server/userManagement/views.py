@@ -26,7 +26,7 @@ def register_user(request):
             user = form.save()
             user.groups.add(registered_users)
             user.save()
-            login(request, user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect(reverse('userManagement:profile', args=[user.username]))
         else:
             return render(
