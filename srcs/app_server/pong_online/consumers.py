@@ -7,6 +7,10 @@ import pygame
 import logging
 from adjectiveanimalnumber import generate
 from .pong_ai_opponent import AIPongOpponent
+from .GameDataCollector import GameDataCollector
+from django.contrib.auth.models import User
+import asyncio
+from asgiref.sync import sync_to_async
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -328,13 +332,19 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		else:
 			self.game_data[player_id]["direction"] = 0
 
+	def create_data_collector(self, modus, username1, username2):
+		return GameDataCollector(User.objects.get(username=username1), User.objects.get(username=username2), modus)
+	
 	#i dont think we need a lock here, as we work with the instances own game_data
 	#every instance has its own game_data
 	#when an update happens, all game_datas are updated
 	#here we could import the game from another file to keep things separated
 	async def game_loop(self, modus):
+		print(self.game_data)
+		exit()
+		gdc = await sync_to_async(self.create_data_collector)(modus, "Alex", "Yann")
 		logger.debug("new game loop started")
-		pong_instance = Pong()
+		pong_instance = Pong(gdc)
 		FPS = 60
 		iteration_time = 1 / FPS
 		if modus == "ai":
