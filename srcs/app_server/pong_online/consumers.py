@@ -131,7 +131,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		)
 
 	async def receive(self, text_data):
-		print(text_data)
+		# print(text_data)
 		text_data_json = json.loads(text_data)
 		message_type = text_data_json.get("type", "")
 
@@ -192,7 +192,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			)
 
 	async def join_game(self, match_id):
-		# self.game_group_name = "alex"
+		self.in_game = True
 		if self.lobby.should_host_game(self.username, match_id):
 			self.hosts_game = True
 		match = self.lobby.get_match(match_id)

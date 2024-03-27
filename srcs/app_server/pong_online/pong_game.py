@@ -7,7 +7,7 @@ SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 400
 
 PADDLE_WIDTH = 15
-PADDLE_HEIGHT = 70
+PADDLE_HEIGHT = 400
 PADDLE_DY = 300
 
 BALL_DX = 200
@@ -67,6 +67,10 @@ class Ball(Entity):
 
 		# Check if the new ball rect collides with the paddle's rect
 		if new_ball_rect.colliderect(paddle.hitbox):
+			if paddle is rightPaddle:
+				print("collision with right paddle")
+			if paddle is leftPaddle:
+				print("collision with left paddle")
 			# If the new x-position is within its radius of the left or right of the paddle,
 			# it means the ball has hit the left or right of the paddle.
 			# In this case, we reverse the x-direction of the ball to simulate a bounce.
@@ -142,7 +146,7 @@ class Pong:
 		self.leftPaddle.move(dt, player1_direction)
 		self.rightPaddle.move(dt, player2_direction)
 		self.ball.move(dt, self.leftPaddle, self.rightPaddle)
-		return {'relativeBallX': self.ball.x / SCREEN_HEIGHT,
+		return {'relativeBallX': self.ball.x / SCREEN_WIDTH,
 		  		'relativeBallY': self.ball.y / SCREEN_HEIGHT,
 				"relPaddleHeight": PADDLE_HEIGHT / SCREEN_HEIGHT,
 		   		"relPaddleWidth": PADDLE_WIDTH / SCREEN_WIDTH, 
