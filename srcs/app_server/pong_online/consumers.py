@@ -1,19 +1,17 @@
 import json
 import uuid
 import asyncio
-import math
 import time
-import pygame
 import logging
-from adjectiveanimalnumber import generate
-from .pong_ai_opponent import AIPongOpponent
 
-logger = logging.getLogger(__name__)
+from adjectiveanimalnumber import generate
+
+logger = logging.getLogger("__name__")
 logging.basicConfig(level=logging.INFO)
 
 from channels.generic.websocket import AsyncWebsocketConsumer
-from asgiref.sync import async_to_sync
 
+from pong_online.pong_ai_opponent import AIPongOpponent
 from pong_online.pong_game import Pong
 from pong_online.lobby import Lobby
 
@@ -45,14 +43,13 @@ class apiConsumer(AsyncWebsocketConsumer):
 
 class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#global class variable to try some things without the db
-	n_connected_players = 0
-	# last_game_group_name = ""
+	n_connected_websockets = 0
 
 	update_lock = asyncio.Lock()
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
-		MultiplayerConsumer.n_connected_players += 1
-		print("n connected:", MultiplayerConsumer.n_connected_players)
+		MultiplayerConsumer.n_connected_websockets += 1
+		print("number of connected websockets:", MultiplayerConsumer.n_connected_websockets)
 		#for now assign a uuid. maybe later session id or smth
 		# self.player_id = str(uuid.uuid4())
 		self.username = ""
@@ -63,25 +60,13 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 		self.in_game = False
 
-		self.game_data = {
-			# self.username: {
-			# 	"score": 0,
-			# 	"moveUp": False,
-			# 	"moveDown": False,
-			# 	"direction": 0,
-			# },
-			# "player2": {
-			# 	"score": 0,
-			# 	"moveUp": False,
-			# 	"moveDown": False,
-			# 	"direction": 0,
-			# }
-		}
+		self.game_data = {}
+
 		#set to true later for consumer that runs the game loop
 		self.hosts_game = False
 
 	#is called when connection from client to websocket (set up in routing.py) is
-	#established
+	#established. is for now established when user enters the lobby site
 	async def connect(self):
 		#accept ws connection
 		await self.accept()
@@ -89,117 +74,102 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		await self.channel_layer.group_add(
 			"lobby", self.channel_name
 		)
-		#send playerId to browser
-		#probably remove this as i see now reason why the browser would want
-		#or need to know the id that the server assigns
-		# await self.send(
-		# 	text_data=json.dumps({"type": "playerId", "playerId": self.player_id})
-		# )
-
-
-		#assign user to its own group
-		#probably here we consult the db to see if other players are available
-		#in order to decide wether we join an already existing game or start
-		#a new one -> should defenitely go to its own function. maybe even own file,
-		#for matchmaking
-		# async with self.update_lock:
-		# 	MultiplayerConsumer.n_connected_players += 1
-		
-		# #equal amount of player -> join existing game
-		# if MultiplayerConsumer.n_connected_players % 2 == 0:
-		# 	self.game_group_name = MultiplayerConsumer.last_game_group_name
-		# else:
-		# 	self.hosts_game = True
-		# 	self.game_group_name = str(uuid.uuid4())
-		# 	MultiplayerConsumer.last_game_group_name = self.game_group_name
-
-		#add player to group to send/receive updates
-		# await self.channel_layer.group_add(
-		# 	self.game_group_name, self.channel_name
-		# )
-
-		#add player to lobby
-
-
-
-		#start game_loop if player is hosting
-		# if self.hosts_game:
-		# 	asyncio.create_task(self.game_loop())
 
 	async def disconnect(self, close_code):
+		await self.channel_layer.group_discard(
+			"lobby", self.channel_name
+		)
 		await self.channel_layer.group_discard(
 			self.game_group_name, self.channel_name
 		)
 
-	async def receive(self, text_data):
-		# print(text_data)
-		text_data_json = json.loads(text_data)
-		message_type = text_data_json.get("type", "")
+	#everything that the client send through the websocket is received here
+	#everything that is send by the client needs to have a type field
+	#describing the type of message to deal with the information accordingly
 
-		#we dont need to actually obtain the id from the client
-		#we now it is our client because we are inside receive
-		#so we can just send self.player_id to process keypress
+	async def receive(self, text_data):
+		logger.debug("data received in receive: %s", text_data)
+		print("text data from client in receive:", text_data)
+
+		json_from_client = json.loads(text_data)
+
+		message_type = json_from_client.get("type", "")
 
 		if message_type == "username":
-			self.username = text_data_json.get("username", "")
-			print(self.username)
+			self.username = json_from_client.get("username", "")
 
 		if message_type == "start" and self.hosts_game:
-			print("start game with modus:", text_data_json["modus"])
-			asyncio.create_task(self.game_loop(text_data_json["modus"]))
+			logger.debug("start game with modus:%s", json_from_client["modus"])
+			asyncio.create_task(self.game_loop(json_from_client["modus"]))
 
+		#only process lobby updates. when not inga,e
 		if not self.in_game and message_type == "lobby_update":
-			if text_data_json["action"] == "register":
-				success, message = self.lobby.register_player_match(
-					self.username, text_data_json["match_id"]
+			#process button presses and update lobby content if necessary
+			updated_lobby_info = await self.process_lobby_update_in_consumer(json_from_client)
+			logger.debug("updated_lobby_info:%s", updated_lobby_info)
+			#publish lobby info to all users so they can update the content
+			if updated_lobby_info is not None:
+				await self.channel_layer.group_send(
+					"lobby",
+					updated_lobby_info,
 				)
-				if not success:
-					text_data_json["error"] = message
-				if success:
-					self.game_group_name = text_data_json["match_id"]
-					
-					await self.channel_layer.group_add(
-						self.game_group_name, self.channel_name
-					)
-
-			if text_data_json["action"] == "create":
-				print("Create")
-				success, message = self.lobby.add_match(str(generate()))
-				if not success:
-					text_data_json["error"] = message
-
-			if text_data_json["action"] == "join" and text_data_json["modus"] == "remote":
-				success, message = self.lobby.join(self.username, text_data_json["match_id"])
-				if success:
-					await self.join_remote_game(text_data_json["match_id"])
-					return
-				else:
-					text_data_json["error"] = message
-
-			if text_data_json["action"] == "join" and text_data_json["modus"] == "local":
-				await self.join_local_game()
-				return
-			
-			if text_data_json["action"] == "join" and text_data_json["modus"] == "ai":
-				await self.join_ai_game()
-				return
-
-			await self.channel_layer.group_send(
-				"lobby",
-				text_data_json,
-			)
 
 		#we call process keypress to update the keypress in our
 		#game_data. if one client sends a keypress. the process_keypress
 		#function is called in both consumers
+		#it is send over our game_group because only players in the group
+		#should receive it
 		if message_type == "keypress":
-			# print("game group name keypress", self.username, self.game_group_name, type(self.game_group_name))
 			await self.channel_layer.group_send(
 				self.game_group_name,
 				{"type": "process_keypress",
-				"playerId": text_data_json.get("playerId", ""),
-	 			"action": text_data_json.get("action", "")},
+				"playerId": json_from_client.get("playerId", ""),
+	 			"action": json_from_client.get("action", "")},
 			)
+
+	#register: put consumer in group (match_id as group_name) -> thats were game updates will be published to
+	async def process_lobby_update_in_consumer(self, json_from_client):
+		action = json_from_client.get("action", "")
+		match_id = json_from_client.get("match_id", "")
+		modus = json_from_client.get("modus", "")
+
+		if action == "register":
+			success, message = self.lobby.register_player_match(
+				self.username, match_id
+			)
+			if success:
+				self.game_group_name = match_id
+				
+				await self.channel_layer.group_add(
+					self.game_group_name, self.channel_name
+				)
+			else:
+				json_from_client["error"] = message
+
+		if action == "create":
+			success, message = self.lobby.add_match(str(generate()))
+			if not success:
+				json_from_client["error"] = message
+
+		if action == "join" and modus == "remote":
+			success, message = self.lobby.join(self.username, json_from_client["match_id"])
+			if success:
+				await self.join_remote_game(match_id)
+				return None
+			else:
+				json_from_client["error"] = message
+		
+		if action == "join" and modus == "local":
+			await self.join_local_game()
+			return None
+			
+		if action == "join" and modus == "ai":
+			await self.join_ai_game()
+			return None
+		
+		json_from_client["type"] = "group_lobby_update"
+		return json_from_client
+
 
 	async def join_ai_game(self):
 		self.in_game = True
@@ -265,12 +235,11 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				"moveDown": False,
 				"direction": 0,
 				}
-		# print("game_data", self.game_data)
 		
 		await self.send(text_data=json.dumps({"type": "join", "modus": "remote"}))
 
 
-	async def lobby_update(self, event):
+	async def group_lobby_update(self, event):
 		basic_update = {"type": "lobby_update"}
 		
 		if "error" in event and self.username in event["username"]:
@@ -286,7 +255,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		)
 
 
-	async def state_update(self, event):
+	async def group_game_state_update(self, event):
 		# print("game_state:", " leon:", event["entity_data"]["leon"]["relativeY"], " local_opponent:", event["entity_data"]["local_opponent"]["relativeY"])
 		await self.send(
 			text_data=json.dumps(event)
@@ -305,12 +274,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		
 		action = keypress["action"]
 		player_id = keypress["playerId"]
-		print("keypress player id:", player_id)
-		# print("keypress:", keypress)
-		#update dictionary with other playerId the first time we receive a keypress
-		# if player_id not in self.game_data:
-		# 	self.game_data[player_id] = self.game_data["player2"] 
-		# 	del self.game_data["player2"]
 
 		if action == "moveUp":
 			self.game_data[player_id]["moveUp"] = True
@@ -374,7 +337,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			#send all entity data to clients, so they can render the game
 			await self.channel_layer.group_send(
 				self.game_group_name,
-				{"type": "state_update", "entity_data": entity_data},
+				{"type": "group_game_state_update", "entity_data": entity_data},
 			)
 			await asyncio.sleep(iteration_time)
 
