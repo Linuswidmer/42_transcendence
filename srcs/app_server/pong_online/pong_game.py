@@ -7,7 +7,7 @@ SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 400
 
 PADDLE_WIDTH = 15
-PADDLE_HEIGHT = 400
+PADDLE_HEIGHT = 70
 PADDLE_DY = 300
 
 BALL_DX = 200
@@ -140,6 +140,8 @@ class Pong:
 	def	update_entities(self, dt, game_data):
 		player1_data, player2_data = list(game_data.values())
 		player1_id, player2_id = list(game_data.keys())
+		# print("player1", player1_id)
+		# print("player2", player2_id)
 		player1_direction = player1_data["direction"]
 		player2_direction = player2_data["direction"]
 

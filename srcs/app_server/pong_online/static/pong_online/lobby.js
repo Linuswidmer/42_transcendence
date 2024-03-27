@@ -83,6 +83,7 @@ ws.onmessage = function(e) {
 			updateLobby(data);
 		}
 		if (data.type === "join") {
+			ws.modus =  data.modus
 			fetch('/pong_online')
 				.then(response => response.text())
 				.then(data => {
@@ -103,7 +104,7 @@ ws.onmessage = function(e) {
 			
 					// Set its src attribute to the extracted src
 					script.src = scriptSrc;
-			
+					
 					// Append the script element to the body of the document
 					document.body.appendChild(script);
 				})
@@ -138,6 +139,26 @@ function updateLobby(data) {
 		console.log("Create game button clicked");
 		ws.send(JSON.stringify({type: 'lobby_update', 'action': 'create', 'username': username}));
 	});
+
+	var localGameButton = document.createElement('button');
+	localGameButton.innerText = 'Local Game';
+	localGameButton.className = 'local';
+	lobby.appendChild(localGameButton);
+
+	localGameButton.addEventListener('click', function() {
+		console.log("Local game button clicked");
+		ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join', 'username': username, 'modus': 'local'}));
+	});
+
+	var aiGameButton = document.createElement('button');
+	aiGameButton.innerText = 'AI Opponent';
+	aiGameButton.className = 'ai';
+	lobby.appendChild(aiGameButton);
+
+	aiGameButton.addEventListener('click', function() {
+		console.log("AI Opponent button clicked");
+		ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join', 'username': username, 'modus': 'ai'}));
+	});
 	
 
 
@@ -166,7 +187,7 @@ function updateLobby(data) {
 		let joinButton = matchElement.querySelector('.join');
 		joinButton.addEventListener('click', function() {
 			console.log("Join button clicked for match id: ", id);
-			ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join', 'match_id': id, 'username': username}));
+			ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join', 'match_id': id, 'username': username, 'modus': 'remote'}));
 		});
 	})(match_id);
 	}

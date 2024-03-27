@@ -6,6 +6,7 @@ import time
 import pygame
 import logging
 from adjectiveanimalnumber import generate
+from .pong_ai_opponent import AIPongOpponent
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -144,8 +145,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			print(self.username)
 
 		if message_type == "start" and self.hosts_game:
-			print("start game")
-			asyncio.create_task(self.game_loop())
+			print("start game with modus:", text_data_json["modus"])
+			asyncio.create_task(self.game_loop(text_data_json["modus"]))
 
 		if not self.in_game and message_type == "lobby_update":
 			if text_data_json["action"] == "register":
@@ -167,13 +168,22 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				if not success:
 					text_data_json["error"] = message
 
-			if text_data_json["action"] == "join":
+			if text_data_json["action"] == "join" and text_data_json["modus"] == "remote":
 				success, message = self.lobby.join(self.username, text_data_json["match_id"])
 				if success:
-					await self.join_game(text_data_json["match_id"])
+					await self.join_remote_game(text_data_json["match_id"])
 					return
 				else:
 					text_data_json["error"] = message
+
+			if text_data_json["action"] == "join" and text_data_json["modus"] == "local":
+				await self.join_local_game()
+				return
+			
+			if text_data_json["action"] == "join" and text_data_json["modus"] == "ai":
+				await self.join_ai_game()
+				return
+
 			await self.channel_layer.group_send(
 				"lobby",
 				text_data_json,
@@ -187,15 +197,66 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			await self.channel_layer.group_send(
 				self.game_group_name,
 				{"type": "process_keypress",
-				"playerId": self.username,
+				"playerId": text_data_json.get("playerId", ""),
 	 			"action": text_data_json.get("action", "")},
 			)
 
-	async def join_game(self, match_id):
+	async def join_ai_game(self):
+		self.in_game = True
+		self.hosts_game = True
+		self.game_group_name = "ai"
+
+		self.game_data[self.username] = {
+				"score": 0,
+				"moveUp": False,
+				"moveDown": False,
+				"direction": 0,
+				}
+		
+		self.game_data["ai_opponent"] = {
+				"score": 0,
+				"moveUp": False,
+				"moveDown": False,
+				"direction": 0,
+				}
+					
+		await self.channel_layer.group_add(
+			self.game_group_name, self.channel_name
+		)
+
+		await self.send(text_data=json.dumps({"type": "join", "modus": "ai"}))
+
+	async def join_local_game(self):
+		self.in_game = True
+		self.hosts_game = True
+		self.game_group_name = "local"
+
+		self.game_data[self.username] = {
+				"score": 0,
+				"moveUp": False,
+				"moveDown": False,
+				"direction": 0,
+				}
+		
+		self.game_data["local_opponent"] = {
+				"score": 0,
+				"moveUp": False,
+				"moveDown": False,
+				"direction": 0,
+				}
+					
+		await self.channel_layer.group_add(
+			self.game_group_name, self.channel_name
+		)
+
+		await self.send(text_data=json.dumps({"type": "join", "modus": "local"}))
+
+	async def join_remote_game(self, match_id):
 		self.in_game = True
 		if self.lobby.should_host_game(self.username, match_id):
 			self.hosts_game = True
 		match = self.lobby.get_match(match_id)
+		# match.modus = modus
 		players = match.get_registered_players()
 		for player in players:
 			self.game_data[player] = {
@@ -206,7 +267,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				}
 		# print("game_data", self.game_data)
 		
-		await self.send(text_data=json.dumps({"type": "join"}))
+		await self.send(text_data=json.dumps({"type": "join", "modus": "remote"}))
 
 
 	async def lobby_update(self, event):
@@ -226,7 +287,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 
 	async def state_update(self, event):
-		# print("game_state:", " leon:", event["entity_data"]["leon"]["relativeY"], " alex:", event["entity_data"]["alex"]["relativeY"])
+		# print("game_state:", " leon:", event["entity_data"]["leon"]["relativeY"], " local_opponent:", event["entity_data"]["local_opponent"]["relativeY"])
 		await self.send(
 			text_data=json.dumps(event)
 		)
@@ -244,6 +305,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		
 		action = keypress["action"]
 		player_id = keypress["playerId"]
+		print("keypress player id:", player_id)
 		# print("keypress:", keypress)
 		#update dictionary with other playerId the first time we receive a keypress
 		# if player_id not in self.game_data:
@@ -270,13 +332,41 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#every instance has its own game_data
 	#when an update happens, all game_datas are updated
 	#here we could import the game from another file to keep things separated
-	async def game_loop(self):
+	async def game_loop(self, modus):
 		logger.debug("new game loop started")
 		pong_instance = Pong()
 		FPS = 60
 		iteration_time = 1 / FPS
+		if modus == "ai":
+			ai = AIPongOpponent(
+				pong_instance.rightPaddle.y,
+				pong_instance.rightPaddle.x,
+				pong_instance.ball.x,
+				pong_instance.ball.y,
+				pong_instance.ball.dx,
+				pong_instance.ball.dy,
+				pong_instance.rightPaddle.dy,
+				pong_instance.rightPaddle.height,
+				iteration_time,
+				10)
+			ai_refresh_timer = time.time()
 		while 1:
 			# start_time = time.time()
+			if modus == "ai":
+				if (time.time() - ai_refresh_timer >= 1):
+					ai.setGameState(
+						pong_instance.rightPaddle.y,
+						pong_instance.rightPaddle.x,
+						pong_instance.ball.x,
+						pong_instance.ball.y,
+						pong_instance.ball.dx,
+						pong_instance.ball.dy,
+						pong_instance.rightPaddle.dy,
+						pong_instance.rightPaddle.height)
+					ai_refresh_timer = time.time()
+				ai_decision = ai.getAIDecision()
+				self.game_data["ai_opponent"]["direction"] = ai_decision
+
 
 			#update entities with the iteration_time and keypresses
 			entity_data = pong_instance.update_entities(iteration_time, self.game_data)

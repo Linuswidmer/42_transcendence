@@ -121,7 +121,7 @@ function update(user_id, data) {
 }
 
 let ws = window.ws
-function join_game(name) {
+function join_game(modus) {
 
 	// const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
     // // const wsUrl = protocol + `://${window.location.host}/ws/pong/${roomName}/`; // this has to be modified to be a unique identifier
@@ -134,17 +134,25 @@ function join_game(name) {
 	//prevents client from sending a lot of messages when holding a button pressed
 	let keys = {
 		'KeyA': false,
-		'KeyD': false
+		'KeyD': false,
+		'KeyJ': false,
+		'KeyL': false,
 	};
 
 	window.addEventListener('keydown', function(event) {
 		let data = undefined;
 		if (event.code === 'KeyA' && !keys[event.code]) {
 			keys[event.code] = true;
-			data = {'playerId': ws.user_id, 'type': 'keypress', 'action': 'moveUp'};
+			data = {'playerId': ws.username, 'type': 'keypress', 'action': 'moveUp'};
 		} else if (event.code === 'KeyD'  && !keys[event.code]) {
 			keys[event.code] = true;
-			data = {'playerId': ws.user_id, 'type': 'keypress', 'action': 'moveDown'};
+			data = {'playerId': ws.username, 'type': 'keypress', 'action': 'moveDown'};
+		} else if (modus === 'local' && event.code === 'KeyJ' && !keys[event.code]) {
+			keys[event.code] = true;
+			data = {'playerId': 'local_opponent', 'type': 'keypress', 'action': 'moveUp'};
+		} else if (modus === 'local' && event.code === 'KeyL'  && !keys[event.code]) {
+			keys[event.code] = true;
+			data = {'playerId': 'local_opponent', 'type': 'keypress', 'action': 'moveDown'};
 		}
 	
 		if (typeof data !== 'undefined' && ws.readyState === WebSocket.OPEN) {
@@ -156,10 +164,16 @@ function join_game(name) {
 		let data = undefined;
 		if (event.code === 'KeyA') {
 			keys[event.code] = false;
-			data = {'playerId': ws.user_id, 'type': 'keypress', 'action': 'stopMoveUp'};
+			data = {'playerId': ws.username, 'type': 'keypress', 'action': 'stopMoveUp'};
 		} else if (event.code === 'KeyD') {
 			keys[event.code] = false;
-			data = {'playerId': ws.user_id, 'type': 'keypress', 'action': 'stopMoveDown'};
+			data = {'playerId': ws.username, 'type': 'keypress', 'action': 'stopMoveDown'};
+		} else if (modus === 'local' && event.code === 'KeyJ') {
+			keys[event.code] = false;
+			data = {'playerId': 'local_opponent', 'type': 'keypress', 'action': 'stopMoveUp'};
+		} else if (modus === 'local' && event.code === 'KeyL') {
+			keys[event.code] = false;
+			data = {'playerId': 'local_opponent', 'type': 'keypress', 'action': 'stopMoveDown'};
 		}
 	
 		if (typeof data !== 'undefined' && ws.readyState === WebSocket.OPEN) {
@@ -206,11 +220,12 @@ function join_game(name) {
 };
 
 
-const startButton = document.getElementById('startButton');
+const startButton = document.getElementById('startButtonRemote');
 if (startButton) {
 	startButton.addEventListener('click', function() {
-		ws.send(JSON.stringify({'type': 'start'}));
-		join_game("");
+		console.log("modus", ws.modus);
+		ws.send(JSON.stringify({'type': 'start', 'modus': ws.modus}));
+		join_game(ws.modus);
 		console.log('Start button clicked pong online');
 	});
 

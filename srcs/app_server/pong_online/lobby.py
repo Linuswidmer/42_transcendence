@@ -82,6 +82,7 @@ class Match:
 	def __init__(self, match_id) -> None:
 		#generate unique identifier for group communication
 		self.group_name = match_id
+		self.modus = ""
 		self.n_registered_players = 0
 		self.match_full = False
 		self.registered_players = []
