@@ -1,4 +1,5 @@
 {% load static %}
+{% include "pong/header.html" %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,11 +7,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="{% static 'pong/styles.css' %}">
     <title>Pong Game</title>
+    <script>
+
+        //  This function communicates with django (backend)
+        
+        function showSection(section) {   
+            fetch(`/sections/${section}`)
+            .then(response => response.text())
+            .then(text => {
+                console.log(text);
+                document.querySelector('#content').innerHTML = text;
+            });
+
+        }
+
+
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll('button').forEach(button => {
+                button.onclick = function() {
+                    showSection(this.dataset.section)
+                }
+            })
+        });
+
+
+    </script>
 </head>
 <body>
+    <h1>Hello</h1>
+    <button data-section="1">Section 1</button>
+    <button data-section="2">Section 2</button>
+    <button data-section="3">Section 3</button>
+
+    <!-- Contents loaded from server is inserted here by javascript -->
+    <div id="content">
+
+    </div>
+
+</body>
+
+
+<!-- <body>
     {% csrf_token %}
 
-    <!-- CONTENT -->
+    CONTENT
     <div id="page">
         {% block content %}{% endblock %}
     </div>
@@ -76,5 +116,5 @@
 
         
         </script>
-</body>
+</body> -->
 </html>

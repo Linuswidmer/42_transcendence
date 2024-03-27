@@ -8,6 +8,8 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 import os
 import uuid
+from django.contrib.auth.views import LoginView
+from django.http import HttpResponse
 
 def dashboard(request):
     return render(request, "userManagement/dashboard.html")
@@ -137,3 +139,18 @@ def profile(request, username):
             current_user_profile.follows.remove(user.profile)
         current_user_profile.save()
     return render(request, "userManagement/profile.html", {"user": user})
+
+
+def section(request, name):
+    if name == "login":
+        # Redirect to the login page
+        return HttpResponse(status=302, headers={'Location': reverse('userManagement:login')})
+    elif name == "register":
+        # Redirect to the register user page
+        return HttpResponse(status=302, headers={'Location': reverse('userManagement:register_user')})
+    elif name == "register_guest":
+        # Redirect to the register guest page
+        return HttpResponse(status=302, headers={'Location': reverse('userManagement:register_guest')})
+    else:
+        # Return a 404 response if the section is not found
+        return HttpResponse(status=404)

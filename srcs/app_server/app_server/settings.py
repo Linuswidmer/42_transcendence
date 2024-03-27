@@ -108,6 +108,14 @@ AUTH_PASSWORD_VALIDATORS = [
     # },
 ]
 
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+    "django.contrib.auth.hashers.ScryptPasswordHasher",
+]
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -130,10 +138,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGOUT_REDIRECT_URL = 'userManagement:dashboard'
-
-LOGIN_REDIRECT_URL = 'userManagement:profile_list'
+LOGOUT_REDIRECT_URL = 'pong:landing_page'
+LOGIN_REDIRECT_URL = 'pong:landing_page'
 ACCOUNT_REDIRECT_URL = 'userManagement:dashboard'
+
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SITE_ID = 1
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

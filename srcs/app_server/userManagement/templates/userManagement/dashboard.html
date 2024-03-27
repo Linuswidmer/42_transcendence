@@ -1,20 +1,56 @@
 <!--users/templates/users/dashboard.html-->
-
 {% extends 'base.html' %}
+{% load static %}
 {% load socialaccount %}
 {% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{% static 'pong/styles.css' %}">
+    <title>Pong Game</title>
+    <script>
+        // This function communicates with Django (backend)
+        function showSection(section) {   
+            fetch(`/sections/${section}`)
+            .then(response => response.text())
+            .then(text => {
+                console.log(text);
+                document.querySelector('#content').innerHTML = text;
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll('a').forEach(link => {
+                link.onclick = function(event) {
+                    event.preventDefault(); // Prevent the default link behavior
+                    showSection(this.dataset.section);
+                }
+            });
+        });
+    </script>
+</head>
+<body>
 <div  class="block">
-	<h1 class="title is-1">Hello, {{ user.username|default:'Guest' }}!</h1>
-    {% if user.is_authenticated %}
-		<form method="post" action="{% url 'userManagement:logout' %}">
-			{% csrf_token %}
-			<button type="submit">logout</button>
-		</form>
+	<h1>Pong Game</h1>
+    <img src="{% static 'pong/platypus.jpg' %}" alt="Portrait" style="width:50px;height:50px;">
+    {% if not user.is_authenticated %}
+	
+	<a href="{% url 'userManagement:login' %}" data-section="login">Login</a>
+	<a href="{% url 'userManagement:register_user' %}" data-section="register">Register</a>
+	<a href="{% url 'userManagement:register_guest'%}" data-section="guest">Continue as Guest</a>
+	
+	
 	{% else %}
-		<a href="{% url 'userManagement:login' %}">Login</a>
-		<a href="{% url 'userManagement:register_user' %}">Register</a>
-		<a href="{% url 'userManagement:register_guest' %}">Continue as Guest</a>
-		<a href="{% provider_login_url 'provider' %}">Sign In with 42</a>
+	<form method="post" action="{% url 'userManagement:logout' %}">
+		{% csrf_token %}
+		<button type="submit">logout</button>
+	</form>
 	{% endif %}
 </div>
 {% endblock %}
+<div id="content">
+<h1 class="title is-1">Hello, {{ user.username|default:'Guest' }}!</h1>
+</div>
+</body>
