@@ -11,9 +11,6 @@ ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '').split()
 # Application definition
 
 INSTALLED_APPS = [
-    'userManagement',
-    'pong',
-	'pong_online',
     'channels',
     'daphne',
     'django.contrib.admin',
@@ -22,6 +19,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'userManagement',
+    'pong',
+	'pong_online',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'provider',
 ]
 
 MIDDLEWARE = [
@@ -32,6 +37,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 #    'userManagement.middleware.UpdateUserActivityMiddleware'
 ]
 
@@ -80,7 +86,10 @@ CHANNEL_LAYERS = {
     },
 }
 
-
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
@@ -99,7 +108,6 @@ AUTH_PASSWORD_VALIDATORS = [
     # },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -110,7 +118,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
@@ -126,8 +133,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGOUT_REDIRECT_URL = 'userManagement:dashboard'
 
 LOGIN_REDIRECT_URL = 'userManagement:profile_list'
-
+ACCOUNT_REDIRECT_URL = 'userManagement:dashboard'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-
+SITE_ID = 1
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+OAUTH_SERVER_BASEURL = 'https://api.intra.42.fr'
