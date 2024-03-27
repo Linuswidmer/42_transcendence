@@ -32,15 +32,81 @@
         <h3 class="title is-4"><br>Personal Info:</h3>
         <div class="content">
             <ul>
-                <li>username: {{profile.user.username}}</li>
-                <li>first name: {{profile.user.first_name}}</li>
-                <li>last name: {{profile.user.last_name}}</li>
-                <li>favorite color: {{profile.favorite_color}}</li>
-                <li>registration date: {{profile.user.date_joined}}</li>
+                <li>Username: {{ profile.user.username }}</li>
+                <li>First Name: {{ profile.user.first_name }}</li>
+                <li>Last Name: {{ profile.user.last_name }}</li>
+                <li>Favorite Color: {{ profile.favorite_color }}</li>
+                <li>Registration Date: {{ profile.user.date_joined }}</li>
             </ul>
         </div>
     </div>
-</div>
+    
+    <div class="block">
+        <h3 class="title is-4"><br>Stats:</h3>
+        <div class="content">
+            <div>
+                <h4>Total Stats:</h4>
+                <ul>
+                    <li>Total Games: {{ stats.totalGames }}</li>
+                    <li>Total Game Time: {{ stats.totalGameTime }}</li>
+                    <li>Total Tournaments: {{ stats.totalTournaments }}</li>
+                    <li>Won Tournaments: {{ stats.wonTournaments }}</li>
+                    <li>Best Tournament Rank: {{ stats.bestTournamentRank }}</li>
+                    <li>Total Misses: {{ stats.totalMisses }}</li>
+                    <li>Total Hits: {{ stats.totalHits }}</li>
+                    <li>Total Wins: {{ stats.totalWins }}</li>
+                    <li>Total Defeats: {{ stats.totalDefeats }}</li>
+                </ul>
+            </div>
+    
+            <div>
+                <h4>Game Type Stats:</h4>
+                <div>
+                    <h5>Local:</h5>
+                    <ul>
+                        <li>Longest Ball Rally: {{ stats.gameTypeStats.local.longestBallRally }}</li>
+                        <li>AVG Points per game: {{ stats.gameTypeStats.local.averagePointsPerGame }}</li>
+                        <li>Best game score: {{ stats.gameTypeStats.local.bestGameScore }}</li>
+                        <li>Highest Winning Streak: {{ stats.gameTypeStats.local.highestWinningStreak }}</li>
+                    </ul>
+                </div>
+    
+                <div>
+                    <h5>Remote:</h5>
+                    <ul>
+                        <li>Longest Ball Rally: {{ stats.gameTypeStats.remote.longestBallRally }}</li>
+                        <li>AVG Points per game: {{ stats.gameTypeStats.remote.averagePointsPerGame }}</li>
+                        <li>Best game score: {{ stats.gameTypeStats.remote.bestGameScore }}</li>
+                        <li>Highest Winning Streak: {{ stats.gameTypeStats.remote.highestWinningStreak }}</li>
+                    </ul>
+                </div>
+    
+                <div>
+                    <h5>AI:</h5>
+                    <ul>
+                        <li>Longest Ball Rally: {{ stats.gameTypeStats.ai.longestBallRally }}</li>
+                        <li>AVG Points per game: {{ stats.gameTypeStats.ai.averagePointsPerGame }}</li>
+                        <li>Best game score: {{ stats.gameTypeStats.ai.bestGameScore }}</li>
+                        <li>Highest Winning Streak: {{ stats.gameTypeStats.ai.highestWinningStreak }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <!-- New section for All Games -->
+     <div class="block">
+        <h3 class="title is-4">All Games:</h3>
+        <div class="content">
+            <ul>
+                <!-- Loop through all games and display relevant information -->
+                {% for gld in stats.gameListData %}
+                    <li><a href="/singleGameStats?gameID={{ gld.game.id }}&userID={{ gld.userGameStats.user.id }}"> {{ gld.game.matchDate }} || {{ gld.game.matchTime }} || against: {{ gld.opponentGameStats.user }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
 
 <div class="column is-one-third">
 

@@ -217,7 +217,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				"direction": 0,
 				}
 		
-		self.game_data["ai_opponent"] = {
+		self.game_data["AI_Ursula"] = { #username of the AI in the db
 				"score": 0,
 				"moveUp": False,
 				"moveDown": False,
@@ -332,19 +332,31 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		else:
 			self.game_data[player_id]["direction"] = 0
 
+	from django.contrib.auth.models import User
+
 	def create_data_collector(self, modus, username1, username2):
-		return GameDataCollector(User.objects.get(username=username1), User.objects.get(username=username2), modus)
+		try:
+			user1 = User.objects.get(username=username1)
+			user2 = User.objects.get(username=username2)
+		except User.DoesNotExist:
+			# Handle the case where one or both users don't exist
+			raise ValueError("One or both users do not exist.")
+
+		return GameDataCollector(user1, user2, modus)
+
 	
 	#i dont think we need a lock here, as we work with the instances own game_data
 	#every instance has its own game_data
 	#when an update happens, all game_datas are updated
 	#here we could import the game from another file to keep things separated
 	async def game_loop(self, modus):
-		print(self.game_data)
-		exit()
-		gdc = await sync_to_async(self.create_data_collector)(modus, "Alex", "Yann")
+		if modus == 'remote' or modus == 'ai':
+			players = list(self.game_data.keys())
+			self.gdc = await sync_to_async(self.create_data_collector)(modus, players[0], players[1])
+		if modus == 'local':
+			self.gdc = await sync_to_async(self.create_data_collector)(modus, self.username, 'DUMP_LOCAL')
 		logger.debug("new game loop started")
-		pong_instance = Pong(gdc)
+		pong_instance = Pong(self.gdc)
 		FPS = 60
 		iteration_time = 1 / FPS
 		if modus == "ai":
@@ -360,8 +372,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				iteration_time,
 				10)
 			ai_refresh_timer = time.time()
-		while 1:
-			# start_time = time.time()
+		should_run = True
+		while should_run:
 			if modus == "ai":
 				if (time.time() - ai_refresh_timer >= 1):
 					ai.setGameState(
@@ -375,12 +387,11 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 						pong_instance.rightPaddle.height)
 					ai_refresh_timer = time.time()
 				ai_decision = ai.getAIDecision()
-				self.game_data["ai_opponent"]["direction"] = ai_decision
-
+				self.game_data["AI_Ursula"]["direction"] = ai_decision
 
 			#update entities with the iteration_time and keypresses
-			entity_data = pong_instance.update_entities(iteration_time, self.game_data)
-
+			entity_data = await pong_instance.update_entities(iteration_time, self.game_data)
+			should_run = not entity_data["game_over"]
 			#send all entity data to clients, so they can render the game
 			await self.channel_layer.group_send(
 				self.game_group_name,

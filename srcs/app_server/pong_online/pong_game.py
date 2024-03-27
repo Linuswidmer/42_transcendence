@@ -152,12 +152,11 @@ class Pong:
 		self.leftPaddle.move(dt, player1_direction)
 		self.rightPaddle.move(dt, player2_direction)
 		self.ball.move(dt, self.leftPaddle, self.rightPaddle)
-		if (self.rightPaddle.score == 5 or self.leftPaddle.score == 5):
+		if (self.rightPaddle.score == 3 or self.leftPaddle.score == 3):
 			print("GAME OVER")
 			self.game_over = True
 			await sync_to_async(self.gameDataCollector.endGame)()
-
-		return {"game_over": self.game_over,
+		return {'game_over': self.game_over,
 				'relativeBallX': self.ball.x / SCREEN_WIDTH,
 		  		'relativeBallY': self.ball.y / SCREEN_HEIGHT,
 				"relPaddleHeight": PADDLE_HEIGHT / SCREEN_HEIGHT,
