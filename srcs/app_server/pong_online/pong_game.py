@@ -1,6 +1,7 @@
 import pygame
 import time
 import random
+from asgiref.sync import sync_to_async
 
 ############## CONSTANTS ###############
 SCREEN_WIDTH = 600
@@ -22,8 +23,9 @@ class Entity:
 		self.dy = dy
 
 class Ball(Entity):
-	def __init__(self, x, y, dx, dy, radius, color) -> None:
+	def __init__(self, x, y, dx, dy, radius, color, gameDataCollector) -> None:
 		super().__init__(x, y, dx, dy)
+		self.gameDataCollector = gameDataCollector
 		self.radius = radius
 		self.color = color
 		self.hitbox = pygame.Rect(self.x - self.radius, self.y - self.radius,
@@ -67,10 +69,10 @@ class Ball(Entity):
 
 		# Check if the new ball rect collides with the paddle's rect
 		if new_ball_rect.colliderect(paddle.hitbox):
-			if paddle is rightPaddle:
-				print("collision with right paddle")
-			if paddle is leftPaddle:
-				print("collision with left paddle")
+			if paddle == rightPaddle:
+				self.gameDataCollector.ballHit(left=False)
+			else:
+				self.gameDataCollector.ballHit(left=True)
 			# If the new x-position is within its radius of the left or right of the paddle,
 			# it means the ball has hit the left or right of the paddle.
 			# In this case, we reverse the x-direction of the ball to simulate a bounce.
@@ -92,8 +94,10 @@ class Ball(Entity):
 		if new_x - self.radius < 0 or new_x + self.radius > SCREEN_WIDTH:
 			if self.dx < 0: #left side wall hit -> point for right player
 				rightPaddle.score += 1
+				self.gameDataCollector.endRally(leftUserWon=False)
 			if self.dx > 0:
 				leftPaddle.score += 1
+				self.gameDataCollector.endRally(leftUserWon=True)
 			self.random_spawn()
 			return
 
@@ -129,26 +133,31 @@ class Paddle(Entity):
 
 class Pong:
 	# change initial properties of entities here
-	def __init__(self) -> None:
+	def __init__(self, gameDataCollector) -> None:
 		self.leftPaddle = Paddle(0, SCREEN_HEIGHT / 2 - PADDLE_HEIGHT,
 						0, PADDLE_DY, PADDLE_WIDTH, PADDLE_HEIGHT, (255, 255, 255))
 		self.rightPaddle = Paddle(SCREEN_WIDTH - PADDLE_WIDTH, SCREEN_HEIGHT / 2 - PADDLE_HEIGHT,
 						0, PADDLE_DY, PADDLE_WIDTH, PADDLE_HEIGHT, (255, 255, 255))
 		self.ball = Ball(0, 0,
-						BALL_DX, BALL_DY, BALL_RADIUS, (255, 255, 255))
-	
-	def	update_entities(self, dt, game_data):
+						BALL_DX, BALL_DY, BALL_RADIUS, (255, 255, 255), gameDataCollector)
+		self.game_over = False
+		self.gameDataCollector = gameDataCollector
+
+	async def	update_entities(self, dt, game_data):
 		player1_data, player2_data = list(game_data.values())
 		player1_id, player2_id = list(game_data.keys())
-		# print("player1", player1_id)
-		# print("player2", player2_id)
 		player1_direction = player1_data["direction"]
 		player2_direction = player2_data["direction"]
 
 		self.leftPaddle.move(dt, player1_direction)
 		self.rightPaddle.move(dt, player2_direction)
 		self.ball.move(dt, self.leftPaddle, self.rightPaddle)
-		return {'relativeBallX': self.ball.x / SCREEN_WIDTH,
+		if (self.rightPaddle.score == 3 or self.leftPaddle.score == 3):
+			print("GAME OVER")
+			self.game_over = True
+			await sync_to_async(self.gameDataCollector.endGame)()
+		return {'game_over': self.game_over,
+				'relativeBallX': self.ball.x / SCREEN_WIDTH,
 		  		'relativeBallY': self.ball.y / SCREEN_HEIGHT,
 				"relPaddleHeight": PADDLE_HEIGHT / SCREEN_HEIGHT,
 		   		"relPaddleWidth": PADDLE_WIDTH / SCREEN_WIDTH, 
@@ -218,8 +227,6 @@ def main():
 
 		# Update the display
 		pygame.display.flip()
-
-
 
 
 	while running:
