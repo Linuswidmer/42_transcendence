@@ -288,7 +288,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 	from django.contrib.auth.models import User
 
-	def create_data_collector(self, modus, username1, username2):
+	def create_data_collector(self, modus, username1, username2, matchName):
 		try:
 			user1 = User.objects.get(username=username1)
 			user2 = User.objects.get(username=username2)
@@ -296,7 +296,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			# Handle the case where one or both users don't exist
 			raise ValueError("One or both users do not exist.")
 
-		return GameDataCollector(user1, user2, modus)
+		return GameDataCollector(user1=user1, user2=user2, matchName=matchName, type=modus)
 
 	
 	#i dont think we need a lock here, as we work with the instances own game_data
@@ -308,9 +308,9 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		print("players:", players)
 		if modus == 'remote' or modus == 'ai':
 			players = list(self.match.game_data.keys())
-			self.gdc = await sync_to_async(self.create_data_collector)(modus, players[0], players[1])
+			self.gdc = await sync_to_async(self.create_data_collector)(modus, players[0], players[1], self.match.group_name)
 		if modus == 'local':
-			self.gdc = await sync_to_async(self.create_data_collector)(modus, self.username, 'DUMP_LOCAL')
+			self.gdc = await sync_to_async(self.create_data_collector)(modus, self.username, 'DUMP_LOCAL', self.match.group_name)
 		logger.debug("new game loop started")
 		pong_instance = Pong(self.gdc)
 		FPS = 60

@@ -5,10 +5,11 @@ from .models import UserGameStats
 from .models import Tournaments
 
 class GameDataCollector:
-	def __init__(self, user1, user2, type='', tournament=None):
+	def __init__(self, user1, user2, matchName, type='', tournament=None):
 
 		self.django_games = Games.objects.create(
 			gameType = type,
+			matchName = matchName,
 			matchDate = datetime.datetime.now().strftime("%Y-%m-%d"),
 			matchTime = datetime.datetime.now().strftime("%H:%M:%S")
 		)

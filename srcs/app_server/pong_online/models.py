@@ -5,6 +5,7 @@ class Tournaments(models.Model):
 	pass
 
 class Games(models.Model):
+	matchName = models.CharField(max_length=200, default='')
 	gameType = models.CharField(max_length=100, default='')
 	gameDuration = models.IntegerField(default=0)
 	matchDate = models.CharField(default='')
