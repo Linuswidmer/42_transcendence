@@ -24,6 +24,7 @@ class apiConsumer(AsyncWebsocketConsumer):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.id = str(uuid.uuid4())
+		self.lobby = Lobby()
 
 	async def connect(self):
 		await self.accept()
@@ -34,14 +35,49 @@ class apiConsumer(AsyncWebsocketConsumer):
 
 	async def disconnect(self, close_code):
 		await self.send(
-			text_data=json.dumps({"type": "disconnect", "api_id": self.id})
+			text_data=json.dumps({"type": "disconnect", "api_id": self.id, "reason": close_code})
 		)
+		await self.close()
 
 	async def receive(self, text_data):
-		print(text_data)
-		await self.send(
-			text_data=json.dumps({"type": "receive", "api_id": self.id, "data": text_data})
-		)
+		# Split the received text into command and arguments
+		tokens = text_data.strip().split()
+		command = tokens.pop(0)
+		option = tokens.pop(0) if tokens else None
+		args = tokens
+
+		if command == "match":
+			response = command + ": "
+			if not option:
+				response += "no option provided"
+
+			elif option == "list":
+				response += json.dumps(self.lobby.get_all_matches())
+
+			elif option == "create" and len(args) == 1:
+				if self.lobby.add_match(args[0]):
+					response += "created match successfully"
+				else:
+					response += option + ": match name already exists"
+
+			elif option == "addplayer" and len(args) == 2:
+				success, message, match = self.lobby.register_player_match(args[1], args[0])
+				if success:
+					response += "added player successfully"
+				else:
+					response += option + ": " + message
+			else:
+				response += option + ": not a valid option"
+
+		elif command == "exit":
+			await self.disconnect("user closed connection")
+			return
+
+
+		else:
+			response += "invalid command"
+
+		await self.send(response)
 
 
 
