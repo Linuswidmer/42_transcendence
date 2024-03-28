@@ -7,13 +7,13 @@ from asgiref.sync import sync_to_async
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 400
 
-PADDLE_WIDTH = 15
+PADDLE_WIDTH = 20
 PADDLE_HEIGHT = 70
 PADDLE_DY = 300
 
 BALL_DX = 200
 BALL_DY = 200
-BALL_RADIUS = 5
+BALL_RADIUS = 15
 
 class Entity:
 	def __init__(self, x, y, dx, dy) -> None:
