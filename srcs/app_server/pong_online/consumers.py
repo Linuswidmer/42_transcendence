@@ -67,6 +67,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 		self.game_data = {}
 
+		self.match = None
+
 		#set to true later for consumer that runs the game loop
 		self.hosts_game = False
 
@@ -139,12 +141,12 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		modus = json_from_client.get("modus", "")
 
 		if action == "register":
-			success, message = self.lobby.register_player_match(
+			success, message, match = self.lobby.register_player_match(
 				self.username, match_id
 			)
 			if success:
 				self.game_group_name = match_id
-				
+				self.match = match
 				await self.channel_layer.group_add(
 					self.game_group_name, self.channel_name
 				)
@@ -157,89 +159,42 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				json_from_client["error"] = message
 
 		if action == "join" and modus == "remote":
-			success, message = self.lobby.join(self.username, json_from_client["match_id"])
+			success, message = self.lobby.join(self.username, self.match)
 			if success:
-				await self.join_remote_game(match_id)
+				await self.join_remote_game()
 				return None
 			else:
 				json_from_client["error"] = message
 		
-		if action == "join" and modus == "local":
-			await self.join_local_game()
+		if action == "join" and (modus == "local" or modus == "ai"):
+			await self.join_local_game(modus)
 			return None
 			
-		if action == "join" and modus == "ai":
-			await self.join_ai_game()
-			return None
 		
 		json_from_client["type"] = "group_lobby_update"
 		return json_from_client
 
-
-	async def join_ai_game(self):
+	async def join_local_game(self, modus):
+		local_opponent_name = modus + "_opponent"
+		if modus == "ai":
+			local_opponent_name = "AI_Ursula"
 		self.in_game = True
 		self.hosts_game = True
-		self.game_group_name = "ai"
-
-		self.game_data[self.username] = {
-				"score": 0,
-				"moveUp": False,
-				"moveDown": False,
-				"direction": 0,
-				}
+		match_id = generate()
+		self.match = self.lobby.create_local_match(match_id)
+		self.match.add_player_to_gamedata(self.username)
+		self.match.add_player_to_gamedata(local_opponent_name)
+		self.game_group_name = match_id
 		
-		self.game_data["AI_Ursula"] = { #username of the AI in the db
-				"score": 0,
-				"moveUp": False,
-				"moveDown": False,
-				"direction": 0,
-				}
-					
 		await self.channel_layer.group_add(
 			self.game_group_name, self.channel_name
 		)
+		await self.send(text_data=json.dumps({"type": "join", "modus": modus}))
 
-		await self.send(text_data=json.dumps({"type": "join", "modus": "ai"}))
-
-	async def join_local_game(self):
+	async def join_remote_game(self):
 		self.in_game = True
-		self.hosts_game = True
-		self.game_group_name = "local"
-
-		self.game_data[self.username] = {
-				"score": 0,
-				"moveUp": False,
-				"moveDown": False,
-				"direction": 0,
-				}
-		
-		self.game_data["local_opponent"] = {
-				"score": 0,
-				"moveUp": False,
-				"moveDown": False,
-				"direction": 0,
-				}
-					
-		await self.channel_layer.group_add(
-			self.game_group_name, self.channel_name
-		)
-
-		await self.send(text_data=json.dumps({"type": "join", "modus": "local"}))
-
-	async def join_remote_game(self, match_id):
-		self.in_game = True
-		if self.lobby.should_host_game(self.username, match_id):
+		if self.lobby.should_host_game(self.username, self.match):
 			self.hosts_game = True
-		match = self.lobby.get_match(match_id)
-		# match.modus = modus
-		players = match.get_registered_players()
-		for player in players:
-			self.game_data[player] = {
-				"score": 0,
-				"moveUp": False,
-				"moveDown": False,
-				"direction": 0,
-				}
 		
 		await self.send(text_data=json.dumps({"type": "join", "modus": "remote"}))
 
@@ -279,22 +234,21 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		
 		action = keypress["action"]
 		player_id = keypress["playerId"]
-
 		if action == "moveUp":
-			self.game_data[player_id]["moveUp"] = True
+			self.match.game_data[player_id]["moveUp"] = True
 		elif action == "moveDown":
-			self.game_data[player_id]["moveDown"] = True
+			self.match.game_data[player_id]["moveDown"] = True
 		elif action == "stopMoveUp":
-			self.game_data[player_id]["moveUp"] = False
+			self.match.game_data[player_id]["moveUp"] = False
 		elif action == "stopMoveDown":
-			self.game_data[player_id]["moveDown"] = False
+			self.match.game_data[player_id]["moveDown"] = False
 
-		if self.game_data[player_id]["moveUp"] and not self.game_data[player_id]["moveDown"]:
-			self.game_data[player_id]["direction"] = -1
-		elif self.game_data[player_id]["moveDown"] and not self.game_data[player_id]["moveUp"]:
-			self.game_data[player_id]["direction"] = 1
+		if self.match.game_data[player_id]["moveUp"] and not self.match.game_data[player_id]["moveDown"]:
+			self.match.game_data[player_id]["direction"] = -1
+		elif self.match.game_data[player_id]["moveDown"] and not self.match.game_data[player_id]["moveUp"]:
+			self.match.game_data[player_id]["direction"] = 1
 		else:
-			self.game_data[player_id]["direction"] = 0
+			self.match.game_data[player_id]["direction"] = 0
 
 	from django.contrib.auth.models import User
 
@@ -314,8 +268,10 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#when an update happens, all game_datas are updated
 	#here we could import the game from another file to keep things separated
 	async def game_loop(self, modus):
+		players = list(self.match.game_data.keys())
+		print("players:", players)
 		if modus == 'remote' or modus == 'ai':
-			players = list(self.game_data.keys())
+			players = list(self.match.game_data.keys())
 			self.gdc = await sync_to_async(self.create_data_collector)(modus, players[0], players[1])
 		if modus == 'local':
 			self.gdc = await sync_to_async(self.create_data_collector)(modus, self.username, 'DUMP_LOCAL')
@@ -351,12 +307,13 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 						pong_instance.rightPaddle.height)
 					ai_refresh_timer = time.time()
 				ai_decision = ai.getAIDecision()
-				self.game_data["AI_Ursula"]["direction"] = ai_decision
+				self.match.game_data["AI_Ursula"]["direction"] = ai_decision
 
 			#update entities with the iteration_time and keypresses
-			entity_data = await pong_instance.update_entities(iteration_time, self.game_data)
+			entity_data = await pong_instance.update_entities(iteration_time, self.match.game_data)
 			should_run = not entity_data["game_over"]
 			#send all entity data to clients, so they can render the game
+			# print(entity_data)
 			await self.channel_layer.group_send(
 				self.game_group_name,
 				{"type": "group_game_state_update", "entity_data": entity_data},

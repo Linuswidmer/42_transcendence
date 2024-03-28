@@ -1,5 +1,6 @@
 from uuid import uuid4
 from adjectiveanimalnumber import generate
+import copy
 
 class Lobby:
 	_instance = None
@@ -28,27 +29,26 @@ class Lobby:
 	def register_player_match(self, username, match_id):
 		match = self.get_match(match_id)
 		if not match:
-			return False, "match does not exist"
+			return False, "match does not exist", None
 		elif username in self.registered_players_total:
-			return False, "player already registered"
+			return False, "player already registered", None
 		elif not (match.register_player(username)):
-			return False, "game full"
+			return False, "game full", None
 		self.registered_players_total.append(username)
-		return True, ""
+		return True, "", match
 	
-	def	join(self, username, match_id):
-		match = self.get_match(match_id)
+	def	join(self, username, match):
 		if not match:
 			return False, "match does not exist"
 		elif username not in match.get_registered_players():
 			return False, "player not registered for this match"
 		elif len(match.get_registered_players()) != 2:
 			return False, "not enough players registered"
+		match.add_player_to_gamedata(username)
 		return True, ""
 	
 	#player in first position in registered players hosts the game
-	def	should_host_game(self, username, match_id):
-		match = self.get_match(match_id)
+	def	should_host_game(self, username, match):
 		if username == match.get_registered_players()[0]:
 			return True
 		return False
@@ -58,6 +58,9 @@ class Lobby:
 			return False, "match name already exists"
 		self.matches[match_id] = Match(match_id)
 		return True, ""
+	
+	def	create_local_match(self, match_id) -> bool:
+		return Match(match_id)
 
 	def get_match(self, match_id):
 		return self.matches.get(match_id)
@@ -87,6 +90,15 @@ class Match:
 		self.match_full = False
 		self.registered_players = []
 
+		self.game_data = {}
+
+		self.data_template = {
+			"score": 0,
+			"moveUp": False,
+			"moveDown": False,
+			"direction": 0,
+		}
+
 	def	register_player(self, user_id) -> bool:
 		if self.match_full:
 			return False
@@ -103,6 +115,10 @@ class Match:
 		if user_id in self.registered_players:
 			pass
 
+	def	add_player_to_gamedata(self, player_id):
+		self.game_data[player_id] = copy.deepcopy(self.data_template)
+	
+	
 	
 	# def	leave_match(self, user_id):
 	# 	if user_id in self.registered_players:
