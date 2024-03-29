@@ -11,6 +11,9 @@ def ws_test(request):
 def game(request):
     return render(request, 'pong/pong_game.html')
 
+def landing_page(request):
+    return render(request, 'pong/landing_page.html')
+
 def section(request, name):
     try:
         return render(request, f'pong/{name}.html')
