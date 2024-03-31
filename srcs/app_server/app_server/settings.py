@@ -148,3 +148,4 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 OAUTH_SERVER_BASEURL = 'https://api.intra.42.fr'
+SOCIALACCOUNT_LOGIN_ON_GET = True #remove the middle screen "You are about to sign in using a third-party"

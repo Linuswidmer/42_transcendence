@@ -76,7 +76,7 @@
     </div>
   </div>
   <!-- Register Modal -->
-  <div class="modal fade" id="registerModal" tabindex="-1" role="dialog" aria-labelledby="registerModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+  <div class="modal" id="registerModal" tabindex="-1" role="dialog" aria-labelledby="registerModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -199,10 +199,11 @@
   // Bootstrap JavaScript code
   // It's added here as Bootstrap requires JavaScript for modals
   document.addEventListener("DOMContentLoaded", function(event) {
-      var triggerModalList = [].slice.call(document.querySelectorAll('[data-toggle="modal"]'))
-      triggerModalList.forEach(function(triggerEl) {
-          var modalTrigger = new bootstrap.Modal(triggerEl);
-      })
+       // Initialize Bootstrap modal instances
+       var modals = document.querySelectorAll('.modal');
+      modals.forEach(function(modalEl) {
+          new bootstrap.Modal(modalEl);
+      });
       var contentDiv = document.getElementById("content");
       var dashboardContentDiv = document.getElementById("dashboardContent");
       var loginBtn = document.getElementById("loginBtn");

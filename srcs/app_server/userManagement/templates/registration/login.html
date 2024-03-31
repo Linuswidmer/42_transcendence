@@ -1,12 +1,9 @@
 <!--users/templates/registration/login.html-->
 
-{% extends 'base.html' %}
-
 {% block content %}
 <div  class="block">
     <h2>Login</h2>
-
-    <form method="post">
+    <form method="post" id="loginModalContainerForm">
         {% csrf_token %}
         {{ form.as_p }}
         <input type="submit" value="Login">
