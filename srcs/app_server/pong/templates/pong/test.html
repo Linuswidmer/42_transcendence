@@ -15,8 +15,8 @@
     <div class="image-container">
       <img src="{% static 'pong/michael.jpg' %}" alt="Image description">
     </div>
-    <h1>Welcome to Pong</h1>
-    <div id="content">
+    <h1>Welcome Stranger</h1>
+    <div>
         <!-- Content for non-authenticated users -->
       <button type="button" class="button" id="loginBtn">Login</button>
       <button type="button" class="button" id="registerBtn">Register</button>
@@ -29,10 +29,10 @@
   </div>
 
   <script>
-    // Wait for the DOM content to be fully loaded
-    document.addEventListener("DOMContentLoaded", function() {
+    
     // Event listeners for each button
     document.getElementById("loginBtn").addEventListener("click", function() {
+        console.log("touche");
        renderForm("{% url 'userManagement:login' %}", "loginModalContainer", true, "cors");
     });
 
@@ -45,13 +45,13 @@
     });
 
     document.getElementById("42Btn").addEventListener("click", function() {
-        renderForm("{% provider_login_url 'provider' %}", "oauth2ModalContainer", false, "no-cors");
+        window.location.href = "{% provider_login_url 'provider' %}";
     });
 
     // Function to fetch and render forms
     function renderForm(url, containerId, includeCSRF, mode) {
-    console.log("triggered"),
-    fetch(url, {
+    console.log("triggered")
+        fetch(url, {
         // Include CSRF token in the headers if includeCSRF is true
         headers: includeCSRF ? {
                 "X-CSRFToken": getCookie("csrftoken")
@@ -85,9 +85,23 @@
           const modal = document.getElementById(`${containerId}Modal`);
           modal.classList.add('show');
           modal.style.display = 'block';
+            
+           // Add event listener to close modal when clicking on the cross (close button)
+        const closeButton = modal.querySelector('.close');
+        closeButton.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+
+        // Close modal when clicking outside of it
+        window.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
 
           // Find the form element within the modal
           const form = modal.querySelector("form");
+          console.log(url);
             // Check if the form element was found
             if (form) {
                 // Add the desired ID to the form element
@@ -101,10 +115,10 @@
                     const formData = new FormData(form);
 
                     // Send POST request to register user
+                    
                     fetch(url, {
-
-
         // Add event listener for form submission
+
         //const form = document.getElementById(`${containerId}Form`);
          //   console.log(containerId);
           //form.addEventListener("submit", function(event) {
@@ -120,35 +134,37 @@
                 // Include CSRF token in the headers
                 headers: {
                     "X-CSRFToken": getCookie("csrftoken"),
-
                 }
             })
             .then(response => {
                 if (response.ok) {
-                    // Registration successful
-                    // Handle success (e.g., redirect user)
-                    console.log("Registration successful");
+                    
+                    console.log("Login successful");
                     const modal = document.getElementById(`${containerId}Modal`);
                     modal.classList.remove('show');
                     modal.style.display = 'none';
-                } else {
-                    // Registration failed
-                    // Handle error (e.g., display error message)
-                    console.error("Registration failed");
-                }
+                    loadLoggedInContent();
 
+                } else {
+                    // Login failed
+                    // Display error message
+                    console.error("Login failed");
+                    const errorMessage = data.error || "Login failed. Please check your credentials.";
+                    const errorContainer = document.createElement("div");
+                    errorContainer.classList.add("alert", "alert-danger");
+                    errorContainer.textContent = errorMessage;
+                    modal.querySelector(".modal-body").appendChild(errorContainer);
+                }
             })
-            .catch(error => {
-                console.error("Error:", error);
+            .catch(error => console.error('Error:', error));
             });
-        });
-      } else {
-                console.error("Form element not found in fetched HTML content");
+                    } else {
+                        console.error("Form element not found in fetched HTML content");
+                    }
+                })
+                .catch(error => console.error('Error fetching form:', error));
             }
-    })
-    .catch(error => console.error('Error fetching form:', error));
-}
-});
+
 // Function to retrieve CSRF token from cookies
 function getCookie(name) {
     let cookieValue = null;

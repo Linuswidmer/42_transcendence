@@ -1,6 +1,7 @@
 <!--users/templates/registration/login.html-->
 
 {% block content %}
+{% load socialaccount %}
 <div  class="block">
     <h2>Login</h2>
     <form method="post" id="loginModalContainerForm">
@@ -9,7 +10,8 @@
         <input type="submit" value="Login">
     </form>
 
-    <a href="{% url 'userManagement:dashboard' %}">Back to dashboard</a>
-    <a href="{% url 'userManagement:register_user' %}">Register</a>
+    <a href="{% url 'userManagement:register_user' %}">I don't have an account yet</a>
+    <a href="{% provider_login_url 'provider' %}">Sign In with 42</a>
+    <a href="{% url 'userManagement:register_guest' %}">Continue as Guest</a>
 </div>
 {% endblock %}

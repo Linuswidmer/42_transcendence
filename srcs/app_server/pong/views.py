@@ -17,8 +17,12 @@ def landing_page(request):
 def test(request):
     return render(request, 'pong/test.html')
 
+def logged_in(request):
+    return render(request, 'pong/logged_in.html')
+
 def section(request, name):
     try:
         return render(request, f'pong/{name}.html')
     except TemplateDoesNotExist:
         raise Http404("No such section")
+    

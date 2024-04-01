@@ -1,4 +1,4 @@
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User, Group
 from .models import Profile
@@ -7,6 +7,7 @@ from userManagement.forms import CustomUserCreationForm, CustomUserChangeForm, C
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 import os
+from django.http import JsonResponse
 import uuid
 
 def dashboard(request):

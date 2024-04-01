@@ -5,223 +5,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Landing Page App</title>
+    <title>Your Pong</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'pong/styles.css' %}">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #6a0dad; /* Light gray background */
-            font-family: Arial, sans-serif;
-            color: #fff;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 50px 20px;
-            text-align: center;
-        }
-        h1 {
-            color: #fff; /* White heading color */
-        }
-        .button {
-            display: inline-block;
-            margin: 10px;
-            padding: 15px 30px;
-            background-color: #fff; /* White button color */
-            color: #6a0dad; /* Purple text color */
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        .button:hover {
-            background-color: #4a0072; /* Darker purple on hover */
-            color: #fff; /* White text color on hover */
-        }
-        .image-container {
-            margin-bottom: 30px;
-        }
-    </style>
-</head>
+    <link rel="icon" type="image/x-icon" href="data:image/x-icon;,">
+  </head>
 <body>
-  <div class="container">
-    <div class="image-container">
-      <img src="{% static 'pong/michael.jpg' %}" alt="Image description">
-    </div>
-    <h1>Welcome to Pong</h1>
-    <div id="content">
+    <div id="app">
         <!-- Content for non-authenticated users -->
-      <button type="button" class="button" id="loginBtn">Login</button>
-      <button type="button" class="button" id="registerBtn">Register</button>
-      <button type="button" class="button" id="guestBtn">Continue as Guest</button>
-      <button type="button" class="button" id="42Btn">Sign In with 42</button>
-    </div>
-    <div id="dashboardContent" class="hidden">
-      <!-- Content for authenticated users -->
-      <button type="button" class="btn btn-primary" id="logoutBtn">Logout</button>
-    </div>
-  </div>
-  <!-- Login Modal -->
-  <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="loginModalLabel">Login</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body" id="loginModalBody">
-          <!-- Content will be loaded here -->
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- Register Modal -->
-  <div class="modal" id="registerModal" tabindex="-1" role="dialog" aria-labelledby="registerModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="registerModalLabel">Register</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body" id="registerModalBody">
-          <!-- Content will be loaded here -->
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- Guest Modal -->
-  <div class="modal fade" id="guestModal" tabindex="-1" role="dialog" aria-labelledby="guestModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="guestModalLabel">Continue as Guest</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body" id="guestModalBody">
-          <!-- Content will be loaded here -->
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- 42 Modal -->
-  <div class="modal fade" id="42Modal" tabindex="-1" role="dialog" aria-labelledby="42ModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="42ModalLabel">Sign in with 42</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body" id="42ModalBody">
-          <!-- Content will be loaded here -->
-        </div>
-      </div>
-    </div>
-  </div>
-<script>
-  document.getElementById("loginBtn").addEventListener("click", function() {
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                if (xhr.status === 200) {
-                    document.getElementById("loginModalBody").innerHTML = xhr.responseText;
-                    document.getElementById("loginModal").classList.add("show");
-                    document.getElementById("loginModal").style.display = "block";
-                } else {
-                    console.error("Error: " + xhr.status);
-                }
+        <div id="content">
+          <!-- Content will be dynamically loaded here -->
+          <script>
+            // Function to load content for logged-in users
+            function loadLoggedInContent() {
+                fetch("{% url 'logged_in' %}")
+                    .then(response => response.text())
+                    .then(html => {
+                        document.getElementById('content').innerHTML = html;
+                        const scripts = document.getElementById('content').querySelectorAll('script');
+                        scripts.forEach(script => {
+                            eval(script.innerText);
+                        });
+                    })
+                    .catch(error => console.error('Error loading content:', error));
             }
-        };
-        xhr.open("GET", "{% url 'userManagement:login' %}", true);
-        xhr.send();
-    });
-  </script>
-<script>
-  document.getElementById("registerBtn").addEventListener("click", function() {
-      var xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = function() {
-          if (xhr.readyState === XMLHttpRequest.DONE) {
-              if (xhr.status === 200) {
-                  document.getElementById("registerModalBody").innerHTML = xhr.responseText;
-                  document.getElementById("registerModal").classList.add("show");
-                  document.getElementById("registerModal").style.display = "block";
-              } else {
-                  console.error("Error: " + xhr.status);
-              }
-          }
-      };
-      xhr.open("GET", "{% url 'userManagement:register_user' %}", true);
-      xhr.send();
-  });
-</script>
-<script>
-  document.getElementById("guestBtn").addEventListener("click", function() {
-      var xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = function() {
-          if (xhr.readyState === XMLHttpRequest.DONE) {
-              if (xhr.status === 200) {
-                  document.getElementById("guestModalBody").innerHTML = xhr.responseText;
-                  document.getElementById("guestModal").classList.add("show");
-                  document.getElementById("guestModal").style.display = "block";
-              } else {
-                  console.error("Error: " + xhr.status);
-              }
-          }
-      };
-      xhr.open("GET", "{% url 'userManagement:register_guest' %}", true);
-      xhr.send();
-  });
-</script>
-<script>
-  document.getElementById("42Btn").addEventListener("click", function() {
-      var xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = function() {
-          if (xhr.readyState === XMLHttpRequest.DONE) {
-              if (xhr.status === 200) {
-                  document.getElementById("42ModalBody").innerHTML = xhr.responseText;
-                  document.getElementById("42Modal").classList.add("show");
-                  document.getElementById("42Modal").style.display = "block";
-              } else {
-                  console.error("Error: " + xhr.status);
-              }
-          }
-      };
-      xhr.open("GET", "{% provider_login_url 'provider' %}", true);
-      xhr.send();
-  });
-</script>
-<script>
-  // Bootstrap JavaScript code
-  // It's added here as Bootstrap requires JavaScript for modals
-  document.addEventListener("DOMContentLoaded", function(event) {
-       // Initialize Bootstrap modal instances
-       var modals = document.querySelectorAll('.modal');
-      modals.forEach(function(modalEl) {
-          new bootstrap.Modal(modalEl);
-      });
-      var contentDiv = document.getElementById("content");
-      var dashboardContentDiv = document.getElementById("dashboardContent");
-      var loginBtn = document.getElementById("loginBtn");
-      var logoutBtn = document.getElementById("logoutBtn");
-
-      // Check if the user is authenticated
-      var isAuthenticated = false; // You should replace this with your actual authentication check
-
-      if (isAuthenticated) {
-      // If authenticated, show dashboard content
-        contentDiv.classList.add("hidden");
-        dashboardContentDiv.classList.remove("hidden");
-      } else {
-      // If not authenticated, show content for non-authenticated users
-        contentDiv.classList.remove("hidden");
-        dashboardContentDiv.classList.add("hidden");
-      }
-  });
-</script>
-</body>
+    
+            // Function to load content for non-authenticated users
+            function loadNonAuthenticatedContent() {
+                fetch("{% url 'test' %}")
+                    .then(response => response.text())
+                    .then(html => {
+                        document.getElementById('content').innerHTML = html;
+                        // Execute any JavaScript code included in the loaded content
+                        const scripts = document.getElementById('content').querySelectorAll('script');
+                        scripts.forEach(script => {
+                            eval(script.innerText);
+                        });
+                    })
+                    .catch(error => console.error('Error loading content:', error));
+            }
+    
+            // Check if the user is authenticated and load appropriate content
+            if ({% if user.is_authenticated %} true {% else %} false {% endif %}) {
+                loadLoggedInContent();
+            } else {
+                loadNonAuthenticatedContent();
+            }
+        </script>
+  </body>
 </html>
