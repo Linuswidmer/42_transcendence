@@ -1,0 +1,23 @@
+{% load static %}
+<div class="navbar">
+    <img src="{% static 'pong/pong_logo.png' %}" alt="Logo" class="logo">
+      <div>
+          <button class="navbar-button" id="gameBtn">Play</button>
+          <button class="navbar-button" id="profileBtn">Dashboard</button>
+        </div>
+        <div>
+            <button class="navbar-button" id="logoutButton">Logout</button>
+        </div>
+    </div>
+<script>
+    document.getElementById("logoutBtn").addEventListener("click", function() {
+    // Perform logout action
+    logout();
+    });
+    const gameButton = document.getElementById("gameBtn");
+    gameButton.addEventListener("click", loadGame);
+    const profileButton = document.getElementById("profileBtn");
+    profileButton.addEventListener("click", loadProfile);
+
+</script>
+<script src="{% static 'pong/buttons.js' %}"></script>

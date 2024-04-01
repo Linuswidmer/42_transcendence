@@ -5,16 +5,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Pong</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'pong/styles.css' %}">
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="data:image/x-icon;,">
-  </head>
+    <title>{% block title %}Pong{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'pong/styles.css' %}">
+    <!-- Add any other meta tags, links to CSS files, or scripts here -->
+</head>
 <body>
     <div id="app">
         <!-- Content for non-authenticated users -->
         <div id="content">
           <!-- Content will be dynamically loaded here -->
+        </div>
+    </div>
+    {% include 'includes/footer.html' %}
+
           <script>
             // Function to load content for logged-in users
             function loadLoggedInContent() {
@@ -52,5 +55,7 @@
                 loadNonAuthenticatedContent();
             }
         </script>
-  </body>
+        <script src="{% static 'pong/buttons.js' %}"></script>
+</body>
 </html>
+

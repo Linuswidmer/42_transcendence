@@ -1,7 +1,62 @@
 
+/* ---------------------------- NAVBAR -------------------------------*/
+.navbar {
+  background-color: #6a0dad;
+  padding: 10px;
+  color: white;
+  display: flex;
+  font-size: 16px; 
+  justify-content: space-between;
+  border-bottom: 1px solid #ccc;
+}
+
+ /* Styling for buttons inside the navbar */
+ .navbar-button {
+  background-color: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: color 0.3s;
+  font-size: 16px; 
+}
+
+.navbar-button:hover {
+  color: rgba(255, 255, 255, 1);
+}
+
+.logo {
+  height: 40px; /* Adjust the height of the logo */
+  margin-right: 20px; /* Add some margin to the right of the logo */
+}
+
+
+/* ---------------------------- FOOTER -------------------------------*/
+.footer {
+  background-color: #6a0dad;
+  font-size: 16px; 
+  padding: 10px;
+  color: white;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  border-top: 1px solid #ccc;
+}
+
+.column {
+  flex: 1;
+  text-align: center;
+}
+
+.column:not(:last-child) {
+  border-right: 1px solid #fff;
+}
+/* ---------------------------- MAIN -------------------------------*/
+
 html {
   background-color: #6a0dad; /* Light gray background */
-  font-family: Arial, sans-serif;
   color: #fff;
 }
 .container {
@@ -26,7 +81,6 @@ h1 {
   transition: background-color 0.3s;
 }
 .button:hover {
-  background-color: #4a0072; /* Darker purple on hover */
   color: #fff; /* White text color on hover */
 }
 .image-container {
@@ -38,11 +92,6 @@ h1 {
   font-family: Arial, sans-serif;
   color: #fff;
 }
-/* ---------------------------- CONTENT -------------------------------*/
-
-
-
-
 /* ---------------------------- GAME -------------------------------*/
 
 canvas {
