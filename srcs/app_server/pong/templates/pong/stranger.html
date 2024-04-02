@@ -1,21 +1,20 @@
-<!DOCTYPE html>
+{% extends 'pong/home.html' %}
 {% load static %}
 {% load socialaccount %}
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Landing Page App</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'pong/styles.css' %}">
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="data:image/x-icon;,">
-</head>
-<body>
-  <div class="container">
-    <div class="image-container">
-      <img src="{% static 'pong/michael.jpg' %}" alt="Image description">
-    </div>
+
+{% block title %}
+{% if not user.is_authenticated %}
+Welcome Stranger
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% if not user.is_authenticated %}
     <h1>Welcome Stranger</h1>
+<div class="container">
+  <div class="image-container">
+    <img src="{% static 'pong/michael.jpg' %}" alt="Image description">
+  </div>
     <div>
         <!-- Content for non-authenticated users -->
       <button type="button" class="button" id="loginBtn">Login</button>
@@ -23,40 +22,37 @@
       <button type="button" class="button" id="guestBtn">Continue as Guest</button>
       <button type="button" class="button" id="42Btn">Sign In with 42</button>
     </div>
-    <div id="modalContainer">
-
-    </div>
   </div>
 
+{% endif %}
+{% endblock %}
   <script>
-    
     // Event listeners for each button
     document.getElementById("loginBtn").addEventListener("click", function() {
-        console.log("touche");
-       renderForm("{% url 'userManagement:login' %}", "loginModalContainer", true, "cors");
+        console.log("loginbtn");
+        renderForm("{% url 'userManagement:login' %}", "loginModal");
     });
-
     document.getElementById("registerBtn").addEventListener("click", function() {
-        renderForm("{% url 'userManagement:register_user' %}", "registerModalContainer", true, "cors");
+        console.log("registerbtn");
+        renderForm("{% url 'userManagement:register_user' %}", "registerModal");
     });
-
     document.getElementById("guestBtn").addEventListener("click", function() {
-        renderForm("{% url 'userManagement:register_guest' %}", "guestModalContainer", true, "cors");
+        console.log("guestbtn");
+        renderForm("{% url 'userManagement:register_guest' %}", "guestModal");
     });
-
     document.getElementById("42Btn").addEventListener("click", function() {
+        console.log("42btn");
         window.location.href = "{% provider_login_url 'provider' %}";
     });
 
     // Function to fetch and render forms
-    function renderForm(url, containerId, includeCSRF, mode) {
+    function renderForm(url, containerId) {
     console.log("triggered")
         fetch(url, {
         // Include CSRF token in the headers if includeCSRF is true
-        headers: includeCSRF ? {
+        headers: {
                 "X-CSRFToken": getCookie("csrftoken")
-            } : {},
-        mode: mode
+            },
     })
     .then(response => response.text())
     .then(html => {
@@ -101,7 +97,6 @@
 
           // Find the form element within the modal
           const form = modal.querySelector("form");
-          console.log(url);
             // Check if the form element was found
             if (form) {
                 // Add the desired ID to the form element
@@ -137,6 +132,7 @@
                 }
             })
             .then(response => {
+                console.log(response);
                 if (response.ok) {
                     
                     console.log("Login successful");
@@ -183,5 +179,4 @@ function getCookie(name) {
 }
 const csrftoken = getCookie('csrftoken');
 </script>
-</body>
-</html>
+

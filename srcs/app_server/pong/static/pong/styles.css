@@ -56,19 +56,19 @@
 /* ---------------------------- MAIN -------------------------------*/
 
 html {
-  background-color: #6a0dad; /* Light gray background */
-  color: #fff;
+  background-color: #fff; /* Light gray background */
+  color: #6a0dad;
 }
 .container {
-  background-color: #6a0dad;
+  background-color: #fff;
   max-width: 800px;
   margin: 0 auto;
   padding: 50px 20px;
   text-align: center;
 }
 h1 {
-  color: #fff; /* White heading color */
-  background-color: #6a0dad;
+  color: #6a0dad; /* White heading color */
+  background-color: #fff;
 }
 .button {
   display: inline-block;
@@ -78,10 +78,11 @@ h1 {
   color: #6a0dad; /* Purple text color */
   text-decoration: none;
   border-radius: 5px;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, background-color 0.3s;
 }
 .button:hover {
   color: #fff; /* White text color on hover */
+  background-color: #6a0dad;
 }
 .image-container {
   margin-bottom: 30px;

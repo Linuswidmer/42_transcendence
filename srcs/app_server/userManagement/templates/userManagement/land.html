@@ -1,0 +1,33 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Pong{% endblock %}</title>
+    <!-- Add your CSS and JavaScript links here -->
+    {% block styles %}
+        <link rel="stylesheet" href="{% static 'pong/styles.css' %}">
+    {% endblock %}
+    <!-- Add your JavaScript imports and scripts here -->
+</head>
+<body>
+    <!-- Navbar -->
+    {% if user.is_authenticated %}
+        {% include 'includes/navbar.html' %}
+    {% endif %}
+    <!-- Content -->
+    <div id="content">
+        {% block content %}
+        <!-- Content will be dynamically loaded here -->
+        {% endblock %}
+    </div>
+    
+    <!-- Footer -->
+    {% include 'includes/footer.html' %}
+    {% block scripts %}
+
+    {% endblock %}
+
+</body>
+</html>

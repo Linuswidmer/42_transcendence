@@ -1,14 +1,15 @@
-    <!-- Navigation bar -->
-    
-    {% if user.is_authenticated %}
-        <!-- Include navbar only if user is authenticated -->
-        {% include 'includes/navbar.html' %}
-    
-        <div class="container">
+{% extends 'pong/home.html' %}
+{% block title %}
+{% if user.is_authenticated %}
+    Welcome {{ user.username }}
+{% endif %}
+{% endblock %}
 
-        <h1>Welcome {{ user.username }}</h1>
-       
-        {% endif %}
-    </div>
-  </div>
-
+{% block content %}
+coucou quand meme
+{% if user.is_authenticated %}
+    {% include 'includes/navbar.html' %}
+    <h1>Welcome {{ user.username }}</h1>
+    <!-- Add home page content here -->
+{% endif %}
+{% endblock %}

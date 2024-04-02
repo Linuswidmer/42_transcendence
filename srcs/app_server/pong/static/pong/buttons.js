@@ -1,8 +1,11 @@
 
+document.getElementById("logoutBtn").addEventListener("click", logout);
+document.getElementById("gameBtn").addEventListener("click", loadGame);
+document.getElementById("profileBtn").addEventListener("click", loadProfile);
 
 
 function logout() {
-
+    console.log("coucou");
     fetch("{% url 'userManagement:logout' %}", {
         method: "POST",
         headers: {
@@ -21,34 +24,31 @@ function logout() {
     .catch(error => console.error('Error:', error));
 }
 
-
 function loadGame() {
-fetch("/game")
+    fetch("/game")
     .then(response => response.text())
     .then(html => {
         // Insert the content of game.html into your app's container
         document.getElementById("content").innerHTML = html;
     })
     .catch(error => console.error('Error loading game page:', error));
-}
-
-
+    }
 
 function loadProfile() {
-fetch("{% url 'userManagement:profile' user.username %}")
+    fetch("{% url 'userManagement:profile' user.username %}")
     .then(response => response.text())
     .then(html => {
         // Insert the content of game.html into your app's container
         document.getElementById("content").innerHTML = html;
     })
     .catch(error => console.error('Error loading profile page:', error));
-}
+    }
 
 
 // Function to retrieve CSRF token from cookies
 function getCookie(name) {
-let cookieValue = null;
-if (document.cookie && document.cookie !== '') {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
     const cookies = document.cookie.split(';');
     for (let i = 0; i < cookies.length; i++) {
         const cookie = cookies[i].trim();
@@ -58,6 +58,6 @@ if (document.cookie && document.cookie !== '') {
             break;
         }
     }
-}
-return cookieValue;
+    }
+    return cookieValue;
 }

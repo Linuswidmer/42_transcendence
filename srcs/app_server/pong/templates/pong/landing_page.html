@@ -5,13 +5,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Pong{% endblock %}</title>
+    <title>Pong</title>
     <link rel="stylesheet" href="{% static 'pong/styles.css' %}">
     <!-- Add any other meta tags, links to CSS files, or scripts here -->
 </head>
 <body>
     <div id="app">
-        <!-- Content for non-authenticated users -->
+
         <div id="content">
           <!-- Content will be dynamically loaded here -->
         </div>
@@ -19,6 +19,17 @@
     {% include 'includes/footer.html' %}
 
           <script>
+                function loadContent() {
+            // Check if the user is authenticated
+            const isAuthenticated = {% if user.is_authenticated %} true {% else %} false {% endif %};
+            
+            // Load content accordingly
+            if (isAuthenticated) {
+                loadLoggedInContent();
+            } else {
+                loadNonAuthenticatedContent();
+            }
+        }
             // Function to load content for logged-in users
             function loadLoggedInContent() {
                 fetch("{% url 'logged_in' %}")
@@ -35,7 +46,7 @@
     
             // Function to load content for non-authenticated users
             function loadNonAuthenticatedContent() {
-                fetch("{% url 'test' %}")
+                fetch("{% url 'stranger' %}")
                     .then(response => response.text())
                     .then(html => {
                         document.getElementById('content').innerHTML = html;
@@ -47,15 +58,8 @@
                     })
                     .catch(error => console.error('Error loading content:', error));
             }
-    
-            // Check if the user is authenticated and load appropriate content
-            if ({% if user.is_authenticated %} true {% else %} false {% endif %}) {
-                loadLoggedInContent();
-            } else {
-                loadNonAuthenticatedContent();
-            }
+            loadContent();
         </script>
-        <script src="{% static 'pong/buttons.js' %}"></script>
 </body>
 </html>
 

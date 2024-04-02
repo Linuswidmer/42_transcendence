@@ -13,6 +13,10 @@ import uuid
 def dashboard(request):
     return render(request, "userManagement/dashboard.html")
 
+def my_view(request):
+    return render(request, "userManagement/logged_in.html")
+
+
 #view for registering a new user
 def register_user(request):
     if request.method == "GET":

@@ -14,11 +14,14 @@ def game(request):
 def landing_page(request):
     return render(request, 'pong/landing_page.html')
 
-def test(request):
-    return render(request, 'pong/test.html')
-
 def logged_in(request):
     return render(request, 'pong/logged_in.html')
+
+def stranger(request):
+    return render(request, 'pong/stranger.html')
+
+def home(request):
+     return render(request, 'pong/home.html')
 
 def section(request, name):
     try:

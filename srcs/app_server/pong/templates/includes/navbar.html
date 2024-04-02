@@ -6,18 +6,78 @@
           <button class="navbar-button" id="profileBtn">Dashboard</button>
         </div>
         <div>
-            <button class="navbar-button" id="logoutButton">Logout</button>
+            <button class="navbar-button" id="logoutBtn">Logout</button>
         </div>
     </div>
-<script>
-    document.getElementById("logoutBtn").addEventListener("click", function() {
-    // Perform logout action
-    logout();
-    });
-    const gameButton = document.getElementById("gameBtn");
-    gameButton.addEventListener("click", loadGame);
-    const profileButton = document.getElementById("profileBtn");
-    profileButton.addEventListener("click", loadProfile);
 
+<script>
+        // Add event listener for the "Play" button
+        document.getElementById("gameBtn").addEventListener("click", function() {
+            // Add your logic for the "Play" button here
+            console.log("Play button clicked");
+            fetch("/game")
+            .then(response => response.text())
+            .then(html => {
+                // Insert the content of game.html into your app's container
+                document.getElementById("content").innerHTML = html;
+            })
+            .catch(error => console.error('Error loading game page:', error));
+            });
+
+        // Add event listener for the "Dashboard" button
+        document.getElementById("profileBtn").addEventListener("click", function() {
+            // Add your logic for the "Dashboard" button here
+            console.log("Dashboard button clicked");
+            fetch("{% url 'userManagement:profile' user.username %}")
+            .then(response => response.text())
+            .then(html => {
+                // Insert the content of game.html into your app's container
+                document.getElementById("content").innerHTML = html;
+            })
+            .catch(error => console.error('Error loading profile page:', error));
+            });
+
+        // Add event listener for the "Logout" button
+        document.getElementById("logoutBtn").addEventListener("click", function() {
+            // Add your logic for the "Logout" button here
+            console.log("Logout button clicked");
+            fetch("{% url 'userManagement:logout' %}", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken") 
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                     // If logout is successful, fetch the content of the stranger template
+                fetch("{% url 'stranger' %}")
+                .then(response => response.text())
+                .then(html => {
+                    // Replace the content of the app's container with the HTML content of the stranger template
+                    document.getElementById("content").innerHTML = html;
+                })
+                .catch(error => console.error('Error loading content:', error));
+                } else {
+                    // Handle logout error
+                    console.error("Logout failed");
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    });
+    // Function to retrieve CSRF token from cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
 </script>
-<script src="{% static 'pong/buttons.js' %}"></script>
