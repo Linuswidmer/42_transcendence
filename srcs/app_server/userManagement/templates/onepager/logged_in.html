@@ -9,6 +9,7 @@
 
 {% block content %}
 {% if user.is_authenticated %}
+{% include 'includes/navbar.html' %}
     <h1>Welcome {{ user.username }}</h1>
     <!-- Add home page content here -->
 {% else %}
