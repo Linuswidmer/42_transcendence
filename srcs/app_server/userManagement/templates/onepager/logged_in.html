@@ -1,15 +1,17 @@
-{% extends 'pong/home.html' %}
+{% extends 'onepager/land.html' %}
 {% block title %}
 {% if user.is_authenticated %}
     Welcome {{ user.username }}
+{% else %}
+    Welcome Stranger
 {% endif %}
 {% endblock %}
 
 {% block content %}
-coucou quand meme
 {% if user.is_authenticated %}
-    {% include 'includes/navbar.html' %}
     <h1>Welcome {{ user.username }}</h1>
     <!-- Add home page content here -->
+{% else %}
+    {% include 'onepager/stranger.html' %}
 {% endif %}
 {% endblock %}

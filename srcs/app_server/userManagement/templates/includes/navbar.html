@@ -50,7 +50,7 @@
             .then(response => {
                 if (response.ok) {
                      // If logout is successful, fetch the content of the stranger template
-                fetch("{% url 'stranger' %}")
+                fetch("/stranger")
                 .then(response => response.text())
                 .then(html => {
                     // Replace the content of the app's container with the HTML content of the stranger template
