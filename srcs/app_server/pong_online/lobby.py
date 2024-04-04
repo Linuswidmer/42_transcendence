@@ -37,6 +37,9 @@ class Lobby:
 		self.registered_players_total.append(username)
 		return True, "", match
 	
+	def remove_registered_player(self, player):
+		self.registered_players_total.remove(player)
+	
 	def	join(self, username, match):
 		if not match:
 			return False, "match does not exist"
@@ -65,6 +68,9 @@ class Lobby:
 	def get_match(self, match_id):
 		return self.matches.get(match_id)
 	
+	def delete_match(self, match_id):
+		del self.matches[match_id]
+
 
 	# 	#generate unique identifier for match_id
 	# 	#will also be used for group communication

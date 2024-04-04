@@ -240,8 +240,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		
 		if "error" in event and self.username in event["username"]:
 			basic_update["error"] = event["error"]
-		
-		
 
 		#return all matches with registered players to display the lobby in the fronend
 		matches_info = self.lobby.get_all_matches()
@@ -305,7 +303,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#here we could import the game from another file to keep things separated
 	async def game_loop(self, modus):
 		players = list(self.match.game_data.keys())
-		print("players:", players)
 		if modus == 'remote' or modus == 'ai':
 			players = list(self.match.game_data.keys())
 			self.gdc = await sync_to_async(self.create_data_collector)(modus, players[0], players[1], self.match.group_name)
@@ -355,7 +352,15 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				{"type": "group_game_state_update", "entity_data": entity_data},
 			)
 			await asyncio.sleep(iteration_time)
-
+		
+		if (modus == 'remote'):
+			self.lobby.delete_match(str(self.match.group_name))
+			self.lobby.remove_registered_player(players[0])
+			self.lobby.remove_registered_player(players[1])
+			await self.channel_layer.group_send(
+					"lobby",
+					{"type" : "group_lobby_update"},
+			)
 			# end_time = time.time()  # End time of the iteration
 			# iteration_time_measured = end_time - start_time
 			# margin = 0.1
