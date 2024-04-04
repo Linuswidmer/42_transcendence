@@ -352,7 +352,9 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				{"type": "group_game_state_update", "entity_data": entity_data},
 			)
 			await asyncio.sleep(iteration_time)
-		
+
+		#remove player from registred after match, so the player can play again
+		#also remove the match from the lobby and update the lobby
 		if (modus == 'remote'):
 			self.lobby.delete_match(str(self.match.group_name))
 			self.lobby.remove_registered_player(players[0])
@@ -361,8 +363,5 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 					"lobby",
 					{"type" : "group_lobby_update"},
 			)
-			# end_time = time.time()  # End time of the iteration
-			# iteration_time_measured = end_time - start_time
-			# margin = 0.1
-			# if iteration_time_measured  > (iteration_time * (1 + margin)):
-			# 	print("Warning: Server cannot keep up with the desired framerate.", iteration_time_measured, ">", iteration_time)
+
+		#redirect the player to the game site
