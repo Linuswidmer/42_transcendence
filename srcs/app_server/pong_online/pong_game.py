@@ -144,16 +144,28 @@ class Pong:
 		self.gameDataCollector = gameDataCollector
 
 	async def	update_entities(self, dt, game_data):
+		print(game_data)
 		player1_data, player2_data = list(game_data.values())
 		player1_id, player2_id = list(game_data.keys())
 		player1_direction = player1_data["direction"]
 		player2_direction = player2_data["direction"]
+		player1_score = player1_data["score"]
+		player2_score = player2_data["score"]
 
 		self.leftPaddle.move(dt, player1_direction)
 		self.rightPaddle.move(dt, player2_direction)
 		self.ball.move(dt, self.leftPaddle, self.rightPaddle)
+
+		#the score is set to 3 in the consumer if one user closed the windwo during the game
+		#so we use this information here to end the game and set the scores
+		if (player1_score == 3):
+			self.gameDataCollector.makeUserWin(left=True)
+			self.leftPaddle.score = 3
+		if (player2_score == 3):
+			self.gameDataCollector.makeUserWin(left=False)
+			self.rightPaddle.score = 3
+
 		if (self.rightPaddle.score == 3 or self.leftPaddle.score == 3):
-			print("GAME OVER")
 			self.game_over = True
 			await sync_to_async(self.gameDataCollector.endGame)()
 		return {'game_over': self.game_over,

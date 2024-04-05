@@ -248,6 +248,11 @@ if (startButton) {
 
 }
 
+window.addEventListener('beforeunload', function(event) {
+	//only send when tehre is a game running
+    ws.send(JSON.stringify({'type': 'player_left', 'player': ws.username}));
+});
+
 // document.getElementById('nameForm').addEventListener('submit', function(event) {
 // 	event.preventDefault();
 // 	console.log("test")

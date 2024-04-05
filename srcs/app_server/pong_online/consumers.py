@@ -134,6 +134,12 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 		message_type = json_from_client.get("type", "")
 
+		if message_type == "player_left":
+			await self.channel_layer.group_send(
+					self.game_group_name,
+					{"type": "end_game_player_left", "player": json_from_client.get("player", "")},
+				)
+
 		if message_type == "username":
 			self.username = json_from_client.get("username", "")
 
@@ -242,6 +248,20 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		await self.send(
 			text_data=json.dumps(basic_update)
 		)
+	
+	async def end_game_player_left(self,event):
+		print("Window closed message consumer")
+		if self.hosts_game:
+			losing_player = event["player"]
+			print("LOOSING PLAYER: ", losing_player)
+			if self.match.registered_players[0] == losing_player:
+				winning_player = self.match.registered_players[1]
+			else:
+				winning_player = self.match.registered_players[0]
+			print("WINNNING PLAYER: ", winning_player)
+			print(self.match.game_data)
+			self.match.game_data[winning_player]["score"] = 3
+
 
 
 	async def group_game_state_update(self, event):
@@ -344,7 +364,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 					ai_refresh_timer = time.time()
 				ai_decision = ai.getAIDecision()
 				self.match.game_data["AI_Ursula"]["direction"] = ai_decision
-
+			print(self.match.game_data)
 			#update entities with the iteration_time and keypresses
 			entity_data = await pong_instance.update_entities(iteration_time, self.match.game_data)
 			should_run = not entity_data["game_over"]

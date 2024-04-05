@@ -31,6 +31,13 @@ class GameDataCollector:
 		self.streakCtrUser1 = 0
 		self.streakCtrUser2 = 0
 
+	def makeUserWin(self, left=True):
+		if left:
+			self.django_userstats_1.score = 3
+			self.django_userstats_2.score = 0
+		else:
+			self.django_userstats_1.score = 0
+			self.django_userstats_2.score = 3
 
 	def endGame(self):
 		print("GameDataCollector: End Game")
