@@ -73,13 +73,10 @@ class apiConsumer(AsyncWebsocketConsumer):
 			await self.disconnect("user closed connection")
 			return
 
-
 		else:
 			response += "invalid command"
 
 		await self.send(response)
-
-
 
 
 class MultiplayerConsumer(AsyncWebsocketConsumer):
@@ -129,7 +126,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#everything that the client send through the websocket is received here
 	#everything that is send by the client needs to have a type field
 	#describing the type of message to deal with the information accordingly
-
 	async def receive(self, text_data):
 		logger.debug("data received in receive: %s", text_data)
 		print("text data from client in receive:", text_data)
@@ -206,7 +202,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			await self.join_local_game(modus)
 			return None
 			
-		
 		json_from_client["type"] = "group_lobby_update"
 		return json_from_client
 
@@ -284,7 +279,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		else:
 			self.match.game_data[player_id]["direction"] = 0
 
-	from django.contrib.auth.models import User
 
 	def create_data_collector(self, modus, username1, username2, matchName):
 		try:
@@ -365,3 +359,10 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			)
 
 		#redirect the player to the game site
+		await self.send(
+			text_data=json.dumps({
+				"type": "redirect_to_game_page",
+				"matchName": self.match.group_name,
+				"user": self.username
+				})
+		)

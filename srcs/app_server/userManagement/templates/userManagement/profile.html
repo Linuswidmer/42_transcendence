@@ -116,7 +116,7 @@
             <ul>
                 <!-- Loop through all games and display relevant information -->
                 {% for gld in stats.gameListData %}
-                    <li><a href="/singleGameStats?gameID={{ gld.game.id }}&userID={{ gld.userGameStats.user.id }}"> {{ gld.game.matchName }} || {{ gld.game.matchDate }} || {{ gld.game.matchTime }} || against: {{ gld.opponentGameStats.user }}</a></li>
+                    <li><a href="/singleGameStats?matchName={{ gld.game.matchName }}&username={{ gld.userGameStats.user.username }}"> {{ gld.game.matchName }} || {{ gld.game.matchDate }} || {{ gld.game.matchTime }} || against: {{ gld.opponentGameStats.user }}</a></li>
                 {% endfor %}
             </ul>
         </div>

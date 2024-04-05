@@ -144,11 +144,11 @@ def profile(request, username):
 	return render(request, "userManagement/profile.html", {"user": user, "stats": sb})
 
 def single_game_stats(request):
-	game_id = int(request.GET.get('gameID'))
-	user_id = int(request.GET.get('userID'))
-	user = User.objects.get(id=user_id)
+	matchName = request.GET.get('matchName')
+	username = request.GET.get('username')
+	user = User.objects.get(username=username)
 	sb = StatsBuilder(user)
 	sb.build()
 	for gld in sb.gameListData:
-		if gld.game.id == game_id:
+		if gld.game.matchName == matchName:
 			return render(request, "userManagement/single_game_stats.html", {"gld": gld})

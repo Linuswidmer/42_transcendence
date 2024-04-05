@@ -210,8 +210,16 @@ function join_game(modus) {
     ws.onmessage = function(e) {
         try{
             const data = JSON.parse(e.data);
-        
-			// console.log(e.data);
+			if (data.type === "redirect_to_game_page") {
+				console.log(e.data);
+				fetch('/singleGameStats/?matchName=' + data.matchName + '&username=' + data.user)
+				.then(response => response.text())
+				.then(data => {
+					document.body.innerHTML = data;
+				}).catch((error) => {
+					console.error('Error:', error);
+				});
+			}
 
 			if (data.type === "playerId") {
 				ws.user_id = data.playerId;
