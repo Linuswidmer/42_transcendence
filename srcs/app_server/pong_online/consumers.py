@@ -250,6 +250,15 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			text_data=json.dumps(event)
 		)
 	
+	async def	show_stats_end_game(self, event):
+		await self.send(
+			text_data=json.dumps({
+				"type": "redirect_to_game_page",
+				"matchName": self.match.group_name,
+				"user": self.username
+				})
+		)
+	
 	#update game_data with keypress, if we are in a consumer that
 	#is not hosting the game, we ignore it
 	async def process_keypress(self, keypress):
@@ -358,11 +367,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 					{"type" : "group_lobby_update"},
 			)
 
-		#redirect the player to the game site
-		await self.send(
-			text_data=json.dumps({
-				"type": "redirect_to_game_page",
-				"matchName": self.match.group_name,
-				"user": self.username
-				})
-		)
+		#redirect both players to the game site
+		await self.channel_layer.group_send(
+				self.game_group_name,
+				{"type": "show_stats_end_game"},
+			)
