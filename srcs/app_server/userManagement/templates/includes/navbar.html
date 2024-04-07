@@ -1,5 +1,5 @@
-{% block content %}
 {% load static %}
+
 <div class="navbar">
     <img src="{% static 'pong/pong_logo.png' %}" alt="Logo" class="logo">
       <div>
@@ -10,77 +10,99 @@
             <button class="navbar-button" id="logoutBtn">Logout</button>
         </div>
     </div>
-{% endblock %}
-{% block scripts %}
-<script>
-        // Add event listener for the "Play" button
-        document.getElementById("gameBtn").addEventListener("click", function() {
-            // Add your logic for the "Play" button here
-            console.log("Play button clicked");
-            fetch("/game")
-            .then(response => response.text())
-            .then(html => {
-                // Insert the content of game.html into your app's container
-                document.getElementById("content").innerHTML = html;
-            })
-            .catch(error => console.error('Error loading game page:', error));
-            });
 
-        // Add event listener for the "Dashboard" button
-        document.getElementById("profileBtn").addEventListener("click", function() {
-            // Add your logic for the "Dashboard" button here
-            console.log("Dashboard button clicked");
-            fetch("{% url 'userManagement:profile' user.username %}")
-            .then(response => response.text())
-            .then(html => {
-                // Insert the content of game.html into your app's container
-                document.getElementById("content").innerHTML = html;
-            })
-            .catch(error => console.error('Error loading profile page:', error));
-            });
 
-        // Add event listener for the "Logout" button
-        document.getElementById("logoutBtn").addEventListener("click", function() {
-            // Add your logic for the "Logout" button here
-            console.log("Logout button clicked");
-            fetch("{% url 'userManagement:logout' %}", {
-                method: "POST",
-                headers: {
-                    "X-CSRFToken": getCookie("csrftoken")
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                     // If logout is successful, fetch the content of the stranger template
-                fetch("/stranger")
+    <script>
+      const isAuthenticated = {{ user.is_authenticated|lower }};
+      console.log(isAuthenticated)
+
+                    attachNavbarEventListeners(); // Attach event listeners after loading navbar
+
+        // Function to attach event listeners to navbar buttons
+        function attachNavbarEventListeners() {
+            const gameBtn = document.getElementById('gameBtn');
+            const profileBtn = document.getElementById('profileBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            gameBtn.addEventListener('click', function() {
+                console.log('Play button clicked');
+                // Add logic for the "Play" button here
+                fetch("/game")
                 .then(response => response.text())
                 .then(html => {
-                    // Replace the content of the app's container with the HTML content of the stranger template
+                    // Insert the content of game.html into your app's container
                     document.getElementById("content").innerHTML = html;
                 })
-                .catch(error => console.error('Error loading content:', error));
-                } else {
-                    // Handle logout error
-                    console.error("Logout failed");
+                .catch(error => console.error('Error loading game page:', error));
+            });
+
+            profileBtn.addEventListener('click', function() {
+                console.log('Dashboard button clicked');
+                // Add logic for the "Dashboard" button here
+                if (isAuthenticated) {
+                fetch("{% url 'userManagement:profile' user.username %}")
+                  .then(response => response.text())
+                  .then(html => {
+                      // Insert the content of game.html into your app's container
+                      document.getElementById("content").innerHTML = html;
+                  })
+                  .catch(error => console.error('Error loading profile page:', error));
                 }
-            })
-            .catch(error => console.error('Error:', error));
-    });
-    // Function to retrieve CSRF token from cookies
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                // Does this cookie string begin with the name we want?
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+                });
+
+
+            logoutBtn.addEventListener('click', function() {
+                console.log('Logout button clicked');
+                // Add logic for the "Logout" button here
+                if (isAuthenticated) {
+                  fetch("{% url 'userManagement:logout' %}", {
+                      method: "POST",
+                      headers: {
+                          "X-CSRFToken": getCookie("csrftoken")
+                      }
+                  })
+                  .then(response => {
+                      if (response.ok) {
+                           // If logout is successful, fetch the content of the stranger template
+                           // Clear the content of the app's container
+                          // Clear the content of the app's container
+                          const contentContainer = document.getElementById("content");
+                          while (contentContainer.firstChild) {
+                              contentContainer.removeChild(contentContainer.firstChild);
+                          }
+                      fetch("/stranger")
+                      .then(response => response.text())
+                      .then(html => {
+                          // Replace the content of the app's container with the HTML content of the stranger template
+                          document.getElementById("content").innerHTML = html;
+                      })
+                      .catch(error => console.error('Error loading content:', error));
+                      } else {
+                          // Handle logout error
+                          console.error("Logout failed");
+                      }
+                  })
+                  .catch(error => console.error('Error:', error));
                 }
-            }
+          });
+          // Function to retrieve CSRF token from cookies
+          function getCookie(name) {
+              let cookieValue = null;
+              if (document.cookie && document.cookie !== '') {
+                  const cookies = document.cookie.split(';');
+                  for (let i = 0; i < cookies.length; i++) {
+                      const cookie = cookies[i].trim();
+                      // Does this cookie string begin with the name we want?
+                      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                          break;
+                      }
+                  }
+              }
+              return cookieValue;
+          }
         }
-        return cookieValue;
-    }
-</script>
-{% endblock %}
+
+
+
+      </script>

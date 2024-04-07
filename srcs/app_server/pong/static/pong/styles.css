@@ -5,7 +5,7 @@
   padding: 10px;
   color: white;
   display: flex;
-  font-size: 16px; 
+  font-size: 16px;
   justify-content: space-between;
   border-bottom: 1px solid #ccc;
 }
@@ -18,7 +18,7 @@
   padding: 8px 16px;
   cursor: pointer;
   transition: color 0.3s;
-  font-size: 16px; 
+  font-size: 16px;
 }
 
 .navbar-button:hover {
@@ -34,7 +34,7 @@
 /* ---------------------------- FOOTER -------------------------------*/
 .footer {
   background-color: #6a0dad;
-  font-size: 16px; 
+  font-size: 16px;
   padding: 10px;
   color: white;
   position: fixed;

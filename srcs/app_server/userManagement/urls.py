@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import dashboard, profile_list, profile, register_user, register_guest, update_user, update_profile, change_password, my_view, stranger, logged_in, navbar, check_login_status
+from .views import dashboard, profile_list, profile, register_user, register_guest, update_user, update_profile, change_password, my_view, stranger, logged_in, navbar, check_login_status, dynamic_content
 
 app_name = "userManagement"
 
@@ -11,6 +11,7 @@ urlpatterns = [
 	path("update_user/", update_user, name="update_user"),
 	path("update_profile/", update_profile, name="update_profile"),
     path("profile_list/", profile_list, name="profile_list"),
+    path('profile/', profile, name='profile'),
     path('profile/<str:username>/', profile, name='profile'),
     path("land/", my_view, name='my_view'),
     path("change_password/", change_password, name="change_password"),
@@ -18,6 +19,7 @@ urlpatterns = [
     path('logged_in/', logged_in, name='logged_in'),
     path('includes/navbar/', navbar, name='navbar'),
     path('check_login_status/', check_login_status, name='check_login_status'),
+    path('dynamic_content/', dynamic_content, name='dynamic_content'),
 
 
 ]

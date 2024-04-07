@@ -16,8 +16,7 @@ def dashboard(request):
     return render(request, "userManagement/dashboard.html")
 
 def my_view(request):
-    return render(request, "onepager/logged_in.html")
-
+    return render(request, "onepager/land.html")
 
 #view for registering a new user
 def register_user(request):
@@ -132,7 +131,8 @@ def profile_list(request):
     all_users = User.objects.all()
     return render(request, "userManagement/profile_list.html", {"registered_users": all_users})
 
-def profile(request, username):
+@login_required
+def profile(request,username):
     user = get_object_or_404(User, username=username)
     if request.method == "POST":
         current_user_profile = request.user.profile
@@ -151,12 +151,18 @@ def logged_in(request):
 def stranger(request):
     return render(request, 'onepager/stranger.html')
 
-@login_required
-def navbar(request):
-    return render(request, 'includes/navbar.html')
 
 def check_login_status(request):
     if request.user.is_authenticated:
         return JsonResponse({'logged_in': True})
     else:
         return JsonResponse({'logged_in': False})
+
+def dynamic_content(request):
+    # Your logic to fetch dynamic content
+    data = {'message': 'This is dynamic content!'}
+    return JsonResponse(data)
+
+
+def navbar(request):
+    return render(request, 'includes/navbar.html')

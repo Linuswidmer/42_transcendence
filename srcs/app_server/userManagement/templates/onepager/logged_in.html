@@ -1,22 +1,5 @@
-{% extends 'onepager/land.html' %}
-{% block title %}
-{% if user.is_authenticated %}
-    Welcome {{ user.username }}
-{% else %}
-    Welcome Stranger
-{% endif %}
-{% endblock %}
 
-{% block content %}
-{% if user.is_authenticated %}
+
 {% include 'includes/navbar.html' %}
-    <!-- Navbar -->
-    <div id="navbar">
-      <!-- Navbar content will be dynamically loaded here -->
-    </div>
-    <h1>Welcome {{ user.username }}</h1>
+    <h1>welcome {{user.username }}</h1>
     <!-- Add home page content here -->
-{% else %}
-    {% include 'onepager/stranger.html' %}
-{% endif %}
-{% endblock %}

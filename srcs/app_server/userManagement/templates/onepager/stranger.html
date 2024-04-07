@@ -1,7 +1,7 @@
-{% extends 'onepager/land.html' %}
+
 {% load static %}
 {% load socialaccount %}
-{% block content %}
+
     <h1>Welcome Stranger</h1>
 <div class="container">
   <div class="image-container">
@@ -16,8 +16,8 @@
     </div>
     <div id="modalContainer"></div>
   </div>
-{% endblock %}
-{% block scripts %}
+
+
   <script>
     // Event listeners for each button
     document.getElementById("loginBtn").addEventListener("click", function() {
@@ -155,7 +155,9 @@ function getCookie(name) {
 const csrftoken = getCookie('csrftoken');
  // Function to load logged-in content after successful login
  function loadLoggedInContent() {
-        fetch("/land")
+  console.log("loading")
+        document.getElementById("content").innerHTML = '';
+        fetch("/logged_in")
             .then(response => response.text())
             .then(html => {
                 // Replace the content of the main container with the logged-in content
@@ -184,4 +186,3 @@ function extractErrorMessage(errorMessage) {
     }
 }
 </script>
-{% endblock %}

@@ -9,14 +9,25 @@
     {% block styles %}
         <link rel="stylesheet" href="{% static 'pong/styles.css' %}">
         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    {% endblock %}
+        <style>
+        #navbar-container {
+          display: none;
+      }
+      </style>
+        {% endblock %}
     <!-- Add your JavaScript imports and scripts here -->
 </head>
 <body>
-
+  <div id="navbar-container"></div>
+  <div id="content">
+    {% block content %}
     <!-- Content -->
-    <div id="content">
-        {% block content %}
+    {% if user.is_authenticated %}
+      {% include 'onepager/logged_in.html'%}
+      {% else %}
+      {% include 'onepager/stranger.html' %}
+      {% endif %}
+
         <!-- Content will be dynamically loaded here -->
         {% endblock %}
     </div>
@@ -26,5 +37,10 @@
     {% block scripts %}
 
     {% endblock %}
+    <script>
+
+
+      </script>
+</script>
 </body>
 </html>
