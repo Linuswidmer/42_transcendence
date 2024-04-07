@@ -1,3 +1,4 @@
+{% block content %}
 {% load static %}
 <div class="navbar">
     <img src="{% static 'pong/pong_logo.png' %}" alt="Logo" class="logo">
@@ -9,7 +10,8 @@
             <button class="navbar-button" id="logoutBtn">Logout</button>
         </div>
     </div>
-
+{% endblock %}
+{% block scripts %}
 <script>
         // Add event listener for the "Play" button
         document.getElementById("gameBtn").addEventListener("click", function() {
@@ -44,7 +46,7 @@
             fetch("{% url 'userManagement:logout' %}", {
                 method: "POST",
                 headers: {
-                    "X-CSRFToken": getCookie("csrftoken") 
+                    "X-CSRFToken": getCookie("csrftoken")
                 }
             })
             .then(response => {
@@ -81,3 +83,4 @@
         return cookieValue;
     }
 </script>
+{% endblock %}

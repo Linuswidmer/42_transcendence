@@ -1,3 +1,4 @@
+{% extends 'onepager/land.html' %}
 {% load static %}
 {% load socialaccount %}
 {% block content %}
@@ -16,6 +17,7 @@
     <div id="modalContainer"></div>
   </div>
 {% endblock %}
+{% block scripts %}
   <script>
     // Event listeners for each button
     document.getElementById("loginBtn").addEventListener("click", function() {
@@ -71,7 +73,7 @@
           const modal = document.getElementById(`${containerId}Modal`);
           modal.classList.add('show');
           modal.style.display = 'block';
-            
+
            // Add event listener to close modal when clicking on the cross (close button)
         const closeButton = modal.querySelector('.close');
         closeButton.addEventListener('click', function() {
@@ -182,4 +184,4 @@ function extractErrorMessage(errorMessage) {
     }
 }
 </script>
-
+{% endblock %}

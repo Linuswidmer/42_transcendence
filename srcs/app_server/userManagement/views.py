@@ -7,7 +7,9 @@ from userManagement.forms import CustomUserCreationForm, CustomUserChangeForm, C
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 import os
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
+from django.template import loader
+from django.contrib.auth.decorators import login_required
 import uuid
 
 def dashboard(request):
@@ -148,3 +150,13 @@ def logged_in(request):
 
 def stranger(request):
     return render(request, 'onepager/stranger.html')
+
+@login_required
+def navbar(request):
+    return render(request, 'includes/navbar.html')
+
+def check_login_status(request):
+    if request.user.is_authenticated:
+        return JsonResponse({'logged_in': True})
+    else:
+        return JsonResponse({'logged_in': False})

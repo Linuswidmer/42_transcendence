@@ -10,6 +10,10 @@
 {% block content %}
 {% if user.is_authenticated %}
 {% include 'includes/navbar.html' %}
+    <!-- Navbar -->
+    <div id="navbar">
+      <!-- Navbar content will be dynamically loaded here -->
+    </div>
     <h1>Welcome {{ user.username }}</h1>
     <!-- Add home page content here -->
 {% else %}
