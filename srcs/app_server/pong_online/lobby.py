@@ -45,8 +45,9 @@ class Lobby:
 			return False, "match does not exist"
 		elif username not in match.get_registered_players():
 			return False, "player not registered for this match"
-		elif len(match.get_registered_players()) != 2:
-			return False, "not enough players registered"
+		#we shouldnt need this anymore, because register and join where merged to one button
+		# elif len(match.get_registered_players()) != 2:
+		# 	return False, "not enough players registered"
 		match.add_player_to_gamedata(username)
 		return True, ""
 	
@@ -64,9 +65,11 @@ class Lobby:
 			self.delete_match(match)
 		return True, ""
 	
-	#player in first position in registered players hosts the game
+	#player in second position in registered players hosts the game
+	#this is necessary, because players can leave the lobby again
 	def	should_host_game(self, username, match):
-		if username == match.get_registered_players()[1]:
+		registered_players = match.get_registered_players()
+		if len(registered_players) == 2 and username == registered_players[1]:
 			return True
 		return False
 	

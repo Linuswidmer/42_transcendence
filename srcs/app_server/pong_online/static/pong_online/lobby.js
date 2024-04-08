@@ -131,7 +131,7 @@ function updateLobby(data) {
 
 	// Add the "Create game" button to the lobby
 	var createGameButton = document.createElement('button');
-	createGameButton.innerText = 'Create Game';
+	createGameButton.innerText = 'create Game';
 	createGameButton.className = 'create';
 	lobby.appendChild(createGameButton);
 
@@ -171,18 +171,17 @@ function updateLobby(data) {
 		matchElement.innerHTML = `
 			<h2>Match ID: ${id}</h2>
 			<p>Registered Users: ${registered_users.join(', ')}</p>
-			<button class="register" data-match-id="${id}">Register</button>
 			<button class="join" data-match-id="${id}">Join Game</button>
 		`;
 
 		lobby.appendChild(matchElement);
 
 		// New code to add event listeners to the buttons
-		let registerButton = matchElement.querySelector('.register');
-		registerButton.addEventListener('click', function() {
-			console.log("Register button clicked for match id: ", id);
-			ws.send(JSON.stringify({type: 'lobby_update', 'action': 'register', 'match_id': id, 'username': username}));
-		});
+		// let registerButton = matchElement.querySelector('.register');
+		// registerButton.addEventListener('click', function() {
+		// 	console.log("Register button clicked for match id: ", id);
+		// 	ws.send(JSON.stringify({type: 'lobby_update', 'action': 'register', 'match_id': id, 'username': username}));
+		// });
 
 		let joinButton = matchElement.querySelector('.join');
 		joinButton.addEventListener('click', function() {

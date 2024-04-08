@@ -177,30 +177,39 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		modus = json_from_client.get("modus", "")
 		print("LOBBY_UPDATE:", action, match_id, modus)
 
-		if action == "register":
-			success, message, match = self.lobby.register_player_match(
-				self.username, match_id
-			)
-			if success:
-				self.game_group_name = match_id
-				self.match = match
-				await self.channel_layer.group_add(
-					self.game_group_name, self.channel_name
-				)
+		#check if registered -> if not try to register then join
+		# if registered -> try to join immediately
+		if action == "join" and modus == "remote":
+			match = self.lobby.get_match_by_player_id(self.username)
+			#player is not registered at all -> register
+			if not match:
+				success, message, match = self.lobby.register_player_match(
+						self.username, match_id
+						)
+				if success:
+					self.game_group_name = match_id
+					self.match = match
+					await self.channel_layer.group_add(
+						self.game_group_name, self.channel_name
+					)
+				else:
+					json_from_client["error"] = message
+
+			#player is registered to this game -> join
+			if match.group_name == match_id:
+				success, message = self.lobby.join(self.username, self.match)
+				if success:
+					await self.join_remote_game()
+					# return None
+				else:
+					json_from_client["error"] = message
+			#player is registered, but to a diffrent match -> cannot join
 			else:
-				json_from_client["error"] = message
+				json_from_client["error"] = "player cannot join, already registered to a different game"
 
 		if action == "create":
 			success, message = self.lobby.add_match(str(generate()))
 			if not success:
-				json_from_client["error"] = message
-
-		if action == "join" and modus == "remote":
-			success, message = self.lobby.join(self.username, self.match)
-			if success:
-				await self.join_remote_game()
-				return None
-			else:
 				json_from_client["error"] = message
 
 		if action == "leave" and modus == "remote":
