@@ -98,8 +98,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 		self.in_game = False
 
-		self.game_data = {}
-
 		self.match = None
 
 		#set to true later for consumer that runs the game loop
@@ -148,7 +146,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			asyncio.create_task(self.game_loop(json_from_client["modus"]))
 
 		#only process lobby updates. when not inga,e
-		if not self.in_game and message_type == "lobby_update":
+		if (not self.in_game and message_type == "lobby_update") or message_type == "leave":
 			#process button presses and update lobby content if necessary
 			updated_lobby_info = await self.process_lobby_update_in_consumer(json_from_client)
 			logger.debug("updated_lobby_info:%s", updated_lobby_info)
@@ -177,6 +175,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		action = json_from_client.get("action", "")
 		match_id = json_from_client.get("match_id", "")
 		modus = json_from_client.get("modus", "")
+		print("LOBBY_UPDATE:", action, match_id, modus)
 
 		if action == "register":
 			success, message, match = self.lobby.register_player_match(
@@ -203,6 +202,17 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				return None
 			else:
 				json_from_client["error"] = message
+
+		if action == "leave" and modus == "remote":
+			print("LEAVING GAME")
+			success, message = self.lobby.leave(self.username, self.match)
+			if success:
+				print("LEAVING GAME SUCCESS")
+				self.in_game = False
+				self.hosts_game = False
+			else:
+				json_from_client["error"] = message
+
 		
 		if action == "join" and (modus == "local" or modus == "ai"):
 			await self.join_local_game(modus)
@@ -237,6 +247,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 
 	async def group_lobby_update(self, event):
+		print("group_lobby_update: ", event)
 		basic_update = {"type": "lobby_update"}
 		
 		if "error" in event and self.username in event["username"]:
@@ -244,6 +255,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 		#return all matches with registered players to display the lobby in the fronend
 		matches_info = self.lobby.get_all_matches()
+		print("Matches_info: ", matches_info)
 		basic_update["matches_info"] = matches_info
 		await self.send(
 			text_data=json.dumps(basic_update)
@@ -379,7 +391,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		#remove player from registred after match, so the player can play again
 		#also remove the match from the lobby and update the lobby
 		if (modus == 'remote'):
-			self.lobby.delete_match(str(self.match.group_name))
+			self.lobby.delete_match(self.match)
 			self.lobby.remove_registered_player(players[0])
 			self.lobby.remove_registered_player(players[1])
 			await self.channel_layer.group_send(

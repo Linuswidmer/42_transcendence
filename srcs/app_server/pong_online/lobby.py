@@ -50,9 +50,23 @@ class Lobby:
 		match.add_player_to_gamedata(username)
 		return True, ""
 	
+	def	leave(self, username, match):
+		if not match:
+			return False, "match does not exist"
+		elif username not in match.get_registered_players():
+			return False, "player not registered for this match"
+		print("before remove player:", match.get_registered_players())
+		self.remove_registered_player(username)
+		match.leave_match(username)
+		print("after remove player:", match.get_registered_players())
+		if len(match.get_registered_players()) == 0:
+			print("DELETING MATCH")
+			self.delete_match(match)
+		return True, ""
+	
 	#player in first position in registered players hosts the game
 	def	should_host_game(self, username, match):
-		if username == match.get_registered_players()[0]:
+		if username == match.get_registered_players()[1]:
 			return True
 		return False
 	
@@ -68,9 +82,8 @@ class Lobby:
 	def get_match(self, match_id):
 		return self.matches.get(match_id)
 	
-	def delete_match(self, match_id):
-		del self.matches[match_id]
-
+	def delete_match(self, match):
+		del self.matches[match.group_name]
 
 	# 	#generate unique identifier for match_id
 	# 	#will also be used for group communication
@@ -93,7 +106,6 @@ class Match:
 		self.group_name = match_id
 		self.modus = ""
 		self.n_registered_players = 0
-		self.match_full = False
 		self.registered_players = []
 
 		self.game_data = {}
@@ -106,12 +118,10 @@ class Match:
 		}
 
 	def	register_player(self, user_id) -> bool:
-		if self.match_full:
+		if self.n_registered_players == 2:
 			return False
 		self.n_registered_players += 1
 		self.registered_players.append(user_id)
-		if self.n_registered_players == 2:
-			self.match_full = True
 		return True
 
 	def	get_registered_players(self):
@@ -124,12 +134,9 @@ class Match:
 	def	add_player_to_gamedata(self, player_id):
 		self.game_data[player_id] = copy.deepcopy(self.data_template)
 	
-	
-	
-	# def	leave_match(self, user_id):
-	# 	if user_id in self.registered_players:
-	# 		self.n_registered_players -= 1
-	# 		self.registered_players.discard(user_id)
+	def	leave_match(self, username):
+		self.n_registered_players -= 1
+		self.registered_players.remove(username)
 			
 
 

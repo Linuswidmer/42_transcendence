@@ -245,7 +245,43 @@ if (startButton) {
 		join_game(ws.modus);
 		console.log('Start button clicked pong online');
 	});
+}
 
+const leaveButton = document.getElementById('leaveGame');
+if (leaveButton) {
+	leaveButton.addEventListener('click', function() {
+		console.log("modus", ws.modus);
+		ws.send(JSON.stringify({type: 'leave', 'action': 'leave', 'username': username, 'modus': ws.modus}));
+		console.log('leaveButtonclicked');
+
+		fetch('/lobby')
+				.then(response => response.text())
+				.then(data => {
+					// Create a temporary DOM div element
+					var tempDiv = document.createElement('div');
+
+					// Set its innerHTML to the fetched HTML data
+					tempDiv.innerHTML = data;
+			
+					// Extract the src attribute from the script tag
+					var scriptSrc = tempDiv.querySelector('script').src;
+			
+					// Use the fetched HTML data
+					document.body.innerHTML = data;
+			
+					// Create a new script element
+					var script = document.createElement('script');
+			
+					// Set its src attribute to the extracted src
+					script.src = scriptSrc;
+					
+					// Append the script element to the body of the document
+					document.body.appendChild(script);
+				})
+				.catch((error) => {
+					console.error('Error:', error);
+				});
+	});
 }
 
 window.addEventListener('beforeunload', function(event) {
