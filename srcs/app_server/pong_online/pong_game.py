@@ -1,6 +1,7 @@
 import pygame
 import time
 import random
+import math
 from asgiref.sync import sync_to_async
 
 ############## CONSTANTS ###############
@@ -15,6 +16,9 @@ BALL_DX = 200
 BALL_DY = 200
 BALL_RADIUS = 15
 
+MAXBOUNCE_ANGLE = math.radians(75) #75 degree in radian
+MAX_VELOCITY = 500
+
 class Entity:
 	def __init__(self, x, y, dx, dy) -> None:
 		self.x = x
@@ -28,6 +32,7 @@ class Ball(Entity):
 		self.gameDataCollector = gameDataCollector
 		self.radius = radius
 		self.color = color
+		self.tempMaxDy = BALL_DY
 		self.hitbox = pygame.Rect(self.x - self.radius, self.y - self.radius,
 							2 * self.radius, 2 * self.radius)
 		self.random_spawn()
@@ -58,6 +63,13 @@ class Ball(Entity):
 
 		self.update_pos(new_x, new_y)
 
+	def update_velocity(self, velocity):
+		if (velocity < MAX_VELOCITY):
+			velocity += 20
+		if (velocity > MAX_VELOCITY):
+			velocity = MAX_VELOCITY
+		return velocity
+
 	def check_ball_paddle_collision(self, new_x, new_y, leftPaddle, rightPaddle):
 
 		# if the ball is moving right (positive dx) the possible 
@@ -77,7 +89,14 @@ class Ball(Entity):
 			# it means the ball has hit the left or right of the paddle.
 			# In this case, we reverse the x-direction of the ball to simulate a bounce.
 			if abs(new_x - paddle.x) < self.radius or abs(new_x - (paddle.x + paddle.width)) < self.radius:
-				self.dx *= -1
+				initialYDirection = -1 if self.dy < 0 else 1
+				relativeIntersectToPaddleCenter = (paddle.y + (paddle.height / 2)) - self.y
+				normalized = abs(relativeIntersectToPaddleCenter / (paddle.height / 2))
+				bouncAngle = normalized * math.radians(75)
+				self.tempMaxDy = self.update_velocity(self.tempMaxDy)
+				self.dy = initialYDirection * self.tempMaxDy * math.sin(bouncAngle)
+				self.dx = -self.update_velocity(self.dx)
+
 			else: # The ball hit the top or bottom of the paddle
 				self.dy *= -1
 
@@ -98,6 +117,9 @@ class Ball(Entity):
 			if self.dx > 0:
 				leftPaddle.score += 1
 				self.gameDataCollector.endRally(leftUserWon=True)
+			self.tempMaxDy = BALL_DY
+			self.dy = BALL_DY
+			self.dx = BALL_DX
 			self.random_spawn()
 			return
 
@@ -144,7 +166,6 @@ class Pong:
 		self.gameDataCollector = gameDataCollector
 
 	async def	update_entities(self, dt, game_data):
-		print(game_data)
 		player1_data, player2_data = list(game_data.values())
 		player1_id, player2_id = list(game_data.keys())
 		player1_direction = player1_data["direction"]

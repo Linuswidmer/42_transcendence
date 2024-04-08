@@ -14,7 +14,6 @@
 		<a href="{% url 'userManagement:login' %}">Login</a>
 		<a href="{% url 'userManagement:register_user' %}">Register</a>
 		<a href="{% url 'userManagement:register_guest' %}">Continue as Guest</a>
-		<a href="{% provider_login_url 'provider' %}">Sign In with 42</a>
 	{% endif %}
 </div>
 {% endblock %}

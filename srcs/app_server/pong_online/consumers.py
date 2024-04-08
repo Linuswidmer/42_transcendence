@@ -128,7 +128,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#describing the type of message to deal with the information accordingly
 	async def receive(self, text_data):
 		logger.debug("data received in receive: %s", text_data)
-		print("text data from client in receive:", text_data)
 
 		json_from_client = json.loads(text_data)
 
@@ -364,7 +363,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 					ai_refresh_timer = time.time()
 				ai_decision = ai.getAIDecision()
 				self.match.game_data["AI_Ursula"]["direction"] = ai_decision
-			print(self.match.game_data)
 			#update entities with the iteration_time and keypresses
 			entity_data = await pong_instance.update_entities(iteration_time, self.match.game_data)
 			should_run = not entity_data["game_over"]

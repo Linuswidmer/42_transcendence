@@ -39,20 +39,20 @@ let     rightPaddleY = 0
 /*****************************************************************************/
 function drawBall() {
     ctx.beginPath();
-    // // ctx.arc(ballX, ballY, ballRadius, 0, Math.PI*2);
+    ctx.arc(ballX, ballY, ballRadiusX, 0, Math.PI*2);
 	// ctx.ellipse(ballX, ballY, ballRadiusX, ballRadiusY, 0, 0, Math.PI*2);
-    // ctx.fillStyle = "#000";
-    // ctx.fill();
-    // ctx.closePath();
+    ctx.fillStyle = "#000";
+    ctx.fill();
+    ctx.closePath();
 
-	let ballImage = new Image();
-	ballImage.src = '../static/pong_online/dvd_screen_saver.png'; // Replace with the path to your image
+	// let ballImage = new Image();
+	// ballImage.src = '../static/pong_online/dvd_screen_saver.png'; // Replace with the path to your image
 
-	ctx.beginPath();
-	// Draw the image at the ball's position, adjusting for the image's size
-	ctx.drawImage(ballImage, ballX - ballRadiusX, ballY - ballRadiusY, ballRadiusX * 2, ballRadiusY * 2);
+	// ctx.beginPath();
+	// // Draw the image at the ball's position, adjusting for the image's size
+	// ctx.drawImage(ballImage, ballX - ballRadiusX, ballY - ballRadiusY, ballRadiusX * 2, ballRadiusY * 2);
 
-	ctx.closePath();
+	// ctx.closePath();
 }
 
 function drawPaddle(x, y) {
