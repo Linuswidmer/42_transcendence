@@ -10,17 +10,17 @@ import asyncio
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 400
 
-PADDLE_WIDTH = 70
+PADDLE_WIDTH = 30
 PADDLE_HEIGHT = 70
 PADDLE_DY = 400
 
-BALL_DX = 20
-BALL_DY = 20
-BALL_RADIUS = 20
+BALL_DX = 100
+BALL_DY = 100
+BALL_RADIUS = 10
 
 MAX_BOUNCE_ANGLE = math.radians(50) #75 degree in radian
 MAX_VELOCITY = 550
-VELOCITY_INCREMENT = 0
+VELOCITY_INCREMENT = 30
 
 class Entity:
 	def __init__(self, x, y, dx, dy) -> None:
@@ -74,14 +74,19 @@ class Ball(Entity):
 		return velocity
 
 	def top_or_bottom_paddle_hit(self, paddle, new_x, new_y, radius):
-		if paddle.y < new_y < paddle.y + paddle.height:
-        # Check if the ball is within the horizontal range of the paddle
-			if paddle.x < new_x < paddle.x + paddle.width:
-				# Check if the ball is touching the paddle (considering the radius)
-				if (paddle.y <= new_y + radius <= paddle.y + paddle.height) or (paddle.y <= new_y - radius <= paddle.y + paddle.height):
-					return "TOP"
-				elif (paddle.x <= new_x + radius <= paddle.x + paddle.width) or (paddle.x <= new_x - radius <= paddle.x + paddle.width):
-					return "SIDE"
+		# Check if the ball is within the horizontal range of the paddle
+		if paddle.x < new_x < paddle.x + paddle.width:
+			# Check if the ball is touching the top or bottom of the paddle (considering the radius)
+			if paddle.y - radius <= new_y <= paddle.y + radius:
+				return "TOP"
+			elif paddle.y + paddle.height - radius <= new_y <= paddle.y + paddle.height + radius:
+				return "BOTTOM"
+		# Check if the ball is within the vertical range of the paddle
+		elif paddle.y < new_y < paddle.y + paddle.height:
+			# Check if the ball is touching the side of the paddle (considering the radius)
+			if (paddle.x - radius <= new_x <= paddle.x + radius) or (paddle.x + paddle.width - radius <= new_x <= paddle.x + paddle.width + radius):
+				return "SIDE"
+		return None
 
 	def check_ball_paddle_collision(self, new_x, new_y, leftPaddle, rightPaddle):
 
