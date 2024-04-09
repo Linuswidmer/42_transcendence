@@ -1,6 +1,6 @@
 ///////////////////////////////
 // Define Constants
-const   BALL_RADIUS = 5;
+const   BALL_RADIUS = 10;
 const	PADDLE_WIDTH = 15;
 const	PADDLE_HEIGHT = 70;
 const	WINNING_SCORE = 3;

@@ -2,22 +2,25 @@ import pygame
 import time
 import random
 import math
-from asgiref.sync import sync_to_async
+from asgiref.sync import sync_to_async, async_to_sync
+import asyncio
+
 
 ############## CONSTANTS ###############
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 400
 
-PADDLE_WIDTH = 20
+PADDLE_WIDTH = 70
 PADDLE_HEIGHT = 70
-PADDLE_DY = 300
+PADDLE_DY = 400
 
-BALL_DX = 200
-BALL_DY = 200
-BALL_RADIUS = 15
+BALL_DX = 20
+BALL_DY = 20
+BALL_RADIUS = 20
 
-MAXBOUNCE_ANGLE = math.radians(75) #75 degree in radian
-MAX_VELOCITY = 500
+MAX_BOUNCE_ANGLE = math.radians(50) #75 degree in radian
+MAX_VELOCITY = 550
+VELOCITY_INCREMENT = 0
 
 class Entity:
 	def __init__(self, x, y, dx, dy) -> None:
@@ -70,6 +73,16 @@ class Ball(Entity):
 			velocity = MAX_VELOCITY
 		return velocity
 
+	def top_or_bottom_paddle_hit(self, paddle, new_x, new_y, radius):
+		if paddle.y < new_y < paddle.y + paddle.height:
+        # Check if the ball is within the horizontal range of the paddle
+			if paddle.x < new_x < paddle.x + paddle.width:
+				# Check if the ball is touching the paddle (considering the radius)
+				if (paddle.y <= new_y + radius <= paddle.y + paddle.height) or (paddle.y <= new_y - radius <= paddle.y + paddle.height):
+					return "TOP"
+				elif (paddle.x <= new_x + radius <= paddle.x + paddle.width) or (paddle.x <= new_x - radius <= paddle.x + paddle.width):
+					return "SIDE"
+
 	def check_ball_paddle_collision(self, new_x, new_y, leftPaddle, rightPaddle):
 
 		# if the ball is moving right (positive dx) the possible 
@@ -77,27 +90,33 @@ class Ball(Entity):
 		paddle = rightPaddle if self.dx > 0 else leftPaddle
 
 		# Create a new rect for the ball's new position
-		new_ball_rect = pygame.Rect(new_x, new_y, self.radius, self.radius)
+		new_ball_rect = pygame.Rect(new_x - self.radius, new_y - self.radius, 2 * self.radius, 2 * self.radius)
 
 		# Check if the new ball rect collides with the paddle's rect
 		if new_ball_rect.colliderect(paddle.hitbox):
-			if paddle == rightPaddle:
-				self.gameDataCollector.ballHit(left=False)
-			else:
-				self.gameDataCollector.ballHit(left=True)
+			if self.gameDataCollector != None:
+				if paddle == rightPaddle:
+					self.gameDataCollector.ballHit(left=False)
+				else:
+					self.gameDataCollector.ballHit(left=True)
 			# If the new x-position is within its radius of the left or right of the paddle,
 			# it means the ball has hit the left or right of the paddle.
 			# In this case, we reverse the x-direction of the ball to simulate a bounce.
-			if abs(new_x - paddle.x) < self.radius or abs(new_x - (paddle.x + paddle.width)) < self.radius:
+			if self.top_or_bottom_paddle_hit(paddle, new_x, new_y, self.radius) == "SIDE":
+				print("NORMALHIT")
 				initialYDirection = -1 if self.dy < 0 else 1
+				newXDirection = -1 if self.dx > 0 else 1
 				relativeIntersectToPaddleCenter = (paddle.y + (paddle.height / 2)) - self.y
 				normalized = abs(relativeIntersectToPaddleCenter / (paddle.height / 2))
-				bouncAngle = normalized * math.radians(75)
-				self.tempMaxDy = self.update_velocity(self.tempMaxDy)
-				self.dy = initialYDirection * self.tempMaxDy * math.sin(bouncAngle)
-				self.dx = -self.update_velocity(self.dx)
+				bouncAngle = normalized * MAX_BOUNCE_ANGLE
+				currentVel = math.sqrt(self.dx ** 2 + self.dy ** 2) + VELOCITY_INCREMENT
+				if (currentVel > MAX_VELOCITY):
+					currentVel = MAX_VELOCITY
+				self.dx = currentVel * math.cos(bouncAngle) * newXDirection
+				self.dy = currentVel * math.sin(bouncAngle) * initialYDirection
 
 			else: # The ball hit the top or bottom of the paddle
+				print("TOPHIT")
 				self.dy *= -1
 
 			# increase or decrease dy of the ball if the paddle is moving
@@ -113,10 +132,12 @@ class Ball(Entity):
 		if new_x - self.radius < 0 or new_x + self.radius > SCREEN_WIDTH:
 			if self.dx < 0: #left side wall hit -> point for right player
 				rightPaddle.score += 1
-				self.gameDataCollector.endRally(leftUserWon=False)
+				if self.gameDataCollector != None:
+					self.gameDataCollector.endRally(leftUserWon=False)
 			if self.dx > 0:
 				leftPaddle.score += 1
-				self.gameDataCollector.endRally(leftUserWon=True)
+				if self.gameDataCollector != None:
+					self.gameDataCollector.endRally(leftUserWon=True)
 			self.tempMaxDy = BALL_DY
 			self.dy = BALL_DY
 			self.dx = BALL_DX
@@ -135,6 +156,7 @@ class Paddle(Entity):
 		self.color = color
 		self.hitbox = pygame.Rect(self.x, self.y,self.width, self.height)
 		self.score = 0
+		self.direction = 0
 
 	def update_pos(self, y: int):
 		self.y = y
@@ -155,7 +177,7 @@ class Paddle(Entity):
 
 class Pong:
 	# change initial properties of entities here
-	def __init__(self, gameDataCollector) -> None:
+	def __init__(self, gameDataCollector=None) -> None:
 		self.leftPaddle = Paddle(0, SCREEN_HEIGHT / 2 - PADDLE_HEIGHT,
 						0, PADDLE_DY, PADDLE_WIDTH, PADDLE_HEIGHT, (255, 255, 255))
 		self.rightPaddle = Paddle(SCREEN_WIDTH - PADDLE_WIDTH, SCREEN_HEIGHT / 2 - PADDLE_HEIGHT,
@@ -180,15 +202,18 @@ class Pong:
 		#the score is set to 3 in the consumer if one user closed the windwo during the game
 		#so we use this information here to end the game and set the scores
 		if (player1_score == 3):
-			self.gameDataCollector.makeUserWin(left=True)
+			if self.gameDataCollector != None:
+				self.gameDataCollector.makeUserWin(left=True)
 			self.leftPaddle.score = 3
 		if (player2_score == 3):
-			self.gameDataCollector.makeUserWin(left=False)
+			if self.gameDataCollector != None:
+				self.gameDataCollector.makeUserWin(left=False)
 			self.rightPaddle.score = 3
 
-		if (self.rightPaddle.score == 3 or self.leftPaddle.score == 3):
+		if (self.rightPaddle.score == 10 or self.leftPaddle.score == 10):
 			self.game_over = True
-			await sync_to_async(self.gameDataCollector.endGame)()
+			if self.gameDataCollector != None:
+				await sync_to_async(self.gameDataCollector.endGame)()
 		return {'game_over': self.game_over,
 				'relativeBallX': self.ball.x / SCREEN_WIDTH,
 		  		'relativeBallY': self.ball.y / SCREEN_HEIGHT,
@@ -203,92 +228,167 @@ class Pong:
 							"relativeY": self.rightPaddle.y / SCREEN_HEIGHT,
 							"score": self.rightPaddle.score}}
 
+# def main():
+# 	# Initialize Pygame
+# 	pygame.init()
+
+# 	# Create the display surface (canvas)
+# 	canvas = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+# 	# Create a Pong game
+# 	pong = Pong()
+
+# 	# Game loop
+# 	running = True
+# 	clock = pygame.time.Clock()  # Add a clock to control the frame rate
+
+# 	leftPaddle = pong.leftPaddle
+# 	rightPaddle = pong.rightPaddle
+# 	ball = pong.ball
+
+# 	def input_from_keyboard(leftPaddle, rightPaddle):
+# 		running = True
+# 		for event in pygame.event.get():
+# 			if event.type == pygame.QUIT:
+# 				running = False
+# 			elif event.type == pygame.KEYDOWN:
+# 				if event.key == pygame.K_LEFT:
+# 					leftPaddle.isMoving = True
+# 					leftPaddle.direction = -1
+# 				elif event.key == pygame.K_RIGHT:
+# 					leftPaddle.isMoving = True
+# 					leftPaddle.direction = 1
+# 				elif event.key == pygame.K_a:
+# 					rightPaddle.isMoving = True
+# 					rightPaddle.direction = -1
+# 				elif event.key == pygame.K_d:
+# 					rightPaddle.isMoving = True
+# 					rightPaddle.direction = 1
+# 			elif event.type == pygame.KEYUP:
+# 				if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+# 					leftPaddle.isMoving = False
+# 				elif event.key == pygame.K_a or event.key == pygame.K_d:
+# 					rightPaddle.isMoving = False
+# 		return running
+
+def visualize_game(canvas, leftPaddle, rightPaddle, ball):
+	# Draw canvas
+	canvas.fill((0, 0, 0))  # Clear the canvas with black
+
+	# Draw paddles
+	pygame.draw.rect(canvas, leftPaddle.color, leftPaddle.hitbox)  # Draw the paddle
+	pygame.draw.rect(canvas, rightPaddle.color, rightPaddle.hitbox)
+
+	# Draw ball
+	pygame.draw.rect(canvas, (255, 0, 255), ball.hitbox)
+	pygame.draw.circle(canvas, ball.color, (ball.x, ball.y),
+					ball.radius)
+
+	# Update the display
+	pygame.display.flip()
+
+
+# 	while running:
+# 		#this determines the tickrate that our server can send updated
+		
+# 		dt = clock.tick(60) / 1000  # Amount of seconds between each loop
+
+# 		# Event handling for keyboard
+# 		running = input_from_keyboard(leftPaddle, rightPaddle)
+
+# 		# backend would usually receive keypresses via JSON
+# 		# API for this need to be developed
+
+# 		leftPaddle.move(dt, leftPaddle.direction)  # Pass the input to the move function
+# 		rightPaddle.move(dt, rightPaddle.direction)  # Pass the input to the move function
+		
+# 		pong.check_ball_paddle_collision(dt)
+
+# 		ball.move(dt, leftPaddle, rightPaddle)
+
+# 		# develop API to send world state to client
+
+# 		# visualize the game for development/debugging 
+# 		visualize_game(canvas, leftPaddle, rightPaddle, ball)
+
+
+# 	# Quit Pygame
+# 	pygame.quit()
+
+def input_from_keyboard(gameData):
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT:
+			return False, None
+		elif event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_LEFT:
+				gameData["playerRight"]["moveUp"] = True
+			elif event.key == pygame.K_RIGHT:
+				gameData["playerRight"]["moveDown"] = True
+			elif event.key == pygame.K_a:
+				gameData["playerLeft"]["moveUp"] = True
+			elif event.key == pygame.K_d:
+				gameData["playerLeft"]["moveDown"] = True
+		elif event.type == pygame.KEYUP:
+			if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+				gameData["playerRight"]["moveUp"] = False
+				gameData["playerRight"]["moveDown"] = False
+			elif event.key == pygame.K_a or event.key == pygame.K_d:
+				gameData["playerLeft"]["moveUp"] = False
+				gameData["playerLeft"]["moveDown"] = False
+	
+	if gameData["playerLeft"]["moveUp"] and not gameData["playerLeft"]["moveDown"]:
+		gameData["playerLeft"]["direction"] = -1
+	elif gameData["playerLeft"]["moveDown"] and not gameData["playerLeft"]["moveUp"]:
+		gameData["playerLeft"]["direction"] = 1
+	else:
+		gameData["playerLeft"]["direction"] = 0
+
+	if gameData["playerRight"]["moveUp"] and not gameData["playerRight"]["moveDown"]:
+		gameData["playerRight"]["direction"] = -1
+	elif gameData["playerRight"]["moveDown"] and not gameData["playerRight"]["moveUp"]:
+		gameData["playerRight"]["direction"] = 1
+	else:
+		gameData["playerRight"]["direction"] = 0
+
+	return True, gameData
+
 def main():
-	# Initialize Pygame
 	pygame.init()
 
-	# Create the display surface (canvas)
+# 	# Create the display surface (canvas)
 	canvas = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-	# Create a Pong game
-	pong = Pong()
-
-	# Game loop
-	running = True
+	pong_instance = Pong()
+	FPS = 60
 	clock = pygame.time.Clock()  # Add a clock to control the frame rate
-
-	topPaddle = pong.topPaddle
-	bottomPaddle = pong.bottomPaddle
-	ball = pong.ball
-
-	def input_from_keyboard(topPaddle, bottomPaddle):
-		running = True
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				running = False
-			elif event.type == pygame.KEYDOWN:
-				if event.key == pygame.K_LEFT:
-					topPaddle.isMoving = True
-					topPaddle.direction = -1
-				elif event.key == pygame.K_RIGHT:
-					topPaddle.isMoving = True
-					topPaddle.direction = 1
-				elif event.key == pygame.K_a:
-					bottomPaddle.isMoving = True
-					bottomPaddle.direction = -1
-				elif event.key == pygame.K_d:
-					bottomPaddle.isMoving = True
-					bottomPaddle.direction = 1
-			elif event.type == pygame.KEYUP:
-				if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-					topPaddle.isMoving = False
-				elif event.key == pygame.K_a or event.key == pygame.K_d:
-					bottomPaddle.isMoving = False
-		return running
-
-	def visualize_game(canvas, topPaddle, bottomPaddle, ball):
-		# Draw canvas
-		canvas.fill((0, 0, 0))  # Clear the canvas with black
-
-		# Draw paddles
-		pygame.draw.rect(canvas, topPaddle.color, topPaddle.hitbox)  # Draw the paddle
-		pygame.draw.rect(canvas, bottomPaddle.color, bottomPaddle.hitbox)
-
-		# Draw ball
-		pygame.draw.circle(canvas, ball.color, (ball.x, ball.y),
-						ball.radius)
-
-		# Update the display
-		pygame.display.flip()
-
-
-	while running:
-		#this determines the tickrate that our server can send updated
-		
+	iteration_time = 1 / FPS
+	should_run = True
+	game_data = {
+		"playerLeft": {
+			"score": 0,
+			"moveUp": False,
+			"moveDown": False,
+			"direction": 0
+		},
+		"playerRight": {
+			"score": 0,
+			"moveUp": False,
+			"moveDown": False,
+			"direction": 0
+		}
+	}
+	while should_run:
 		dt = clock.tick(60) / 1000  # Amount of seconds between each loop
-
-		# Event handling for keyboard
-		running = input_from_keyboard(topPaddle, bottomPaddle)
-
-		# backend would usually receive keypresses via JSON
-		# API for this need to be developed
-
-		topPaddle.move(dt)  # Pass the input to the move function
-		bottomPaddle.move(dt)  # Pass the input to the move function
-		
-		pong.check_ball_paddle_collision(dt)
-
-		ball.move(dt)
-
-		# develop API to send world state to client
-
-		# visualize the game for development/debugging 
-		visualize_game(canvas, topPaddle, bottomPaddle, ball)
-
-		
-
-	# Quit Pygame
-	pygame.quit()
+		#update entities with the iteration_time and keypresses
+		should_run, game_data = input_from_keyboard(gameData=game_data)
+		if not should_run:
+			break
+		visualize_game(canvas, pong_instance.leftPaddle, pong_instance.rightPaddle, pong_instance.ball)
+		entity_data = async_to_sync(pong_instance.update_entities)(dt, game_data)
+		# entity_data = asyncio.run(async_wrapper(pong_instance, dt, game_data))
+		should_run = not entity_data["game_over"]
+		#send all entity data to clients, so they can render the game
+		# print(entity_data)
 
 if __name__ == "__main__":
 	main()
