@@ -119,6 +119,19 @@ class Match:
 			"moveDown": False,
 			"direction": 0,
 		}
+	
+	def	change_score(self, username, score):
+		if username in self.registered_players:
+			self.game_data[username]["score"] = score
+		
+	def move_paddle(self, username, direction):
+		if username in self.registered_players:
+			if direction == 1:
+				self.game_data[username]["direction"] = 1
+			elif direction == -1:
+				self.game_data[username]["direction"] = -1
+			elif direction == 0:
+				self.game_data[username]["direction"] = 0
 
 	def	register_player(self, user_id) -> bool:
 		if self.n_registered_players == 2:

@@ -25,6 +25,8 @@ class apiConsumer(AsyncWebsocketConsumer):
 		super().__init__(*args, **kwargs)
 		self.id = str(uuid.uuid4())
 		self.lobby = Lobby()
+		self.listen_group_name = None
+		self.listen_match = None
 
 	async def connect(self):
 		await self.accept()
@@ -40,14 +42,15 @@ class apiConsumer(AsyncWebsocketConsumer):
 		await self.close()
 
 	async def receive(self, text_data):
+		print("api_text_data: ", text_data)
 		# Split the received text into command and arguments
 		tokens = text_data.strip().split()
 		command = tokens.pop(0)
 		option = tokens.pop(0) if tokens else None
 		args = tokens
 
+		response = command + ": "
 		if command == "match":
-			response = command + ": "
 			if not option:
 				response += "no option provided"
 
@@ -66,17 +69,67 @@ class apiConsumer(AsyncWebsocketConsumer):
 					response += "added player successfully"
 				else:
 					response += option + ": " + message
+
+			elif option == "listen" and len(args) == 1:
+				if await self.listen_to_match(args[0]):
+					return
+				else:
+					response += option + ": valid arguments are a valid match ID or stop"
 			else:
 				response += option + ": not a valid option"
 
 		elif command == "exit":
 			await self.disconnect("user closed connection")
 			return
+		
+		elif command == "listen":
+			if await self.listen_to_match(option):
+				return
+			else:
+				response += option + ": not a valid option"
 
 		else:
 			response += "invalid command"
 
 		await self.send(response)
+	
+	async def listen_to_match(self, option):
+		if option == "stop":
+			print("Listen stop")
+			if self.listen_group_name:
+				await self.channel_layer.group_discard(self.listen_group_name, self.channel_name)
+				self.listen_group_name = None
+			return True
+		elif option in self.lobby.get_all_matches():
+			print("Listen start")
+			self.listen_group_name = option
+			self.listen_match = self.lobby.get_match(option)
+			await self.channel_layer.group_add(self.listen_group_name, self.channel_name)
+			return True
+		return False
+
+	async def end_game_player_left(self,event):
+		pass
+
+	async def	show_stats_end_game(self, event):
+		await self.channel_layer.group_discard(self.listen_group_name, self.channel_name)
+		self.listen_group_name = None
+		self.listen_match = None
+
+	async def group_game_state_update(self, event):
+		# print("game_state:", " leon:", event["entity_data"]["leon"]["relativeY"], " local_opponent:", event["entity_data"]["local_opponent"]["relativeY"])
+		extracted_data = {name: event["entity_data"][name] for name in self.listen_match.get_registered_players()}
+		if event["entity_data"]["game_over"]:
+			response = "Game over: " + str(extracted_data)
+		else:
+			response = extracted_data
+
+
+
+		# await asyncio.sleep(3)
+		await self.send(
+			text_data=json.dumps(response)
+		)
 
 
 class MultiplayerConsumer(AsyncWebsocketConsumer):
