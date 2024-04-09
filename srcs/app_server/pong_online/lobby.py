@@ -131,6 +131,3 @@ class Match:
 	# 		self.n_registered_players -= 1
 	# 		self.registered_players.discard(user_id)
 			
-
-
-direction

@@ -10,17 +10,19 @@ import asyncio
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 400
 
-PADDLE_WIDTH = 30
+PADDLE_WIDTH = 15
 PADDLE_HEIGHT = 70
 PADDLE_DY = 400
 
-BALL_DX = 100
-BALL_DY = 100
+BALL_DX = 200
+BALL_DY = 200
 BALL_RADIUS = 10
 
 MAX_BOUNCE_ANGLE = math.radians(50) #75 degree in radian
 MAX_VELOCITY = 550
 VELOCITY_INCREMENT = 30
+
+WINNING_SCORE = 3
 
 class Entity:
 	def __init__(self, x, y, dx, dy) -> None:
@@ -206,16 +208,16 @@ class Pong:
 
 		#the score is set to 3 in the consumer if one user closed the windwo during the game
 		#so we use this information here to end the game and set the scores
-		if (player1_score == 3):
+		if (player1_score == WINNING_SCORE):
 			if self.gameDataCollector != None:
 				self.gameDataCollector.makeUserWin(left=True)
-			self.leftPaddle.score = 3
-		if (player2_score == 3):
+			self.leftPaddle.score = WINNING_SCORE
+		if (player2_score == WINNING_SCORE):
 			if self.gameDataCollector != None:
 				self.gameDataCollector.makeUserWin(left=False)
-			self.rightPaddle.score = 3
+			self.rightPaddle.score = WINNING_SCORE
 
-		if (self.rightPaddle.score == 10 or self.leftPaddle.score == 10):
+		if (self.rightPaddle.score == WINNING_SCORE or self.leftPaddle.score == WINNING_SCORE):
 			self.game_over = True
 			if self.gameDataCollector != None:
 				await sync_to_async(self.gameDataCollector.endGame)()
