@@ -423,6 +423,13 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				10)
 			ai_refresh_timer = time.time()
 		should_run = True
+		rel_entity_sizes = pong_instance.get_rel_entity_sz()
+		initial_entity_data = pong_instance.get_initial_entity_data(self.match.game_data)
+		await self.channel_layer.group_send(
+				self.game_group_name,
+				{"type": "group_game_state_update", "rel_entity_sizes": rel_entity_sizes,
+	 			"initial_entity_data": initial_entity_data},
+			)
 		while should_run:
 			if modus == "ai":
 				if (time.time() - ai_refresh_timer >= 1):
@@ -446,7 +453,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			# print(entity_data)
 			await self.channel_layer.group_send(
 				self.game_group_name,
-				{"type": "group_game_state_update", "entity_data": entity_data},
+				{"type": "group_game_state_update", "entity_data": entity_data,
+	 			"iteration_time": iteration_time},
 			)
 			await asyncio.sleep(iteration_time)
 

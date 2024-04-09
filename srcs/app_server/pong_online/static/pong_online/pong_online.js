@@ -19,12 +19,23 @@ const   leftScoreElement = document.getElementById('leftScore');
 const   rightScoreElement = document.getElementById('rightScore');
 
 
+class Entity {
+	constructor(x, y, type) {
+		this.type = type
+		this.x = x;
+		this.y = y;
+		this.position_buffer = [];
+	}
+}
+
 ///////////////////////////////
 // Setup Game Objects
+let	entities = [];
+let iteration_time;
+
 let     ballX;
 let     ballY;
-let		ballRadiusX;
-let		ballRadiusY;
+let		ballRadius;
 
 let		paddleWidth;
 let		paddleHeight;
@@ -39,20 +50,20 @@ let     rightPaddleY = 0
 /*****************************************************************************/
 function drawBall() {
     ctx.beginPath();
-    // // ctx.arc(ballX, ballY, ballRadius, 0, Math.PI*2);
+    ctx.arc(ballX, ballY, ballRadius, 0, Math.PI*2);
 	// ctx.ellipse(ballX, ballY, ballRadiusX, ballRadiusY, 0, 0, Math.PI*2);
-    // ctx.fillStyle = "#000";
-    // ctx.fill();
-    // ctx.closePath();
+    ctx.fillStyle = "#000";
+    ctx.fill();
+    ctx.closePath();
 
-	let ballImage = new Image();
-	ballImage.src = '../static/pong_online/dvd_screen_saver.png'; // Replace with the path to your image
+	// let ballImage = new Image();
+	// ballImage.src = '../static/pong_online/dvd_screen_saver.png'; // Replace with the path to your image
 
-	ctx.beginPath();
-	// Draw the image at the ball's position, adjusting for the image's size
-	ctx.drawImage(ballImage, ballX - ballRadiusX, ballY - ballRadiusY, ballRadiusX * 2, ballRadiusY * 2);
+	// ctx.beginPath();
+	// // Draw the image at the ball's position, adjusting for the image's size
+	// ctx.drawImage(ballImage, ballX - ballRadiusX, ballY - ballRadiusY, ballRadiusX * 2, ballRadiusY * 2);
 
-	ctx.closePath();
+	// ctx.closePath();
 }
 
 function drawPaddle(x, y) {
@@ -83,45 +94,67 @@ function norm2width(relativeX) {
 	return (relativeX * canvas.width)
 }
 
+function interpolateEntities(server_entities) {
+	console.log("it: ", iteration_time);
+	var now = +new Date();
+    var render_timestamp = now - (1000.0 / iteration_time);
+
+	for (var id in server_entities) {
+        var entity = entities[id];
+
+        // Find the two authoritative positions surrounding the rendering timestamp.
+        var buffer = entity.position_buffer;
+
+        // Drop older positions.
+        while (buffer.length >= 2 && buffer[1][0] <= render_timestamp) {
+            buffer.shift();
+        }
+
+        // Interpolate between the two surrounding authoritative positions.
+        if (buffer.length >= 2 && buffer[0][0] <= render_timestamp && render_timestamp <= buffer[1][0]) {
+            var x0 = buffer[0][1];
+            var x1 = buffer[1][1];
+            var y0 = buffer[0][2];
+            var y1 = buffer[1][2];
+            var t0 = buffer[0][0];
+            var t1 = buffer[1][0];
+
+            var new_x = x0 + (x1 - x0) * (render_timestamp - t0) / (t1 - t0);
+            var new_y = y0 + (y1 - y0) * (render_timestamp - t0) / (t1 - t0);
+            entity.set_position(new_x, new_y);
+        }
+    }
+}
+
+function initialize_entities(data) {
+	if (data.rel_entity_sizes.relBallRadius !== undefined) {
+		ballRadius = norm2height(data.rel_entity_sizes.relBallRadius);
+	}
+	if (data.rel_entity_sizes.relPaddleHeight !== undefined) {
+		paddleHeight = norm2height(data.rel_entity_sizes.relPaddleHeight);
+	}
+	if (data.rel_entity_sizes.relPaddleWidth !== undefined) {
+		paddleWidth = norm2width(data.rel_entity_sizes.relPaddleWidth);
+	}
+	if (data.initial_entity_data.entities !== undefined) {
+		for (var id in data.initial_entity_data.entities) {
+            var entity = data.initial_entity_data.entities[id];
+            // Assuming `entities` is an object
+            entities[id] = new Entity(entity.relX, entity.relY, id);
+        }
+		console.log("entities:", entities);
+	}
+
+	console.log("radius: ", ballRadius, " paddleHeight: ", paddleHeight, " paddleWidth: ", paddleWidth);
+}
+
 //update entities in game with informaation sent by server tick
 function update(user_id, data) {
 	try{
-		if (data.entity_data !== undefined) {
-			if (data.entity_data.relBallRadiusY !== undefined) {
-                ballRadiusY = norm2height(data.entity_data.relBallRadiusY);
-            }
-			if (data.entity_data.relBallRadiusX !== undefined) {
-                ballRadiusX = norm2width(data.entity_data.relBallRadiusX);
-            }
-			if (data.entity_data.relPaddleHeight !== undefined) {
-                paddleHeight = norm2height(data.entity_data.relPaddleHeight);
-            }
-			if (data.entity_data.relPaddleWidth !== undefined) {
-                paddleWidth = norm2width(data.entity_data.relPaddleWidth);
-            }
-
-
-            if (data.entity_data.relativeBallX !== undefined) {
-                ballX = norm2width(data.entity_data.relativeBallX);
-            }
-            if (data.entity_data.relativeBallY !== undefined) {
-                ballY = norm2height(data.entity_data.relativeBallY);
-            }
-			if (data.entity_data[user_id] !== undefined) {
-                leftPaddleX = norm2width(data.entity_data[user_id].relativeX);
-                leftPaddleY = norm2height(data.entity_data[user_id].relativeY);
-				leftScore = data.entity_data[user_id].score;
-				leftScoreElement.textContent = leftScore;
-            }
-			for (let id in data.entity_data) {
-                if (id !== "relativeBallX" && id !== "relativeBallY" && id != "score" && id !== user_id) {
-                    rightPaddleX = norm2width(data.entity_data[id].relativeX);
-                    rightPaddleY = norm2height(data.entity_data[id].relativeY);
-					rightScore = data.entity_data[id].score;
-					rightScoreElement.textContent = rightScore;
-                }
-            }
-        }
+		iteration_time = data.iteration_time
+		if (data.entity_data.entities !== undefined) {
+			interpolateEntities(data.entity_data.entities);
+		}
 		if (leftScore == WINNING_SCORE || rightScore == WINNING_SCORE)
 			gameOver()
 	} catch (error) {
@@ -225,10 +258,15 @@ function join_game(modus) {
 				ws.user_id = data.playerId;
 				console.log("user id from server", ws.user_id);
 			}
-			if (data.type === "group_game_state_update") {
+			if (data.type === "group_game_state_update" && data.rel_entity_sizes !== undefined
+				&& data.initial_entity_data !== undefined) {
+				initialize_entities(data)
+			}
+			if (data.type === "group_game_state_update" && data.entity_data !== undefined
+				&& data.iteration_time !== undefined) {
 				update(ws.username, data)
 			}
-			draw()
+			// draw()
 			
         } catch (error) {
             console.log('Error parsing JSON:', error);

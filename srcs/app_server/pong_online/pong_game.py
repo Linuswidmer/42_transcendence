@@ -143,6 +143,33 @@ class Pong:
 		self.game_over = False
 		self.gameDataCollector = gameDataCollector
 
+	def get_rel_entity_sz(self):
+		return {'relBallRadius': BALL_RADIUS / SCREEN_HEIGHT,
+				'relPaddleHeight': PADDLE_HEIGHT / SCREEN_HEIGHT,
+				'relPaddleWidth': PADDLE_WIDTH / SCREEN_WIDTH,
+				}
+	
+	def get_initial_entity_data(self, game_data):
+		player1_id, player2_id = list(game_data.keys())
+		return {'entities': {
+					  'ball': {
+						  'relX': self.ball.x / SCREEN_WIDTH,
+						  'relY': self.ball.y / SCREEN_HEIGHT,
+					  },
+					  player1_id: {
+						  'relX': self.leftPaddle.x / SCREEN_WIDTH,
+						  'relY': self.leftPaddle.y / SCREEN_HEIGHT,
+						  "score": self.leftPaddle.score,
+					  },
+					  player2_id: {
+						  'relX': self.rightPaddle.x / SCREEN_WIDTH,
+						  'relY': self.rightPaddle.y / SCREEN_HEIGHT,
+						  "score": self.rightPaddle.score,
+					  },
+				},
+		}
+
+
 	async def	update_entities(self, dt, game_data):
 		print(game_data)
 		player1_data, player2_data = list(game_data.values())
@@ -169,18 +196,24 @@ class Pong:
 			self.game_over = True
 			await sync_to_async(self.gameDataCollector.endGame)()
 		return {'game_over': self.game_over,
-				'relativeBallX': self.ball.x / SCREEN_WIDTH,
-		  		'relativeBallY': self.ball.y / SCREEN_HEIGHT,
-				"relPaddleHeight": PADDLE_HEIGHT / SCREEN_HEIGHT,
-		   		"relPaddleWidth": PADDLE_WIDTH / SCREEN_WIDTH, 
-		   		"relBallRadiusX": BALL_RADIUS / SCREEN_WIDTH,
-				   "relBallRadiusY": BALL_RADIUS / SCREEN_HEIGHT,
-		  		player1_id: {"relativeX": self.leftPaddle.x / SCREEN_WIDTH,
-							"relativeY": self.leftPaddle.y / SCREEN_HEIGHT,
-							"score": self.leftPaddle.score},
-		  		player2_id: {"relativeX": self.rightPaddle.x / SCREEN_WIDTH,
-							"relativeY": self.rightPaddle.y / SCREEN_HEIGHT,
-							"score": self.rightPaddle.score}}
+		  		'entities': {
+					  'ball': {
+						  'relX': self.ball.x / SCREEN_WIDTH,
+						  'relY': self.ball.y / SCREEN_HEIGHT,
+					  },
+					  player1_id: {
+						  'relX': self.leftPaddle.x / SCREEN_WIDTH,
+						  'relY': self.leftPaddle.y / SCREEN_HEIGHT,
+						  "score": self.leftPaddle.score,
+					  },
+					  player2_id: {
+						  'relX': self.rightPaddle.x / SCREEN_WIDTH,
+						  'relY': self.rightPaddle.y / SCREEN_HEIGHT,
+						  "score": self.rightPaddle.score,
+					  },
+				},
+				'timestamp': int(time.time() * 1000),
+				}
 
 def main():
 	# Initialize Pygame
