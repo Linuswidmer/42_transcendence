@@ -26,6 +26,12 @@ class Entity {
 		this.y = y;
 		this.position_buffer = [];
 	}
+
+	set_position(x, y) {
+		console.log("set_pos");
+		this.x = x;
+		this.y = y;
+	}
 }
 
 ///////////////////////////////
@@ -48,9 +54,9 @@ let     rightPaddleY = 0
 /*****************************************************************************/
 /*                               Game functions                              */
 /*****************************************************************************/
-function drawBall() {
+function drawBall(x, y) {
     ctx.beginPath();
-    ctx.arc(ballX, ballY, ballRadius, 0, Math.PI*2);
+    ctx.arc(x, y, ballRadius, 0, Math.PI*2);
 	// ctx.ellipse(ballX, ballY, ballRadiusX, ballRadiusY, 0, 0, Math.PI*2);
     ctx.fillStyle = "#000";
     ctx.fill();
@@ -74,9 +80,15 @@ function drawPaddle(x, y) {
 function draw() {
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawBall();
-	drawPaddle(leftPaddleX, leftPaddleY);
-    drawPaddle(rightPaddleX, rightPaddleY);
+	for (var id in entities) {
+		var entity = entities[id];
+		if (entity.type === 'ball') {
+			// console.log("draw ball", entity)
+			drawBall(norm2width(entity.x), norm2height(entity.y), entity.radius);
+		} else {
+			drawPaddle(norm2width(entity.x), norm2height(entity.y), entity.y);
+		}
+	}
 }
 
 function gameOver() {
@@ -95,9 +107,11 @@ function norm2width(relativeX) {
 }
 
 function interpolateEntities(server_entities) {
-	console.log("it: ", iteration_time);
+	// console.log("it: ", iteration_time);
 	var now = +new Date();
-    var render_timestamp = now - (1000.0 / iteration_time);
+    var render_timestamp = now - (1000.0 * iteration_time);
+
+	
 
 	for (var id in server_entities) {
         var entity = entities[id];
@@ -105,13 +119,18 @@ function interpolateEntities(server_entities) {
         // Find the two authoritative positions surrounding the rendering timestamp.
         var buffer = entity.position_buffer;
 
+		// console.log("buffer len:", buffer.length);
         // Drop older positions.
         while (buffer.length >= 2 && buffer[1][0] <= render_timestamp) {
             buffer.shift();
         }
-
         // Interpolate between the two surrounding authoritative positions.
+		// console.log("render_timestamp:", render_timestamp);
+		// console.log("now:", now);
+		// console.log("first buffer element time:", buffer[0][0]);
+		// console.log("second buffer element time:", buffer[1][0]);
         if (buffer.length >= 2 && buffer[0][0] <= render_timestamp && render_timestamp <= buffer[1][0]) {
+			// console.log("interpol")
             var x0 = buffer[0][1];
             var x1 = buffer[1][1];
             var y0 = buffer[0][2];
@@ -142,19 +161,29 @@ function initialize_entities(data) {
             // Assuming `entities` is an object
             entities[id] = new Entity(entity.relX, entity.relY, id);
         }
-		console.log("entities:", entities);
 	}
 
-	console.log("radius: ", ballRadius, " paddleHeight: ", paddleHeight, " paddleWidth: ", paddleWidth);
+	// console.log("radius: ", ballRadius, " paddleHeight: ", paddleHeight, " paddleWidth: ", paddleWidth);
 }
 
 //update entities in game with informaation sent by server tick
 function update(user_id, data) {
 	try{
 		iteration_time = data.iteration_time
+
+		for (var id in data.entity_data.entities) {
+			// console.log("id:", id)
+			var entity = entities[id];
+	
+			entity.position_buffer.push([data.entity_data.timestamp,
+				data.entity_data.entities[id].relX, 
+				data.entity_data.entities[id].relY])
+		}
+		// console.log("entities before inter: ", entities)
 		if (data.entity_data.entities !== undefined) {
 			interpolateEntities(data.entity_data.entities);
 		}
+		// console.log("entities after inter:", entities);
 		if (leftScore == WINNING_SCORE || rightScore == WINNING_SCORE)
 			gameOver()
 	} catch (error) {
@@ -266,13 +295,15 @@ function join_game(modus) {
 				&& data.iteration_time !== undefined) {
 				update(ws.username, data)
 			}
-			// draw()
+			draw()
 			
         } catch (error) {
             console.log('Error parsing JSON:', error);
         }
     };
 };
+
+
 
 
 const startButton = document.getElementById('startButtonRemote');

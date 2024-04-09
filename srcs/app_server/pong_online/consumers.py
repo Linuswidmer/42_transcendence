@@ -407,7 +407,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			self.gdc = await sync_to_async(self.create_data_collector)(modus, self.username, 'DUMP_LOCAL', self.match.group_name)
 		logger.debug("new game loop started")
 		pong_instance = Pong(self.gdc)
-		FPS = 60
+		FPS = 10
 		iteration_time = 1 / FPS
 		if modus == "ai":
 			ai = AIPongOpponent(
