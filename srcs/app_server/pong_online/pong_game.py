@@ -193,6 +193,8 @@ class Pong:
 						BALL_DX, BALL_DY, BALL_RADIUS, (255, 255, 255), gameDataCollector)
 		self.game_over = False
 		self.gameDataCollector = gameDataCollector
+		self.screen_width = SCREEN_WIDTH
+		self.screen_height = SCREEN_HEIGHT
 
 	async def	update_entities(self, dt, game_data):
 		player1_data, player2_data = list(game_data.values())
@@ -235,48 +237,6 @@ class Pong:
 							"relativeY": self.rightPaddle.y / SCREEN_HEIGHT,
 							"score": self.rightPaddle.score}}
 
-# def main():
-# 	# Initialize Pygame
-# 	pygame.init()
-
-# 	# Create the display surface (canvas)
-# 	canvas = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-
-# 	# Create a Pong game
-# 	pong = Pong()
-
-# 	# Game loop
-# 	running = True
-# 	clock = pygame.time.Clock()  # Add a clock to control the frame rate
-
-# 	leftPaddle = pong.leftPaddle
-# 	rightPaddle = pong.rightPaddle
-# 	ball = pong.ball
-
-# 	def input_from_keyboard(leftPaddle, rightPaddle):
-# 		running = True
-# 		for event in pygame.event.get():
-# 			if event.type == pygame.QUIT:
-# 				running = False
-# 			elif event.type == pygame.KEYDOWN:
-# 				if event.key == pygame.K_LEFT:
-# 					leftPaddle.isMoving = True
-# 					leftPaddle.direction = -1
-# 				elif event.key == pygame.K_RIGHT:
-# 					leftPaddle.isMoving = True
-# 					leftPaddle.direction = 1
-# 				elif event.key == pygame.K_a:
-# 					rightPaddle.isMoving = True
-# 					rightPaddle.direction = -1
-# 				elif event.key == pygame.K_d:
-# 					rightPaddle.isMoving = True
-# 					rightPaddle.direction = 1
-# 			elif event.type == pygame.KEYUP:
-# 				if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-# 					leftPaddle.isMoving = False
-# 				elif event.key == pygame.K_a or event.key == pygame.K_d:
-# 					rightPaddle.isMoving = False
-# 		return running
 
 def visualize_game(canvas, leftPaddle, rightPaddle, ball):
 	# Draw canvas
@@ -294,33 +254,6 @@ def visualize_game(canvas, leftPaddle, rightPaddle, ball):
 	# Update the display
 	pygame.display.flip()
 
-
-# 	while running:
-# 		#this determines the tickrate that our server can send updated
-		
-# 		dt = clock.tick(60) / 1000  # Amount of seconds between each loop
-
-# 		# Event handling for keyboard
-# 		running = input_from_keyboard(leftPaddle, rightPaddle)
-
-# 		# backend would usually receive keypresses via JSON
-# 		# API for this need to be developed
-
-# 		leftPaddle.move(dt, leftPaddle.direction)  # Pass the input to the move function
-# 		rightPaddle.move(dt, rightPaddle.direction)  # Pass the input to the move function
-		
-# 		pong.check_ball_paddle_collision(dt)
-
-# 		ball.move(dt, leftPaddle, rightPaddle)
-
-# 		# develop API to send world state to client
-
-# 		# visualize the game for development/debugging 
-# 		visualize_game(canvas, leftPaddle, rightPaddle, ball)
-
-
-# 	# Quit Pygame
-# 	pygame.quit()
 
 def input_from_keyboard(gameData):
 	for event in pygame.event.get():

@@ -134,10 +134,11 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		message_type = json_from_client.get("type", "")
 
 		if message_type == "player_left":
+			print('Player left in receive')
 			await self.channel_layer.group_send(
-					self.game_group_name,
-					{"type": "end_game_player_left", "player": json_from_client.get("player", "")},
-				)
+				self.game_group_name,
+				{"type": "end_game_player_left", "player": json_from_client.get("player", "")},
+			)
 
 		if message_type == "username":
 			self.username = json_from_client.get("username", "")
@@ -214,12 +215,16 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		local_opponent_name = modus + "_opponent"
 		if modus == "ai":
 			local_opponent_name = "AI_Ursula"
+		if modus == 'local':
+			local_opponent_name = 'DUMP_LOCAL'
 		self.in_game = True
 		self.hosts_game = True
 		match_id = generate()
 		self.match = self.lobby.create_local_match(match_id)
 		self.match.add_player_to_gamedata(self.username)
 		self.match.add_player_to_gamedata(local_opponent_name)
+		self.match.registered_players.append(self.username)
+		self.match.registered_players.append(local_opponent_name)
 		self.game_group_name = match_id
 		
 		await self.channel_layer.group_add(
@@ -249,7 +254,11 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		)
 	
 	async def end_game_player_left(self,event):
-		print("Window closed message consumer")
+		print(event)
+		if self.hosts_game:
+			print("HOST group message. Window closed message consumer")
+		else:
+			print("NOT HOST group message. Window closed message consumer")
 		if self.hosts_game:
 			losing_player = event["player"]
 			print("LOOSING PLAYER: ", losing_player)
@@ -258,10 +267,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			else:
 				winning_player = self.match.registered_players[0]
 			print("WINNNING PLAYER: ", winning_player)
-			print(self.match.game_data)
 			self.match.game_data[winning_player]["score"] = 3
-
-
 
 	async def group_game_state_update(self, event):
 		# print("game_state:", " leon:", event["entity_data"]["leon"]["relativeY"], " local_opponent:", event["entity_data"]["local_opponent"]["relativeY"])
@@ -335,31 +341,13 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		FPS = 60
 		iteration_time = 1 / FPS
 		if modus == "ai":
-			ai = AIPongOpponent(
-				pong_instance.rightPaddle.y,
-				pong_instance.rightPaddle.x,
-				pong_instance.ball.x,
-				pong_instance.ball.y,
-				pong_instance.ball.dx,
-				pong_instance.ball.dy,
-				pong_instance.rightPaddle.dy,
-				pong_instance.rightPaddle.height,
-				iteration_time,
-				10)
+			ai = AIPongOpponent(pong_instance, iteration_time, 10)
 			ai_refresh_timer = time.time()
 		should_run = True
 		while should_run:
 			if modus == "ai":
 				if (time.time() - ai_refresh_timer >= 1):
-					ai.setGameState(
-						pong_instance.rightPaddle.y,
-						pong_instance.rightPaddle.x,
-						pong_instance.ball.x,
-						pong_instance.ball.y,
-						pong_instance.ball.dx,
-						pong_instance.ball.dy,
-						pong_instance.rightPaddle.dy,
-						pong_instance.rightPaddle.height)
+					ai.setGameState(pong_instance)
 					ai_refresh_timer = time.time()
 				ai_decision = ai.getAIDecision()
 				self.match.game_data["AI_Ursula"]["direction"] = ai_decision
