@@ -203,12 +203,6 @@ class Pong:
 		self.gameDataCollector = gameDataCollector
 		self.screen_width = SCREEN_WIDTH
 		self.screen_height = SCREEN_HEIGHT
-
-	def get_rel_entity_sz(self):
-		return {'relBallRadius': BALL_RADIUS / SCREEN_HEIGHT,
-				'relPaddleHeight': PADDLE_HEIGHT / SCREEN_HEIGHT,
-				'relPaddleWidth': PADDLE_WIDTH / SCREEN_WIDTH,
-				}
 	
 	def get_initial_entity_data(self, game_data):
 		player1_id, player2_id = list(game_data.keys())

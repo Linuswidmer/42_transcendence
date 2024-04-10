@@ -132,6 +132,7 @@ class apiConsumer(AsyncWebsocketConsumer):
 		)
 
 
+
 class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#global class variable to try some things without the db
 	n_connected_websockets = 0
@@ -196,6 +197,11 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 		if message_type == "start" and self.hosts_game:
 			logger.debug("start game with modus:%s", json_from_client["modus"])
+			await self.channel_layer.group_send(
+				self.game_group_name,
+				{"type": "send_to_group", "identifier": "start_game"},
+			)
+
 			asyncio.create_task(self.game_loop(json_from_client["modus"]))
 
 		#only process lobby updates. when not inga,e
@@ -284,7 +290,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		return json_from_client
 
 	async def join_local_game(self, modus):
-		local_opponent_name = modus + "_opponent"
 		if modus == "ai":
 			local_opponent_name = "AI_Ursula"
 		if modus == 'local':
@@ -336,11 +341,11 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				winning_player = self.match.registered_players[0]
 			self.match.game_data[winning_player]["score"] = 3
 
-	async def group_game_state_update(self, event):
+	async def send_to_group(self, event):
 		await self.send(
 			text_data=json.dumps(event)
 		)
-	
+
 	async def	show_stats_end_game(self, event):
 		await self.send(
 			text_data=json.dumps({
@@ -397,6 +402,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#here we could import the game from another file to keep things separated
 	async def game_loop(self, modus):
 		players = list(self.match.game_data.keys())
+		print("players: ", players)
 		if modus == 'remote' or modus == 'ai':
 			players = list(self.match.game_data.keys())
 			self.gdc = await sync_to_async(self.create_data_collector)(modus, players[0], players[1], self.match.group_name)
@@ -411,12 +417,12 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			ai = AIPongOpponent(pong_instance, iteration_time, 10)
 			ai_refresh_timer = time.time()
 		should_run = True
-		rel_entity_sizes = pong_instance.get_rel_entity_sz()
 		initial_entity_data = pong_instance.get_initial_entity_data(self.match.game_data)
 		await self.channel_layer.group_send(
 				self.game_group_name,
-				{"type": "group_game_state_update", "rel_entity_sizes": rel_entity_sizes,
-	 			"initial_entity_data": initial_entity_data, "iteration_time": iteration_time},
+				{"type": "send_to_group", "identifier": "initial_game_data", 
+	 			"initial_entity_data": initial_entity_data,
+				"iteration_time": iteration_time, "modus": modus},
 			)
 		while should_run:
 			if modus == "ai":
@@ -432,7 +438,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			# print(entity_data)
 			await self.channel_layer.group_send(
 				self.game_group_name,
-				{"type": "group_game_state_update", "entity_data": entity_data},
+				{"type": "send_to_group", "identifier": "game_update", "entity_data": entity_data},
 			)
 			await asyncio.sleep(iteration_time)
 
