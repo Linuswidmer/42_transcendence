@@ -428,7 +428,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		await self.channel_layer.group_send(
 				self.game_group_name,
 				{"type": "group_game_state_update", "rel_entity_sizes": rel_entity_sizes,
-	 			"initial_entity_data": initial_entity_data},
+	 			"initial_entity_data": initial_entity_data, "iteration_time": iteration_time},
 			)
 		while should_run:
 			if modus == "ai":
@@ -453,8 +453,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			# print(entity_data)
 			await self.channel_layer.group_send(
 				self.game_group_name,
-				{"type": "group_game_state_update", "entity_data": entity_data,
-	 			"iteration_time": iteration_time},
+				{"type": "group_game_state_update", "entity_data": entity_data},
 			)
 			await asyncio.sleep(iteration_time)
 

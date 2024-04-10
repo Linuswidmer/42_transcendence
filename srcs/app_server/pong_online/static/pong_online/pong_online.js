@@ -148,11 +148,10 @@ function norm2width(relativeX) {
 	return (relativeX * canvas.width)
 }
 
-function interpolateEntities(entities) {
+function interpolateEntities(entities, iteration_time) {
 	var now = +new Date();
-    var render_timestamp = now - (1000.0 * 0.1);
+    var render_timestamp = now - (1000.0 * iteration_time);
 
-	console.log("it");
 
 	for (var id in entities) {
         var entity = entities[id];
@@ -160,7 +159,6 @@ function interpolateEntities(entities) {
         // Find the two authoritative positions surrounding the rendering timestamp.
         var buffer = entity.position_buffer;
 
-		// console.log("buffer len:", buffer.length);
         // Drop older positions.
         while (buffer.length >= 2 && buffer[1][0] <= render_timestamp) {
             buffer.shift();
@@ -181,7 +179,6 @@ function interpolateEntities(entities) {
 
             var new_x = x0 + (x1 - x0) * (render_timestamp - t0) / (t1 - t0);
             var new_y = y0 + (y1 - y0) * (render_timestamp - t0) / (t1 - t0);
-			console.log("set position");
             entity.set_position(new_x, new_y);
         }
     }
@@ -213,7 +210,7 @@ function initialize_entities(data, entities) {
 	if (data.rel_entity_sizes.relPaddleWidth !== undefined) {
 		paddleWidth = norm2width(data.rel_entity_sizes.relPaddleWidth);
 	}
-	console.log("in init:", entities, "length", entities.length);
+
 	// console.log("radius: ", ballRadius, " paddleHeight: ", paddleHeight, " paddleWidth: ", paddleWidth);
 }
 
@@ -244,9 +241,9 @@ const INTERPOLATION_RATE = 60;
 //TODO: find another way to access same websocket in multiple js files
 let ws = window.ws
 function join_game(modus) {
-	let server_update_data; //object -> passed by ref
 	let update_interval; //interval function
 	let entities = [] //object (list) -> passed by ref
+	let iteration_time;
 
 	//prevents client from sending a lot of messages when holding a button pressed
 	let keys = {
@@ -321,23 +318,22 @@ function join_game(modus) {
 			if (data.type === "group_game_state_update" && data.rel_entity_sizes !== undefined
 				&& data.initial_entity_data !== undefined) {
 				initialize_entities(data, entities);
-				console.log("ent after init:", entities, "length", entities.length);
-
+				if (data.iteration_time) {
+					iteration_time = data.iteration_time;
+				}
 				//clear interval
 				clearInterval(update_interval);
 
 				// Set a new update interval
 				//this interval is interpolating between game updates and drawing the entities
 				update_interval = setInterval(function() {
-					
-					interpolateEntities(entities);
+					interpolateEntities(entities, iteration_time);
 					draw_entities(entities, ctx);
 				}, 1000 / INTERPOLATION_RATE);
 
 			}
 			if (data.type === "group_game_state_update" && data.entity_data !== undefined) {
 				process_server_update(data.entity_data, entities);
-				server_update_data = data;
 				// console.log("entities after server update:", entities);
 			}
 			// draw()
