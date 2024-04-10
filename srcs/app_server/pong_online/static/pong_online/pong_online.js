@@ -88,16 +88,16 @@ class Game {
         this.entities = [];
         this.iterationTime = null;
 		this.modus = null;
-        this.ws.onmessage = (e) => this.handleMessage(e);
+        this.ws.onmessage = (e) => this.handle_message(e);
     }
 
-    handleMessage(e) {
+    handle_message(e) {
         try {
             const data = JSON.parse(e.data);
 			if (data.type === 'send_to_group') {
 				switch (data.identifier) {
-					case 'redirect_to_game_page':
-						// this.handleRedirect(data);
+					case 'game_end':
+						this.handle_game_over(data);
 						break;
 					case 'game_update':
 						// console.log('received game update from server');
@@ -215,8 +215,14 @@ class Game {
 		}
 	}
 
-	handle_game_over() {
-
+	handle_game_over(data) {
+		fetch('/singleGameStats/?matchName=' + data.matchName + '&username=' + data.user)
+			.then(response => response.text())
+			.then(data => {
+				document.body.innerHTML = data;
+			}).catch((error) => {
+				console.error('Error:', error);
+			});
 	}
 
     // ...

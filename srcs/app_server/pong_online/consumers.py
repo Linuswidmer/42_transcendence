@@ -460,5 +460,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		#redirect both players to the game site
 		await self.channel_layer.group_send(
 				self.game_group_name,
-				{"type": "show_stats_end_game"},
+				{"type": "send_to_group", "identifier": "game_end",
+	 			"matchName": self.match.group_name, "user": self.username},
 			)
