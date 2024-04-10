@@ -28,15 +28,15 @@ class StatsBuilder:
 		self.user = user
 		
 		#game type independenet data
-		self.totalTournaments = 0#
-		self.wonTournaments = 0#
-		self.bestTournamentRank = 0#
-		self.totalGames = 0#
-		self.totalGameTime = 0#
-		self.totalMisses = 0#
-		self.totalHits = 0#
-		self.totalWins = 0#
-		self.totalDefeats = 0#
+		self.totalTournaments = 0
+		self.wonTournaments = 0
+		self.bestTournamentRank = 0
+		self.totalGames = 0
+		self.totalGameTime = 0
+		self.totalMisses = 0
+		self.totalHits = 0
+		self.totalWins = 0
+		self.totalDefeats = 0
 
 		#game type dependent data
 		self.gameTypeStats = {
@@ -89,7 +89,7 @@ class StatsBuilder:
 
 	def build(self):
 		tournaments = []
-		#get all games of the current user
+		#get all game stats of the current user
 		userGameStats = UserGameStats.objects.filter(user=self.user)
 		
 		#iterate over all UserGameStats from the given user
@@ -102,7 +102,7 @@ class StatsBuilder:
 			if stat.game.tournament != None:
 				tournaments.append(stat.game.tournament)
 			
-			#Get bot stats from user and opponent and store it grouped in an objec
+			#Get both stats from user and opponent and store it grouped in an object
 			# for displaying later
 			gamStats = UserGameStats.objects.filter(game_id=stat.game.id).order_by('id')
 			if gamStats[0].user == self.user:

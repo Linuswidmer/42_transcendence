@@ -14,12 +14,12 @@ PADDLE_WIDTH = 15
 PADDLE_HEIGHT = 70
 PADDLE_DY = 400
 
-BALL_DX = 200
-BALL_DY = 200
+BALL_DX = 250
+BALL_DY = 250
 BALL_RADIUS = 10
 
 MAX_BOUNCE_ANGLE = math.radians(50) #75 degree in radian
-MAX_VELOCITY = 550
+MAX_VELOCITY = 600
 VELOCITY_INCREMENT = 30
 
 WINNING_SCORE = 3
@@ -40,6 +40,7 @@ class Ball(Entity):
 		self.tempMaxDy = BALL_DY
 		self.hitbox = pygame.Rect(self.x - self.radius, self.y - self.radius,
 							2 * self.radius, 2 * self.radius)
+		self.last_collided_paddle = None
 		self.random_spawn()
 	
 	def update_pos(self, x: int, y: int):
@@ -96,11 +97,17 @@ class Ball(Entity):
 		# collision will be with the right paddle
 		paddle = rightPaddle if self.dx > 0 else leftPaddle
 
+
 		# Create a new rect for the ball's new position
 		new_ball_rect = pygame.Rect(new_x - self.radius, new_y - self.radius, 2 * self.radius, 2 * self.radius)
 
 		# Check if the new ball rect collides with the paddle's rect
 		if new_ball_rect.colliderect(paddle.hitbox):
+			#prevent the colliderect function being called multiple times for one hit
+			if (paddle == self.last_collided_paddle):
+				return
+			self.last_collided_paddle = paddle
+
 			if self.gameDataCollector != None:
 				if paddle == rightPaddle:
 					self.gameDataCollector.ballHit(left=False)
@@ -148,6 +155,7 @@ class Ball(Entity):
 			self.tempMaxDy = BALL_DY
 			self.dy = BALL_DY
 			self.dx = BALL_DX
+			self.last_collided_paddle = None
 			self.random_spawn()
 			return
 

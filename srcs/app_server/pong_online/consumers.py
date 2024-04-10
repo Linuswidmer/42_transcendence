@@ -254,23 +254,15 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		)
 	
 	async def end_game_player_left(self,event):
-		print(event)
-		if self.hosts_game:
-			print("HOST group message. Window closed message consumer")
-		else:
-			print("NOT HOST group message. Window closed message consumer")
 		if self.hosts_game:
 			losing_player = event["player"]
-			print("LOOSING PLAYER: ", losing_player)
 			if self.match.registered_players[0] == losing_player:
 				winning_player = self.match.registered_players[1]
 			else:
 				winning_player = self.match.registered_players[0]
-			print("WINNNING PLAYER: ", winning_player)
 			self.match.game_data[winning_player]["score"] = 3
 
 	async def group_game_state_update(self, event):
-		# print("game_state:", " leon:", event["entity_data"]["leon"]["relativeY"], " local_opponent:", event["entity_data"]["local_opponent"]["relativeY"])
 		await self.send(
 			text_data=json.dumps(event)
 		)
@@ -339,6 +331,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		logger.debug("new game loop started")
 		pong_instance = Pong(self.gdc)
 		FPS = 60
+		AI_REFRESH_THRESHOLD = 0.1
 		iteration_time = 1 / FPS
 		if modus == "ai":
 			ai = AIPongOpponent(pong_instance, iteration_time, 10)
@@ -346,7 +339,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		should_run = True
 		while should_run:
 			if modus == "ai":
-				if (time.time() - ai_refresh_timer >= 1):
+				if (time.time() - ai_refresh_timer >= AI_REFRESH_THRESHOLD):
 					ai.setGameState(pong_instance)
 					ai_refresh_timer = time.time()
 				ai_decision = ai.getAIDecision()
@@ -361,6 +354,10 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				{"type": "group_game_state_update", "entity_data": entity_data},
 			)
 			await asyncio.sleep(iteration_time)
+
+		#Prevent the 'beforeunload' to trigger the end game logic in the end_game_player_left()
+		#and the game is over so it actually makes sense :D
+		self.hosts_game = False
 
 		#remove player from registred after match, so the player can play again
 		#also remove the match from the lobby and update the lobby

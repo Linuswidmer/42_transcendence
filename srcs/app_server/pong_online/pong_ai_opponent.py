@@ -32,7 +32,7 @@ class AIPongOpponent:
 		
 	def __moveInternalPaddle(self, aimedPosition):
 		paddleCenterY = self.paddleY + self.paddleHeight / 2
-		if (abs(paddleCenterY - aimedPosition) < 5):
+		if (abs(paddleCenterY - aimedPosition) < self.paddleStepSize * self.dt):
 			return 0
 		elif ((paddleCenterY > aimedPosition) and (self.paddleY > 0)):
 			self.paddleY -= (self.paddleStepSize * self.dt)

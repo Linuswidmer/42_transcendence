@@ -116,7 +116,13 @@
             <ul>
                 <!-- Loop through all games and display relevant information -->
                 {% for gld in stats.gameListData %}
-                    <li><a href="/singleGameStats?matchName={{ gld.game.matchName }}&username={{ gld.userGameStats.user.username }}"> {{ gld.game.matchName }} || {{ gld.game.matchDate }} || {{ gld.game.matchTime }} || against: {{ gld.opponentGameStats.user }}</a></li>
+                    {% if gld.opponentGameStats.user != None %}
+                        <li><a href="/singleGameStats?matchName={{ gld.game.matchName }}&username={{ gld.userGameStats.user.username }}"> {{ gld.game.matchName }} || {{ gld.game.matchDate }} || {{ gld.game.matchTime }} || against: {{ gld.opponentGameStats.user }}</a></li>
+                    {% endif %}
+                    {% if gld.opponentGameStats.user == None %}
+                        <li><a href="/singleGameStats?matchName={{ gld.game.matchName }}&username={{ gld.userGameStats.user.username }}"> {{ gld.game.matchName }} || {{ gld.game.matchDate }} || {{ gld.game.matchTime }} || against: Guest</a></li>
+                    {% endif %}
+                    
                 {% endfor %}
             </ul>
         </div>
