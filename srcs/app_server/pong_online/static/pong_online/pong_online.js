@@ -33,10 +33,50 @@ class Entity {
 	}
 }
 
+class Ball extends Entity {
+	constructor(x, y) {
+		super(x, y, 'ball');
+	}
+
+	set_radius(radius) {
+		this.radius = radius
+	}
+
+	draw(context) {
+		// console.log("draw ball", this);
+		context.beginPath();
+		context.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+		context.fillStyle = "#000";
+		context.fill();
+		context.closePath();
+	}
+}
+
+class Paddle extends Entity {
+	constructor(x, y) {
+		super(x, y, 'paddle');
+	}
+
+	set_score(score) {
+		this.score = score;
+	}
+
+	set_dimensions(width, height) {
+		this.width = width;
+		this.height = height;
+	}
+
+	draw(context) {
+		// console.log("draw paddle", this);
+		context.fillStyle = '#000';
+    	context.fillRect(this.x, this.y, this.width, this.height);
+	}
+}
+
 ///////////////////////////////
 // Setup Game Objects
-let	entities = [];
-let iteration_time;
+// let	entities = [];
+// let iteration_time;
 
 let     ballX;
 let     ballY;
@@ -53,13 +93,13 @@ let     rightPaddleY = 0
 /*****************************************************************************/
 /*                               Game functions                              */
 /*****************************************************************************/
-function drawBall(x, y) {
-    ctx.beginPath();
-    ctx.arc(x, y, ballRadius, 0, Math.PI*2);
-	// ctx.ellipse(ballX, ballY, ballRadiusX, ballRadiusY, 0, 0, Math.PI*2);
-    ctx.fillStyle = "#000";
-    ctx.fill();
-    ctx.closePath();
+// function drawBall(x, y) {
+//     ctx.beginPath();
+//     ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+// 	// ctx.ellipse(ballX, ballY, ballRadiusX, ballRadiusY, 0, 0, Math.PI*2);
+//     ctx.fillStyle = "#000";
+//     ctx.fill();
+//     ctx.closePath();
 
 	// let ballImage = new Image();
 	// ballImage.src = '../static/pong_online/dvd_screen_saver.png'; // Replace with the path to your image
@@ -69,25 +109,26 @@ function drawBall(x, y) {
 	// ctx.drawImage(ballImage, ballX - ballRadiusX, ballY - ballRadiusY, ballRadiusX * 2, ballRadiusY * 2);
 
 	// ctx.closePath();
-}
+// }
 
-function drawPaddle(x, y) {
-    ctx.fillStyle = '#000';
-    ctx.fillRect(x, y, paddleWidth, paddleHeight);
-}
+// function drawPaddle(x, y) {
+//     ctx.fillStyle = '#000';
+//     ctx.fillRect(x, y, paddleWidth, paddleHeight);
+// }
 
-function draw() {
+function draw_entities(entities, context) {
 	// console.log("Draw");
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 	for (var id in entities) {
 		var entity = entities[id];
-		if (entity.type === 'ball') {
-			// console.log("draw ball", entity)
-			drawBall(norm2width(entity.x), norm2height(entity.y), entity.radius);
-		} else {
-			drawPaddle(norm2width(entity.x), norm2height(entity.y), entity.y);
-		}
+		entity.draw(context);
+		// if (entity.type === 'ball') {
+		// 	// console.log("draw ball", entity)
+		// 	drawBall(norm2width(entity.x), norm2height(entity.y), entity.radius);
+		// } else {
+		// 	drawPaddle(norm2width(entity.x), norm2height(entity.y), entity.y);
+		// }
 	}
 }
 
@@ -107,14 +148,13 @@ function norm2width(relativeX) {
 	return (relativeX * canvas.width)
 }
 
-function interpolateEntities(server_entities) {
-	// console.log("it: ", iteration_time);
+function interpolateEntities(entities) {
 	var now = +new Date();
-    var render_timestamp = now - (1000.0 * iteration_time);
+    var render_timestamp = now - (1000.0 * 0.1);
 
-	
+	console.log("it");
 
-	for (var id in server_entities) {
+	for (var id in entities) {
         var entity = entities[id];
 
         // Find the two authoritative positions surrounding the rendering timestamp.
@@ -141,12 +181,29 @@ function interpolateEntities(server_entities) {
 
             var new_x = x0 + (x1 - x0) * (render_timestamp - t0) / (t1 - t0);
             var new_y = y0 + (y1 - y0) * (render_timestamp - t0) / (t1 - t0);
+			console.log("set position");
             entity.set_position(new_x, new_y);
         }
     }
 }
 
-function initialize_entities(data) {
+function initialize_entities(data, entities) {
+	if (data.initial_entity_data.entities !== undefined) {
+		for (var id in data.initial_entity_data.entities) {
+			var entity = data.initial_entity_data.entities[id];
+			
+			if (entity.entity_type === 'ball') {
+				entities[id] = new Ball(norm2width(entity.relX), norm2height(entity.relY));
+				entities[id].set_radius(norm2height(entity.relBallRadius));
+			} else if (entity.entity_type === 'paddle') {
+				entities[id] = new Paddle(norm2width(entity.relX), norm2height(entity.relY));
+				entities[id].set_dimensions(norm2width(entity.relPaddleWidth),
+					norm2height(entity.relPaddleHeight));
+			} else {
+				console.log("Warning: an unknown entity was send by the server");
+			}
+        }
+	}
 	if (data.rel_entity_sizes.relBallRadius !== undefined) {
 		ballRadius = norm2height(data.rel_entity_sizes.relBallRadius);
 	}
@@ -156,69 +213,40 @@ function initialize_entities(data) {
 	if (data.rel_entity_sizes.relPaddleWidth !== undefined) {
 		paddleWidth = norm2width(data.rel_entity_sizes.relPaddleWidth);
 	}
-	if (data.initial_entity_data.entities !== undefined) {
-		for (var id in data.initial_entity_data.entities) {
-            var entity = data.initial_entity_data.entities[id];
-            // Assuming `entities` is an object
-            entities[id] = new Entity(entity.relX, entity.relY, id);
-        }
-	}
-
+	console.log("in init:", entities, "length", entities.length);
 	// console.log("radius: ", ballRadius, " paddleHeight: ", paddleHeight, " paddleWidth: ", paddleWidth);
 }
 
-//update entities in game with informaation sent by server tick
-function update(user_id, data) {
+//update local entities in game with information sent by server tick
+function process_server_update(server_entity_data, entities) {
 	try{
-		iteration_time = data.iteration_time
+		if (server_entity_data.entities) {
+			server_entities = server_entity_data.entities;
+		}
 
-		for (var id in data.entity_data.entities) {
-			// console.log("id:", id)
+		for (var id in server_entities) {
 			var entity = entities[id];
 	
-			entity.position_buffer.push([data.entity_data.timestamp,
-				data.entity_data.entities[id].relX, 
-				data.entity_data.entities[id].relY])
-			// entity.set_position(data.entity_data.entities[id].relX, data.entity_data.entities[id].relY);
+			entity.position_buffer.push([server_entity_data.timestamp,
+				norm2width(server_entities[id].relX),
+				norm2height(server_entities[id].relY)]);
 		}
-		// console.log("entities before inter: ", entities)
-		// if (data.entity_data.entities !== undefined) {
-		// 	interpolateEntities(data.entity_data.entities);
-		// }
-		// console.log("entities after inter:", entities);
 		if (leftScore == WINNING_SCORE || rightScore == WINNING_SCORE)
-			gameOver()
+			gameOver();
 	} catch (error) {
 		console.log('Error parsing JSON:', error);
 	}
 }
 
-// Define the update rate in hertz
-var update_rate = 60;  // Adjust this value as needed
+// Define the local update rate in hertz (frames per second)
+const INTERPOLATION_RATE = 60;
 
-// Define the update interval
-var update_interval;
-
-// Define a variable to hold the latest data
-var latest_data;
-
+//TODO: find another way to access same websocket in multiple js files
 let ws = window.ws
 function join_game(modus) {
-	clearInterval(update_interval);
-
-    // Set a new update interval
-    update_interval = setInterval(function() {
-		if (latest_data.entity_data.entities)
-        	interpolateEntities(latest_data.entity_data.entities)
-		draw()
-    }, 1000 / update_rate);
-	// const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
-    // // const wsUrl = protocol + `://${window.location.host}/ws/pong/${roomName}/`; // this has to be modified to be a unique identifier
-
-	// console.log(protocol + '://' + window.location.host + '/ws/pong_online/game/')
-    // const ws = new WebSocket(
-    //     protocol + '://' + window.location.host + '/ws/pong_online/game/'
-    // );
+	let server_update_data; //object -> passed by ref
+	let update_interval; //interval function
+	let entities = [] //object (list) -> passed by ref
 
 	//prevents client from sending a lot of messages when holding a button pressed
 	let keys = {
@@ -270,24 +298,6 @@ function join_game(modus) {
 		}
 	});
 
-    // ws.onopen = function(e) {
-    //     // telling the server that the client is ready
-    //     console.log('WebSocket connection established');
-    //     let data = {'playerId': name};
-    //     ws.send(JSON.stringify(data));
-
-    //     // gameLoop();
-		
-    //     // setInterval(function() {
-    //     //     let data = {'leftPaddleY': clientLeftPaddleY,
-    //     //                 'rightPaddleY': clientRightPaddleY};
-    //     //     if (ws.readyState === WebSocket.OPEN)
-    //     //         ws.send(JSON.stringify(data));
-    //     // }, GAME_REFRESH_RATE);
-    // }; 
-
-
-
     // Handle messages sent by the server
     ws.onmessage = function(e) {
         try{
@@ -310,32 +320,33 @@ function join_game(modus) {
 			}
 			if (data.type === "group_game_state_update" && data.rel_entity_sizes !== undefined
 				&& data.initial_entity_data !== undefined) {
-				initialize_entities(data)
+				initialize_entities(data, entities);
+				console.log("ent after init:", entities, "length", entities.length);
+
+				//clear interval
+				clearInterval(update_interval);
+
+				// Set a new update interval
+				//this interval is interpolating between game updates and drawing the entities
+				update_interval = setInterval(function() {
+					
+					interpolateEntities(entities);
+					draw_entities(entities, ctx);
+				}, 1000 / INTERPOLATION_RATE);
+
 			}
-			if (data.type === "group_game_state_update" && data.entity_data !== undefined
-				&& data.iteration_time !== undefined) {
-				update(ws.username, data)
+			if (data.type === "group_game_state_update" && data.entity_data !== undefined) {
+				process_server_update(data.entity_data, entities);
+				server_update_data = data;
+				// console.log("entities after server update:", entities);
 			}
-			draw()
+			// draw()
 			
         } catch (error) {
             console.log('Error parsing JSON:', error);
         }
     };
 };
-
-
-
-// Clear any existing update interval
-// clearInterval(update_interval);
-
-// // Set a new update interval
-// update_interval = setInterval(function() {
-// 	// interpolateEntities(data.entity_data.entities);
-//     // draw();
-// 	console.log("test")
-// }, 1000 / update_rate);
-
 
 const startButton = document.getElementById('startButtonRemote');
 if (startButton) {
@@ -388,11 +399,3 @@ window.addEventListener('beforeunload', function(event) {
 	//only send when tehre is a game running
     ws.send(JSON.stringify({'type': 'player_left', 'player': ws.username}));
 });
-
-// document.getElementById('nameForm').addEventListener('submit', function(event) {
-// 	event.preventDefault();
-// 	console.log("test")
-// 	var name = document.getElementById('nameInput').value;
-//     // Start the game
-//    join_game(name);
-// });

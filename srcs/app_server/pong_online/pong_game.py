@@ -153,17 +153,25 @@ class Pong:
 		player1_id, player2_id = list(game_data.keys())
 		return {'entities': {
 					  'ball': {
+						  'entity_type': 'ball',
 						  'relX': self.ball.x / SCREEN_WIDTH,
 						  'relY': self.ball.y / SCREEN_HEIGHT,
+						  'relBallRadius': BALL_RADIUS / SCREEN_HEIGHT,
 					  },
 					  player1_id: {
+						  'entity_type': 'paddle',
 						  'relX': self.leftPaddle.x / SCREEN_WIDTH,
 						  'relY': self.leftPaddle.y / SCREEN_HEIGHT,
+						  'relPaddleHeight': PADDLE_HEIGHT / SCREEN_HEIGHT,
+						  'relPaddleWidth': PADDLE_WIDTH / SCREEN_WIDTH,
 						  "score": self.leftPaddle.score,
 					  },
 					  player2_id: {
+						  'entity_type': 'paddle',
 						  'relX': self.rightPaddle.x / SCREEN_WIDTH,
 						  'relY': self.rightPaddle.y / SCREEN_HEIGHT,
+						  'relPaddleHeight': PADDLE_HEIGHT / SCREEN_HEIGHT,
+						  'relPaddleWidth': PADDLE_WIDTH / SCREEN_WIDTH,
 						  "score": self.rightPaddle.score,
 					  },
 				},
