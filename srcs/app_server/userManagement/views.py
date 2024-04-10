@@ -17,12 +17,18 @@ def dashboard(request):
 
 #view for registering a new user
 def register_user(request):
+	cookies = request.COOKIES
+
+		# Print cookies
+	print("Cookies:", cookies)
+
 	if request.method == "GET":
 		return render(
 			request, "userManagement/register.html",
 			{"form": CustomUserCreationForm}
 		)
 	elif request.method == "POST":
+
 		form = CustomUserCreationForm(request.POST)
 		if form.is_valid():
 			registered_users, created = Group.objects.get_or_create(name='registered_users')

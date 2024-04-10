@@ -3,6 +3,9 @@ import uuid
 import asyncio
 import time
 import logging
+import django
+
+django.setup()
 
 from adjectiveanimalnumber import generate
 from .pong_ai_opponent import AIPongOpponent
