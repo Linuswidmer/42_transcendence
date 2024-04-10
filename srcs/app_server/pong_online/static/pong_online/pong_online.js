@@ -1,6 +1,6 @@
 ///////////////////////////////
 // Define Constants
-const   BALL_RADIUS = 5;
+const   BALL_RADIUS = 10;
 const	PADDLE_WIDTH = 15;
 const	PADDLE_HEIGHT = 70;
 const	WINNING_SCORE = 3;
@@ -227,6 +227,7 @@ function process_server_update(server_entity_data, entities) {
 			entity.position_buffer.push([server_entity_data.timestamp,
 				norm2width(server_entities[id].relX),
 				norm2height(server_entities[id].relY)]);
+				entity.set_position(norm2width(server_entities[id].relX), norm2height(server_entities[id].relY));
 		}
 		if (leftScore == WINNING_SCORE || rightScore == WINNING_SCORE)
 			gameOver();
@@ -322,21 +323,21 @@ function join_game(modus) {
 					iteration_time = data.iteration_time;
 				}
 				//clear interval
-				clearInterval(update_interval);
+				// clearInterval(update_interval);
 
-				// Set a new update interval
-				//this interval is interpolating between game updates and drawing the entities
-				update_interval = setInterval(function() {
-					interpolateEntities(entities, iteration_time);
-					draw_entities(entities, ctx);
-				}, 1000 / INTERPOLATION_RATE);
+				// // Set a new update interval
+				// //this interval is interpolating between game updates and drawing the entities
+				// update_interval = setInterval(function() {
+				// 	interpolateEntities(entities, iteration_time);
+				// 	draw_entities(entities, ctx);
+				// }, 1000 / INTERPOLATION_RATE);
 
 			}
 			if (data.type === "group_game_state_update" && data.entity_data !== undefined) {
 				process_server_update(data.entity_data, entities);
 				// console.log("entities after server update:", entities);
 			}
-			// draw()
+			draw_entities(entities, ctx);
 			
         } catch (error) {
             console.log('Error parsing JSON:', error);

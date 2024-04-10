@@ -13,8 +13,8 @@ class Games(models.Model):
 	tournament = models.ForeignKey(Tournaments, on_delete=models.CASCADE, null=True)
 
 class UserGameStats(models.Model):
-	user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-	game = models.ForeignKey(Games, on_delete=models.CASCADE, null=True)
+	user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+	game = models.ForeignKey(Games, on_delete=models.SET_NULL, null=True)
 	score = models.IntegerField(default=0)
 	ballHits = models.IntegerField(default=0)
 	ballMisses = models.IntegerField(default=0)
