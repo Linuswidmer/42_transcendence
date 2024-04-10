@@ -28,7 +28,6 @@ class Entity {
 	}
 
 	set_position(x, y) {
-		console.log("set_pos");
 		this.x = x;
 		this.y = y;
 	}
@@ -78,6 +77,7 @@ function drawPaddle(x, y) {
 }
 
 function draw() {
+	// console.log("Draw");
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 	for (var id in entities) {
@@ -93,6 +93,7 @@ function draw() {
 
 function gameOver() {
     console.log('Game Over');
+	clearInterval(update_interval);
     // document.getElementById('gameOverMessage').style.display = 'block';
     // document.getElementById('reloadLocalGame').style.display = 'block';
     // document.getElementById('reloadPlayOptions').style.display = 'block';
@@ -178,11 +179,12 @@ function update(user_id, data) {
 			entity.position_buffer.push([data.entity_data.timestamp,
 				data.entity_data.entities[id].relX, 
 				data.entity_data.entities[id].relY])
+			// entity.set_position(data.entity_data.entities[id].relX, data.entity_data.entities[id].relY);
 		}
 		// console.log("entities before inter: ", entities)
-		if (data.entity_data.entities !== undefined) {
-			interpolateEntities(data.entity_data.entities);
-		}
+		// if (data.entity_data.entities !== undefined) {
+		// 	interpolateEntities(data.entity_data.entities);
+		// }
 		// console.log("entities after inter:", entities);
 		if (leftScore == WINNING_SCORE || rightScore == WINNING_SCORE)
 			gameOver()
@@ -191,9 +193,25 @@ function update(user_id, data) {
 	}
 }
 
+// Define the update rate in hertz
+var update_rate = 60;  // Adjust this value as needed
+
+// Define the update interval
+var update_interval;
+
+// Define a variable to hold the latest data
+var latest_data;
+
 let ws = window.ws
 function join_game(modus) {
+	clearInterval(update_interval);
 
+    // Set a new update interval
+    update_interval = setInterval(function() {
+		if (latest_data.entity_data.entities)
+        	interpolateEntities(latest_data.entity_data.entities)
+		draw()
+    }, 1000 / update_rate);
 	// const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
     // // const wsUrl = protocol + `://${window.location.host}/ws/pong/${roomName}/`; // this has to be modified to be a unique identifier
 
@@ -268,10 +286,13 @@ function join_game(modus) {
     //     // }, GAME_REFRESH_RATE);
     // }; 
 
+
+
     // Handle messages sent by the server
     ws.onmessage = function(e) {
         try{
             const data = JSON.parse(e.data);
+			latest_data = data;
 			if (data.type === "redirect_to_game_page") {
 				console.log(e.data);
 				fetch('/singleGameStats/?matchName=' + data.matchName + '&username=' + data.user)
@@ -304,6 +325,16 @@ function join_game(modus) {
 };
 
 
+
+// Clear any existing update interval
+// clearInterval(update_interval);
+
+// // Set a new update interval
+// update_interval = setInterval(function() {
+// 	// interpolateEntities(data.entity_data.entities);
+//     // draw();
+// 	console.log("test")
+// }, 1000 / update_rate);
 
 
 const startButton = document.getElementById('startButtonRemote');
