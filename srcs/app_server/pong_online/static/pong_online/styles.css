@@ -92,28 +92,26 @@ canvas {
 
 #leftPlayerName {
     position: absolute; 
-    left: 30px; 
-    top:65%;
-    font-size: large;
+    left: 50%; 
+    top:10px;
 }
 
 #rightPlayerName {
     position: absolute; 
-    right: 30px; 
-    top: 65%;
-    font-size: large;
+    left: 50%; 
+    top: 30px;
 }
 
 #leftScore {
     position: absolute;
-    left: 50%; 
+    left: 40%; 
     transform: translateX(-50%); 
     top: 10px;
 }
 
 #rightScore {
     position: absolute;
-    left: 50%;
+    left: 40%;
     transform: translateX(-50%);
     top: 30px;
 }

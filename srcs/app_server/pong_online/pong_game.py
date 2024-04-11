@@ -215,6 +215,7 @@ class Pong:
 					  },
 					  player1_id: {
 						  'entity_type': 'paddle',
+						  'screen_pos': 'left',
 						  'relX': self.leftPaddle.x / SCREEN_WIDTH,
 						  'relY': self.leftPaddle.y / SCREEN_HEIGHT,
 						  'relPaddleHeight': PADDLE_HEIGHT / SCREEN_HEIGHT,
@@ -223,6 +224,7 @@ class Pong:
 					  },
 					  player2_id: {
 						  'entity_type': 'paddle',
+						  'screen_pos': 'right',
 						  'relX': self.rightPaddle.x / SCREEN_WIDTH,
 						  'relY': self.rightPaddle.y / SCREEN_HEIGHT,
 						  'relPaddleHeight': PADDLE_HEIGHT / SCREEN_HEIGHT,

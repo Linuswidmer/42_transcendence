@@ -11,6 +11,9 @@ window.ws = new WebSocket(
 
 console.log("username", username);
 
+let loggedInMsg = document.getElementById('loggedInMessage');
+loggedInMsg.textContent += username;
+
 window.ws.onopen = function(e) {
 	// telling the server that the client is ready
 	console.log('WebSocket connection established');
@@ -84,12 +87,18 @@ class Ball extends Entity {
 }
 
 class Paddle extends Entity {
-	constructor(x, y) {
+	constructor(username, x, y, screen_pos) {
 		super(x, y, 'paddle');
+		this.username = username;
+		// console.log("paddle username:", this.username);
+		this.screen_pos = screen_pos;
+		this.score_display = document.getElementById(this.screen_pos === 'left' ? 'leftScore' : 'rightScore');
+        this.name_display = document.getElementById(this.screen_pos === 'left' ? 'leftPlayerName' : 'rightPlayerName');
+        this.name_display.textContent += this.username;
 	}
 
 	set_score(score) {
-		this.score = score;
+		this.score_display.textContent = score;
 	}
 
 	set_dimensions(width, height) {
@@ -166,7 +175,7 @@ class Game {
 				this.entities[id] = new Ball(norm2width(entity.relX), norm2height(entity.relY));
 				this.entities[id].set_radius(norm2height(entity.relBallRadius));
 			} else if (entity.entity_type === 'paddle') {
-				this.entities[id] = new Paddle(norm2width(entity.relX), norm2height(entity.relY));
+				this.entities[id] = new Paddle(id, norm2width(entity.relX), norm2height(entity.relY), entity.screen_pos);
 				this.entities[id].set_dimensions(norm2width(entity.relPaddleWidth),
 					norm2height(entity.relPaddleHeight));
 			} else {
@@ -238,6 +247,9 @@ class Game {
 			// 	norm2width(server_entities[id].relX),
 			// 	norm2height(server_entities[id].relY)]);
 			entity.set_position(norm2width(server_entities[id].relX), norm2height(server_entities[id].relY));
+			if (entity.type === "paddle") {
+				entity.set_score(server_entities[id].score)
+			}
 		}
 	}
 
