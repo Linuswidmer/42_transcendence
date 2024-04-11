@@ -1,3 +1,29 @@
+//////////////////////////////
+// Establish ws connection manually for now
+// remove later again
+
+const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
+
+console.log(protocol + '://' + window.location.host + '/ws/pong_online/game/')
+window.ws = new WebSocket(
+	protocol + '://' + window.location.host + '/ws/pong_online/game/'
+);
+
+console.log("username", username);
+
+window.ws.onopen = function(e) {
+	// telling the server that the client is ready
+	console.log('WebSocket connection established');
+	// let data = {'playerId': 'SESSION ID HERE?????'};
+	// ws.send(JSON.stringify(data));
+	ws.username = username
+	ws.send(JSON.stringify({type: 'username', 'username': username}));
+	// ws.send(JSON.stringify({type: 'lobby_update', 'action': 'display'}));
+};
+
+////////////////////////////////
+
+
 ///////////////////////////////
 // General Setup
 const canvas = document.getElementById('pongCanvas');
@@ -506,13 +532,29 @@ const game = new Game(ws, canvas, ctx);
 // class 
 
 
-const startButton = document.getElementById('startButtonRemote');
-if (startButton) {
-	startButton.addEventListener('click', function() {
-		console.log("modus", ws.modus);
-		ws.send(JSON.stringify({'type': 'start', 'modus': ws.modus}));
-		// join_game(ws.modus);
-		console.log('Start button clicked pong online');
+const startButtonRemote = document.getElementById('startButtonRemote');
+if (startButtonRemote) {
+	startButtonRemote.addEventListener('click', function() {
+		ws.send(JSON.stringify({'type': 'start', 'modus': 'remote'}));
+		console.log('Start button remote clicked');
+	});
+}
+
+////// later only one button for starting the game
+
+const startButtonLocal = document.getElementById('startButtonLocal');
+if (startButtonLocal) {
+	startButtonLocal.addEventListener('click', function() {
+		ws.send(JSON.stringify({'type': 'start', 'modus': 'local'}));
+		console.log('Start button local clicked');
+	});
+}
+
+const startButtonAi = document.getElementById('startButtonAi');
+if (startButtonAi) {
+	startButtonAi.addEventListener('click', function() {
+		ws.send(JSON.stringify({'type': 'start', 'modus': 'ai'}));
+		console.log('Start button ai clicked');
 	});
 }
 

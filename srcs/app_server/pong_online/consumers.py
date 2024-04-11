@@ -180,6 +180,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#describing the type of message to deal with the information accordingly
 	async def receive(self, text_data):
 		logger.debug("data received in receive: %s", text_data)
+		print("receive:", text_data)
 
 		json_from_client = json.loads(text_data)
 
@@ -194,6 +195,14 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 		if message_type == "username":
 			self.username = json_from_client.get("username", "")
+
+		#maybe rethink later if start local game need to go through lobby update
+		#i add this for solo testing the pong_game site
+		if message_type == "start" and (json_from_client["modus"] == "local" or json_from_client["modus"] == "ai"):
+			await self.join_local_game(json_from_client["modus"])
+
+
+
 
 		if message_type == "start" and self.hosts_game:
 			logger.debug("start game with modus:%s", json_from_client["modus"])
@@ -290,6 +299,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		return json_from_client
 
 	async def join_local_game(self, modus):
+		print("join_local-game")
 		if modus == "ai":
 			local_opponent_name = "AI_Ursula"
 		if modus == 'local':

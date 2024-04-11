@@ -6,7 +6,7 @@ from pong_online.lobby import Lobby, Match
 # Create your views here.
 def pong_online(request):
 	print("pong online view")
-	return render(request, "pong_online/pong_game.html")
+	return render(request, "pong_online/pong_game.html", {"username": request.user.username})
 
 def display_lobby(request):
 	return render(request, "pong_online/lobby.html", {"username": request.user.username})
