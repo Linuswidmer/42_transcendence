@@ -14,6 +14,5 @@
 			<button class="create">Create game</button>
 		</div>	
 		
-		<script>let username = "{{ username }}"</script>
-		<script src="{% static 'pong_online/lobby.js' %}"></script>
+		<script src="{% static 'pong_online/lobby.js' %}" defer data-username="{{ username }}"></script>
 </div>

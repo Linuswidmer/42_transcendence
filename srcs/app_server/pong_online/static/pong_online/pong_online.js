@@ -2,27 +2,25 @@
 // Establish ws connection manually for now
 // remove later again
 
-const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
+// const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
 
-console.log(protocol + '://' + window.location.host + '/ws/pong_online/game/')
-window.ws = new WebSocket(
-	protocol + '://' + window.location.host + '/ws/pong_online/game/'
-);
+// console.log(protocol + '://' + window.location.host + '/ws/pong_online/game/')
+// window.ws = new WebSocket(
+// 	protocol + '://' + window.location.host + '/ws/pong_online/game/'
+// );
 
-console.log("username", username);
+// console.log("username", username);
 
-let loggedInMsg = document.getElementById('loggedInMessage');
-loggedInMsg.textContent += username;
 
-window.ws.onopen = function(e) {
-	// telling the server that the client is ready
-	console.log('WebSocket connection established');
-	// let data = {'playerId': 'SESSION ID HERE?????'};
-	// ws.send(JSON.stringify(data));
-	ws.username = username
-	ws.send(JSON.stringify({type: 'username', 'username': username}));
-	// ws.send(JSON.stringify({type: 'lobby_update', 'action': 'display'}));
-};
+// window.ws.onopen = function(e) {
+// 	// telling the server that the client is ready
+// 	console.log('WebSocket connection established');
+// 	// let data = {'playerId': 'SESSION ID HERE?????'};
+// 	// ws.send(JSON.stringify(data));
+// 	ws.username = username
+// 	ws.send(JSON.stringify({type: 'username', 'username': username}));
+// 	// ws.send(JSON.stringify({type: 'lobby_update', 'action': 'display'}));
+// };
 
 ////////////////////////////////
 
@@ -34,13 +32,9 @@ const ctx = canvas.getContext('2d');
 
 const ws = window.ws;
 
-///////////////////////////////
-// Setup Scoreboard
+let loggedInMsg = document.getElementById('loggedInMessage');
+loggedInMsg.textContent += ws.username;
 
-let     leftScore = 0;
-let     rightScore = 0;
-const   leftScoreElement = document.getElementById('leftScore');
-const   rightScoreElement = document.getElementById('rightScore');
 
 //////////////////////////////
 // Helper functions
@@ -51,7 +45,6 @@ function norm2height(relativeY) {
 function norm2width(relativeX) {
 	return (relativeX * canvas.width)
 }
-
 
 class Entity {
 	constructor(x, y, type) {
@@ -270,77 +263,6 @@ class Game {
 const game = new Game(ws, canvas, ctx);
 
 
-
-
-///////////////////////////////
-// Setup Game Objects
-// let	entities = [];
-// let iteration_time;
-
-// let     ballX;
-// let     ballY;
-// let		ballRadius;
-
-// let		paddleWidth;
-// let		paddleHeight;
-
-// let     leftPaddleX = 0;
-// let     leftPaddleY = 0;
-// let     rightPaddleX = 0
-// let     rightPaddleY = 0
-
-// /*****************************************************************************/
-// /*                               Game functions                              */
-// /*****************************************************************************/
-// // function drawBall(x, y) {
-// //     ctx.beginPath();
-// //     ctx.arc(x, y, ballRadius, 0, Math.PI*2);
-// // 	// ctx.ellipse(ballX, ballY, ballRadiusX, ballRadiusY, 0, 0, Math.PI*2);
-// //     ctx.fillStyle = "#000";
-// //     ctx.fill();
-// //     ctx.closePath();
-
-// 	// let ballImage = new Image();
-// 	// ballImage.src = '../static/pong_online/dvd_screen_saver.png'; // Replace with the path to your image
-
-// 	// ctx.beginPath();
-// 	// // Draw the image at the ball's position, adjusting for the image's size
-// 	// ctx.drawImage(ballImage, ballX - ballRadiusX, ballY - ballRadiusY, ballRadiusX * 2, ballRadiusY * 2);
-
-// 	// ctx.closePath();
-// // }
-
-// // function drawPaddle(x, y) {
-// //     ctx.fillStyle = '#000';
-// //     ctx.fillRect(x, y, paddleWidth, paddleHeight);
-// // }
-
-// function draw_entities(entities, context) {
-// 	// console.log("Draw");
-//     // Clear the canvas
-//     ctx.clearRect(0, 0, canvas.width, canvas.height);
-// 	for (var id in entities) {
-// 		var entity = entities[id];
-// 		entity.draw(context);
-// 	}
-// }
-
-// function gameOver() {
-//     console.log('Game Over');
-// 	clearInterval(update_interval);
-//     // document.getElementById('gameOverMessage').style.display = 'block';
-//     // document.getElementById('reloadLocalGame').style.display = 'block';
-//     // document.getElementById('reloadPlayOptions').style.display = 'block';
-// }
-
-// function norm2height(relativeY) {
-// 	return (relativeY * canvas.height)
-// }
-
-// function norm2width(relativeX) {
-// 	return (relativeX * canvas.width)
-// }
-
 // function interpolateEntities(entities, iteration_time) {
 // 	var now = +new Date();
 //     var render_timestamp = now - (1000.0 * iteration_time);
@@ -377,147 +299,9 @@ const game = new Game(ws, canvas, ctx);
 //     }
 // }
 
-// function initialize_entities(data, entities) {
-// 	if (data.initial_entity_data.entities !== undefined) {
-// 		for (var id in data.initial_entity_data.entities) {
-// 			var entity = data.initial_entity_data.entities[id];
-			
-// 			if (entity.entity_type === 'ball') {
-// 				entities[id] = new Ball(norm2width(entity.relX), norm2height(entity.relY));
-// 				entities[id].set_radius(norm2height(entity.relBallRadius));
-// 			} else if (entity.entity_type === 'paddle') {
-// 				entities[id] = new Paddle(norm2width(entity.relX), norm2height(entity.relY));
-// 				entities[id].set_dimensions(norm2width(entity.relPaddleWidth),
-// 					norm2height(entity.relPaddleHeight));
-// 			} else {
-// 				console.log("Warning: an unknown entity was send by the server");
-// 			}
-//         }
-// 	}
-// 	if (data.rel_entity_sizes.relBallRadius !== undefined) {
-// 		ballRadius = norm2height(data.rel_entity_sizes.relBallRadius);
-// 	}
-// 	if (data.rel_entity_sizes.relPaddleHeight !== undefined) {
-// 		paddleHeight = norm2height(data.rel_entity_sizes.relPaddleHeight);
-// 	}
-// 	if (data.rel_entity_sizes.relPaddleWidth !== undefined) {
-// 		paddleWidth = norm2width(data.rel_entity_sizes.relPaddleWidth);
-// 	}
-
-// 	// console.log("radius: ", ballRadius, " paddleHeight: ", paddleHeight, " paddleWidth: ", paddleWidth);
-// }
-
-// //update local entities in game with information sent by server tick
-// function process_server_update(server_entity_data, entities) {
-// 	try{
-// 		if (server_entity_data.entities) {
-// 			server_entities = server_entity_data.entities;
-// 		}
-
-// 		for (var id in server_entities) {
-// 			var entity = entities[id];
-	
-// 			// entity.position_buffer.push([server_entity_data.timestamp,
-// 			// 	norm2width(server_entities[id].relX),
-// 			// 	norm2height(server_entities[id].relY)]);
-// 			entity.set_position(norm2width(server_entities[id].relX), norm2height(server_entities[id].relY));
-// 		}
-// 		if (leftScore == WINNING_SCORE || rightScore == WINNING_SCORE)
-// 			gameOver();
-// 	} catch (error) {
-// 		console.log('Error parsing JSON:', error);
-// 	}
-// }
-
-// // Define the local update rate in hertz (frames per second)
 // const INTERPOLATION_RATE = 60;
 
-// //TODO: find another way to access same websocket in multiple js files
-// // let ws = window.ws
-// function join_game(modus) {
-// 	console.log("inside game join");
-// 	let update_interval; //interval function
-// 	let entities = [] //object (list) -> passed by ref
-// 	let iteration_time;
 
-// 	//prevents client from sending a lot of messages when holding a button pressed
-// 	let keys = {
-// 		'KeyA': false,
-// 		'KeyD': false,
-// 		'KeyJ': false,
-// 		'KeyL': false,
-// 	};
-
-// 	window.addEventListener('keydown', function(event) {
-// 		let data = undefined;
-// 		if (event.code === 'KeyA' && !keys[event.code]) {
-// 			keys[event.code] = true;
-// 			data = {'playerId': ws.username, 'type': 'keypress', 'action': 'moveUp'};
-// 		} else if (event.code === 'KeyD'  && !keys[event.code]) {
-// 			keys[event.code] = true;
-// 			data = {'playerId': ws.username, 'type': 'keypress', 'action': 'moveDown'};
-// 		} else if (modus === 'local' && event.code === 'KeyJ' && !keys[event.code]) {
-// 			keys[event.code] = true;
-// 			data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'moveUp'};
-// 		} else if (modus === 'local' && event.code === 'KeyL'  && !keys[event.code]) {
-// 			keys[event.code] = true;
-// 			data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'moveDown'};
-// 		}
-	
-// 		if (typeof data !== 'undefined' && ws.readyState === WebSocket.OPEN) {
-// 			ws.send(JSON.stringify(data));
-// 		}
-// 	});
-	
-// 	window.addEventListener('keyup', function(event) {
-// 		let data = undefined;
-// 		if (event.code === 'KeyA') {
-// 			keys[event.code] = false;
-// 			data = {'playerId': ws.username, 'type': 'keypress', 'action': 'stopMoveUp'};
-// 		} else if (event.code === 'KeyD') {
-// 			keys[event.code] = false;
-// 			data = {'playerId': ws.username, 'type': 'keypress', 'action': 'stopMoveDown'};
-// 		} else if (modus === 'local' && event.code === 'KeyJ') {
-// 			keys[event.code] = false;
-// 			data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'stopMoveUp'};
-// 		} else if (modus === 'local' && event.code === 'KeyL') {
-// 			keys[event.code] = false;
-// 			data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'stopMoveDown'};
-// 		}
-	
-// 		if (typeof data !== 'undefined' && ws.readyState === WebSocket.OPEN) {
-// 			ws.send(JSON.stringify(data));
-// 		}
-// 	});
-// };
-
-// // Handle messages sent by the server
-// ws.onmessage = function(e) {
-// 	try{
-// 		const data = JSON.parse(e.data);
-// 		latest_data = data;
-// 		if (data.type === "redirect_to_game_page") {
-// 			console.log(e.data);
-// 			fetch('/singleGameStats/?matchName=' + data.matchName + '&username=' + data.user)
-// 			.then(response => response.text())
-// 			.then(data => {
-// 				document.body.innerHTML = data;
-// 			}).catch((error) => {
-// 				console.error('Error:', error);
-// 			});
-// 		}
-
-// 		if (data.type === "playerId") {
-// 			ws.user_id = data.playerId;
-// 			console.log("user id from server", ws.user_id);
-// 		}
-// 		if (data.type === "group_game_state_update" && data.rel_entity_sizes !== undefined
-// 			&& data.initial_entity_data !== undefined) {
-// 			initialize_entities(data, entities);
-// 			console.log("init data", entities);
-// 			if (data.iteration_time) {
-// 				iteration_time = data.iteration_time;
-// 			}
 // 			//clear interval
 // 			// clearInterval(update_interval);
 
@@ -527,22 +311,6 @@ const game = new Game(ws, canvas, ctx);
 // 			// 	interpolateEntities(entities, iteration_time);
 // 			// 	draw_entities(entities, ctx);
 // 			// }, 1000 / INTERPOLATION_RATE);
-
-// 		}
-// 		if (data.type === "group_game_state_update" && data.entity_data !== undefined) {
-// 			process_server_update(data.entity_data, entities);
-// 			draw_entities(entities, ctx);
-// 			// console.log("entities after server update:", entities);
-// 		}
-		
-		
-// 	} catch (error) {
-// 		console.log('Error parsing JSON:', error);
-// 	}
-// };
-
-// class 
-
 
 const startButtonRemote = document.getElementById('startButtonRemote');
 if (startButtonRemote) {
@@ -570,17 +338,23 @@ if (startButtonAi) {
 	});
 }
 
-// const leaveButton = document.getElementById('leaveGame');
-// if (leaveButton) {
-// 	leaveButton.addEventListener('click', function() {
-// 		console.log("modus", ws.modus);
-// 		ws.send(JSON.stringify({type: 'leave', 'action': 'leave', 'username': username, 'modus': ws.modus}));
-// 		console.log('leaveButtonclicked');
+const leaveButton = document.getElementById('leaveGame');
+if (leaveButton) {
+	leaveButton.addEventListener('click', function() {
+		console.log("modus", ws.modus);
+		ws.send(JSON.stringify({type: 'leave', 'action': 'leave', 'username': username, 'modus': ws.modus}));
+		console.log('leaveButtonclicked');
+	});
+}
 
+window.addEventListener('beforeunload', function(event) {
+	//only send when tehre is a game running
+	ws.send(JSON.stringify({'type': 'player_left', 'player': ws.username}));
+});
 // 		fetch('/lobby')
 // 				.then(response => response.text())
 // 				.then(data => {
-// 					// Create a temporary DOM div element
+	// 					// Create a temporary DOM div element
 // 					var tempDiv = document.createElement('div');
 
 // 					// Set its innerHTML to the fetched HTML data
@@ -604,10 +378,4 @@ if (startButtonAi) {
 // 				.catch((error) => {
 // 					console.error('Error:', error);
 // 				});
-// 	});
-// }
 
-// window.addEventListener('beforeunload', function(event) {
-// 	//only send when tehre is a game running
-//     ws.send(JSON.stringify({'type': 'player_left', 'player': ws.username}));
-// });

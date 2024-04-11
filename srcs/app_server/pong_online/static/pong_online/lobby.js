@@ -62,7 +62,9 @@ window.ws = new WebSocket(
 	protocol + '://' + window.location.host + '/ws/pong_online/game/'
 );
 
-
+const data = document.currentScript.dataset;
+const username = data.username;
+console.log("username from request", username);
 
 ws.onopen = function(e) {
 	// telling the server that the client is ready

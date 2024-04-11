@@ -198,8 +198,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 		#maybe rethink later if start local game need to go through lobby update
 		#i add this for solo testing the pong_game site
-		if message_type == "start" and (json_from_client["modus"] == "local" or json_from_client["modus"] == "ai"):
-			await self.join_local_game(json_from_client["modus"])
+		# if message_type == "start" and (json_from_client["modus"] == "local" or json_from_client["modus"] == "ai"):
+		# 	await self.join_local_game(json_from_client["modus"])
 
 
 
@@ -299,7 +299,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		return json_from_client
 
 	async def join_local_game(self, modus):
-		print("join_local-game")
 		if modus == "ai":
 			local_opponent_name = "AI_Ursula"
 		if modus == 'local':
