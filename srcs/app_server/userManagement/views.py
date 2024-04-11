@@ -17,11 +17,6 @@ def dashboard(request):
 
 #view for registering a new user
 def register_user(request):
-	cookies = request.COOKIES
-
-		# Print cookies
-	print("Cookies:", cookies)
-
 	if request.method == "GET":
 		return render(
 			request, "userManagement/register.html",
