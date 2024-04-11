@@ -132,8 +132,8 @@ def profile_list(request):
     return render(request, "userManagement/profile_list.html", {"registered_users": all_users})
 
 @login_required
-def profile(request,username):
-    user = get_object_or_404(User, username=username)
+def profile(request):
+    user = get_object_or_404(User, username=request.user)
     if request.method == "POST":
         current_user_profile = request.user.profile
         data = request.POST
@@ -166,3 +166,6 @@ def dynamic_content(request):
 
 def navbar(request):
     return render(request, 'includes/navbar.html')
+
+def navigation(request):
+    return render(request, 'includes/navigation.html')

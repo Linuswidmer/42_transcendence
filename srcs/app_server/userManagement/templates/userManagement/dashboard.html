@@ -1,8 +1,8 @@
 <!--users/templates/users/dashboard.html-->
 
-{% extends 'base.html' %}
+{% extends 'onepager/land.html' %}
 {% load socialaccount %}
-{% block content %}
+
 <div  class="block">
 	<h1 class="title is-1">Hello, {{ user.username|default:'Guest' }}!</h1>
     {% if user.is_authenticated %}
@@ -17,4 +17,3 @@
 		<a href="{% provider_login_url 'provider' %}">Sign In with 42</a>
 	{% endif %}
 </div>
-{% endblock %}

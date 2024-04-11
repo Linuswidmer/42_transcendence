@@ -6,6 +6,7 @@
           <button class="navbar-button" id="gameBtn">Play</button>
           <button class="navbar-button" id="profileBtn">Dashboard</button>
         </div>
+
         <div>
             <button class="navbar-button" id="logoutBtn">Logout</button>
         </div>
@@ -13,10 +14,7 @@
 
 
     <script>
-      const isAuthenticated = {{ user.is_authenticated|lower }};
-      console.log(isAuthenticated)
-
-                    attachNavbarEventListeners(); // Attach event listeners after loading navbar
+          attachNavbarEventListeners(); // Attach event listeners after loading navbar
 
         // Function to attach event listeners to navbar buttons
         function attachNavbarEventListeners() {
@@ -39,15 +37,13 @@
             profileBtn.addEventListener('click', function() {
                 console.log('Dashboard button clicked');
                 // Add logic for the "Dashboard" button here
-                if (isAuthenticated) {
-                fetch("{% url 'userManagement:profile' user.username %}")
+                fetch("{% url 'userManagement:profile' %}")
                   .then(response => response.text())
                   .then(html => {
                       // Insert the content of game.html into your app's container
                       document.getElementById("content").innerHTML = html;
                   })
                   .catch(error => console.error('Error loading profile page:', error));
-                }
                 });
 
 

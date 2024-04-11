@@ -10,7 +10,7 @@
         <link rel="stylesheet" href="{% static 'pong/styles.css' %}">
         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
         <style>
-        #navbar-container {
+        #navbar {
           display: none;
       }
       </style>
@@ -18,11 +18,13 @@
     <!-- Add your JavaScript imports and scripts here -->
 </head>
 <body>
-  <div id="navbar-container"></div>
+  <nav id="navbar">
+    {% include 'includes/navbar.html'%}
+  </nav>
   <div id="content">
     {% block content %}
     <!-- Content -->
-    {% if user.is_authenticated %}
+      {% if user.is_authenticated %}
       {% include 'onepager/logged_in.html'%}
       {% else %}
       {% include 'onepager/stranger.html' %}
@@ -38,9 +40,19 @@
 
     {% endblock %}
     <script>
+    const isAuthenticated = {{ user.is_authenticated|lower }};
+    // Function to toggle the display of the navbar based on authentication status
+    function toggleNavbarDisplay(isAuthenticated) {
+            const navbar = document.getElementById('navbar');
+            navbar.style.display = isAuthenticated ? 'block' : 'none';
+        }
 
-
-      </script>
+        // Check authentication status when the DOM content is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Replace this with your actual authentication check logic
+            const isAuthenticated = true;
+            toggleNavbarDisplay(isAuthenticated);
+        });
 </script>
 </body>
 </html>
