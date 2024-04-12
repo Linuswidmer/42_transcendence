@@ -89,15 +89,80 @@
                     </div>
                 </div>
             </div>
+            <div class="d-flex justify-content-center">
+                {% if stats.totalGames != 0 %}
+                <div class="chart">
+                    <canvas id="winLossChart"></canvas>
+                </div>
+                {% endif %}
+                {% if stats.totalTournaments != 0 %}
+                <div class="chart">
+                    <canvas id="winLossChartTournament"></canvas>
+                </div>
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>
-<div class="d-flex justify-content-center">
-    <div class="chart">
-        <canvas id="winLossChart"></canvas>
-    </div>
-    <div class="chart">
-        <canvas id="winLossChartTournament"></canvas>
+
+<div class="container my-4">
+    <div class="card">
+        <div class="card-header text-center text-white bg-purple">
+            <h4>Game Stats</h4>
+            <div class="d-inline-block float-end">
+                <button class="btn btn-secondary" type="button" id="localGamesButton">
+                    Local Games
+                </button>
+                <button class="btn btn-secondary" type="button" id="remoteGamesButton">
+                    Remote Games
+                </button>
+                <button class="btn btn-secondary" type="button" id="aiGamesButton">
+                    AI Games
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row justify-content-center">
+                <div class="col-md-10">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class>
+                                <tr>
+                                    <th class="text-center">Longest Ball Rally</th>
+                                    <th class="text-center">AVG Points Per Game</th>
+                                    <th class="text-center">Best Game Score</th>
+                                    <th class="text-center">Highest Winning Streak</th>
+                                </tr>
+                            </thead>
+                                <tbody id="gameStatsLocal">
+                                    <tr>
+                                        <td class="text-center">{{stats.gameTypeStats.local.longestBallRally}}</td>
+                                        <td class="text-center">{{stats.gameTypeStats.local.averagePointsPerGame}}</td>
+                                        <td class="text-center">{{stats.gameTypeStats.local.bestGameScore}}</td>
+                                        <td class="text-center">{{stats.gameTypeStats.local.highestWinningStreak}}</td>
+                                    </tr>
+                                </tbody>
+                                <tbody  id="gameStatsRemote">
+                                    <tr>
+                                        <td class="text-center">{{stats.gameTypeStats.remote.longestBallRally}}</td>
+                                        <td class="text-center">{{stats.gameTypeStats.remote.averagePointsPerGame}}</td>
+                                        <td class="text-center">{{stats.gameTypeStats.remote.bestGameScore}}</td>
+                                        <td class="text-center">{{stats.gameTypeStats.remote.highestWinningStreak}}</td>
+                                    </tr>
+                                </tbody>
+                                <tbody id="gameStatsAI">
+                                    <tr>
+                                        <td class="text-center">{{stats.gameTypeStats.ai.longestBallRally}}</td>
+                                        <td class="text-center">{{stats.gameTypeStats.ai.averagePointsPerGame}}</td>
+                                        <td class="text-center">{{stats.gameTypeStats.ai.bestGameScore}}</td>
+                                        <td class="text-center">{{stats.gameTypeStats.ai.highestWinningStreak}}</td>
+                                    </tr>
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -105,21 +170,7 @@
     <div class="block">
         <h3 class="title is-4"><br>Stats:</h3>
         <div class="content">
-            <div>
-                <h4>Total Stats:</h4>
-                <ul>
-                    <li>Total Games: {{ stats.totalGames }}</li>
-                    <li>Total Game Time: {{ stats.totalGameTime }}</li>
-                    <li>Total Tournaments: {{ stats.totalTournaments }}</li>
-                    <li>Won Tournaments: {{ stats.wonTournaments }}</li>
-                    <li>Best Tournament Rank: {{ stats.bestTournamentRank }}</li>
-                    <li>Total Misses: {{ stats.totalMisses }}</li>
-                    <li>Total Hits: {{ stats.totalHits }}</li>
-                    <li>Total Wins: {{ stats.totalWins }}</li>
-                    <li>Total Defeats: {{ stats.totalDefeats }}</li>
-                </ul>
-            </div>
-    
+
             <div>
                 <h4>Game Type Stats:</h4>
                 <div>
@@ -254,26 +305,73 @@
 </div>
 
 <script>
-    var ctx = document.getElementById('winLossChart').getContext('2d');
-    var ctx = document.getElementById('winLossChartTournament').getContext('2d');
-    var chart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: ['Wins', 'Losses'],
-            datasets: [{
-                data: [{{ stats.totalWins }}, {{ stats.totalDefeats }}],
-                backgroundColor: ['green', 'red'],
-            }]
-        },
-        options: {
-            responsive: true,
-            title: {
-                display: true,
-                text: 'Win/Loss Ratio'
+    var chartElement = document.getElementById('winLossChart');
+    if (chartElement !== null)
+    {
+        var ctx = chartElement  .getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Wins', 'Losses'],
+                datasets: [{
+                    data: [{{ stats.totalWins }}, {{ stats.totalDefeats }}],
+                    backgroundColor: ['green', 'red'],
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Games Win/Loss Ratio'
+                    }
+                }
             }
-        }
+        });
+    }
+
+    var chartElement2 = document.getElementById('winLossChartTournament');
+    if (chartElement2 !== null)
+    {
+        var ctx2 = chartElement2.getContext('2d');
+        var chart2 = new Chart(ctx2, {
+            type: 'pie',
+            data: {
+                labels: ['Wins', 'Losses'],
+                datasets: [{
+                    data: [{{ stats.wonTournaments }}, {{ stats.totalTournaments|add:'-wonTournaments' }}],
+                    backgroundColor: ['green', 'red'],
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Tournaments Win/Loss Ratio'
+                    }
+                }
+            }
+        });
+    }
+
+    document.getElementById('localGamesButton').addEventListener('click', function() {
+    document.getElementById('gameStatsLocal').style.display = 'block';
+    document.getElementById('gameStatsRemote').style.display = 'none';
+    document.getElementById('gameStatsAI').style.display = 'none';
     });
 
+    document.getElementById('remoteGamesButton').addEventListener('click', function() {
+        document.getElementById('gameStatsLocal').style.display = 'none';
+        document.getElementById('gameStatsRemote').style.display = 'block';
+        document.getElementById('gameStatsAI').style.display = 'none';
+    });
+
+    document.getElementById('aiGamesButton').addEventListener('click', function() {
+        document.getElementById('gameStatsLocal').style.display = 'none';
+        document.getElementById('gameStatsRemote').style.display = 'none';
+        document.getElementById('gameStatsAI').style.display = 'block';
+    });
 </script>
 
 {% endblock content %}
