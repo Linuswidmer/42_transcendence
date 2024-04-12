@@ -305,6 +305,7 @@
 </div>
 
 <script>
+    // this will only work while the js is not a separate file
     var chartElement = document.getElementById('winLossChart');
     if (chartElement !== null)
     {
@@ -316,7 +317,7 @@
                 datasets: [{
                     data: [{{ stats.totalWins }}, {{ stats.totalDefeats }}],
                     backgroundColor: ['green', 'red'],
-                }]
+                }] // workaround would be reading the data from the html element
             },
             options: {
                 responsive: true,

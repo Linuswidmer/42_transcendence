@@ -3,6 +3,7 @@ echo "setup_users.sh: Start"
 
 # Check if the user exists
 user_exists=$(psql -U pong_user -d postgres -t -c "SELECT 1 FROM auth_user WHERE username = 'linus'")
+admin_exists=$(psql -U pong_user -d postgres -t -c "SELECT 1 FROM auth_user WHERE username = 'admin'")
 ursula_exists=$(psql -U pong_user -d postgres -t -c "SELECT 1 FROM auth_user WHERE username = 'AI_Ursula'")
 local_exists=$(psql -U pong_user -d postgres -t -c "SELECT 1 FROM auth_user WHERE username = 'DUMP_LOCAL'")
 
@@ -14,6 +15,15 @@ if [ -z "$user_exists" ]; then
 else
     echo "User 'linus' already exists."
 fi
+
+if [ -z "$admin_exists" ]; then
+    psql -U pong_user -d postgres -c "
+    INSERT INTO auth_user (is_superuser, first_name, last_name, email, is_staff, is_active, date_joined,  username, password) VALUES (true, 'admin', '', '', true, 'false', '01-01-1970', 'admin', 'coucou');
+    "
+else
+    echo "User 'admin' already exists."
+fi
+
 
 if [ -z "$ursula_exists" ]; then
     psql -U pong_user -d postgres -c "
