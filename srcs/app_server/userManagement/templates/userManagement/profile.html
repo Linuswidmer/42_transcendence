@@ -4,58 +4,104 @@
 
 {% block content %}
 
+<div class="d-flex justify-content-center">
+    <img class="rounded-circle profile-image" src="{{ user.profile.avatar.url }}" alt="Placeholder image">
+</div>
+<h2 class="text-center text-dark my-4 stylish-font"> 
+    {{user.username}}'s Profile 
+    {% if user.profile.logged_in is True  %}
+        <span style="color: green; margin-left: 5px; font-size: 0.5em;">Online</span>
+    {% else %}
+        <span style="color: red; margin-left: 5px; font-size: 0.5em;">Offline</span>    
+    {% endif %}
+</h2>
+
+
+<div class="container my-4">
+    <div class="card">
+        <div class="card-header text-center text-white bg-purple">
+            <h4>Personal information</h4>
+        </div>
+        <div class="card-body">
+            <div class="row justify-content-center">
+                <div class="col-md-10">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class>
+                                <tr>
+                                    <th class="text-center">Username</th>
+                                    <th class="text-center">First Name</th>
+                                    <th class="text-center">Last Name</th>
+                                    <th class="text-center">Registration Date</th>
+                                    <th class="text-center">Last Login</th>
+                                    <th class="text-center">ID</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-center">{{user.username}}</td>
+                                    <td class="text-center">{{user.first_name}}</td>
+                                    <td class="text-center">{{user.last_name}}</td>
+                                    <td class="text-center">{{user.date_joined}}</td>
+                                    <td class="text-center">{{user.last_login}}</td>
+                                    <td class="text-center">{{user.id}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-4">
+    <div class="card">
+        <div class="card-header text-center text-white bg-purple">
+            <h4>Player Stats</h4>
+        </div>
+        <div class="card-body">
+            <div class="row justify-content-center">
+                <div class="col-md-10">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class>
+                                <tr>
+                                    <th class="text-center">Total Games</th>
+                                    <th class="text-center">Total Game Time</th>
+                                    <th class="text-center">Total Tournaments</th>
+                                    <th class="text-center">Best Tournament Rank</th>
+                                    <th class="text-center">Total Hits</th>
+                                    <th class="text-center">Total Misses</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-center">{{ stats.totalGames }}</td>
+                                    <td class="text-center">{{ stats.totalGameTime }}</td>
+                                    <td class="text-center">{{ stats.totalTournaments }}</td>
+                                    <td class="text-center">{{ stats.bestTournamentRank }}</td>
+                                    <td class="text-center">{{ stats.totalHits }}</td>
+                                    <td class="text-center">{{ stats.totalMisses }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="d-flex justify-content-center">
+    <div class="chart">
+        <canvas id="winLossChart"></canvas>
+    </div>
+    <div class="chart">
+        <canvas id="winLossChartTournament"></canvas>
+    </div>
+</div>
+
 <div class="column">
-    <div class="block">
-        <div class="media-left">
-            <figure class="image is-128x128">
-              <img src="{{ user.profile.avatar.url }}"
-                   alt="Placeholder image">
-            </figure>
-        </div>
-        {% if user == request.user %}
-            <a href="{% url 'userManagement:update_profile' %}">Change Profile Picture</a>
-        {% endif %} 
-    <h1 class="title is-1">
-        {{user.username}}'s Profile
-        {% if user.profile.logged_in is True  %}
-            <span style="color: green; margin-left: 5px; font-size: 0.5em;">Online</span>
-        {% else %}
-            <span style="color: red; margin-left: 5px; font-size: 0.5em;">Offline</span>    
-        {% endif %}
-    </h1>
-    </div>
-    {% if user != request.user %}
-	<form method="post">
-		{% csrf_token %}
-		<div class="buttons has-addons">
-		{% if user.profile in request.user.profile.follows.all %}
-			<button class="button is-success is-static">Follow</button>
-			<button class="button is-danger" name="follow" value="unfollow">Unfollow</button>
-		{% else %}
-			<button class="button is-success" name="follow" value="follow">Follow</button>
-			<button class="button is-danger is-static">Unfollow</button>
-		{% endif %}
-		</div>
-	</form>
-    {% endif %} 
-    <div class="block">
-        <h3 class="title is-4"><br>Personal Info:</h3>
-        <div class="content">
-            <ul>
-                <li>username: {{user.username}}</li>
-                <li>first name: {{user.first_name}}</li>
-                <li>last name: {{user.last_name}}</li>
-                <li>registration date: {{user.date_joined}}</li>
-                <li>last login: {{user.last_login}}</li>
-                <li>ID: {{user.id}}</li>
-            </ul>
-        </div>
-        {% if user == request.user %}
-            <a href="{% url 'userManagement:update_user' %}">Update Profile Info</a>
-            <a href="{% url 'userManagement:change_password' %}">Change password</a>
-        {% endif %} 
-    </div>
-    
     <div class="block">
         <h3 class="title is-4"><br>Stats:</h3>
         <div class="content">
@@ -170,6 +216,64 @@
         </div>
     </div>
 
+    <div class="block">
+        {% if user == request.user %}
+            <a href="{% url 'userManagement:update_profile' %}">Change Profile Picture</a>
+        {% endif %} 
+    <h1 class="title is-1">
+        {{user.username}}'s Profile
+        {% if user.profile.logged_in is True  %}
+            <span style="color: green; margin-left: 5px; font-size: 0.5em;">Online</span>
+        {% else %}
+            <span style="color: red; margin-left: 5px; font-size: 0.5em;">Offline</span>    
+        {% endif %}
+    </h1>
+
+    {% if user == request.user %}
+            <a href="{% url 'userManagement:update_user' %}">Update Profile Info</a>
+            <a href="{% url 'userManagement:change_password' %}">Change password</a>
+        {% endif %} 
+    </div>
+
+    <!-- IMPORTANT !!!! -->
+    {% if user != request.user %}
+	<form method="post">
+		{% csrf_token %}
+		<div class="buttons has-addons">
+		{% if user.profile in request.user.profile.follows.all %}
+			<button class="button is-success is-static">Follow</button>
+			<button class="button is-danger" name="follow" value="unfollow">Unfollow</button>
+		{% else %}
+			<button class="button is-success" name="follow" value="follow">Follow</button>
+			<button class="button is-danger is-static">Unfollow</button>
+		{% endif %}
+		</div>
+	</form>
+    {% endif %} 
+
 </div>
+
+<script>
+    var ctx = document.getElementById('winLossChart').getContext('2d');
+    var ctx = document.getElementById('winLossChartTournament').getContext('2d');
+    var chart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Wins', 'Losses'],
+            datasets: [{
+                data: [{{ stats.totalWins }}, {{ stats.totalDefeats }}],
+                backgroundColor: ['green', 'red'],
+            }]
+        },
+        options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: 'Win/Loss Ratio'
+            }
+        }
+    });
+
+</script>
 
 {% endblock content %}

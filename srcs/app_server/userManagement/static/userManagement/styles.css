@@ -5,3 +5,17 @@
 .bg-purple {
     background-color: #6f42c1; /* Change this to the shade of purple you want */
 }
+
+.profile-image {
+    width: 128px;
+    height: 128px;
+    object-fit: cover;
+}
+
+.chart
+{
+    width: 400px;
+    height: 400px;
+    display: flex; 
+    justify-content: center;
+}
