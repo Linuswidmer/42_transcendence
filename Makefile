@@ -2,7 +2,7 @@ dev: clean
 	make -C ./srcs/app_server dev
 
 prod: clean
-	cd srcs && docker compose up --build
+	cd srcs && docker compose up -d
 
 clean:
 	-docker stop $(shell docker ps -aq)

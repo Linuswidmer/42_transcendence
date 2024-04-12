@@ -11,16 +11,9 @@
 			<button type="submit">logout</button>
 		</form>
 	{% else %}
-        <button type="button" class="button" id="42Btn">Sign In with 42</button>
 		<a href="{% url 'userManagement:login' %}">Login</a>
 		<a href="{% url 'userManagement:register_user' %}">Register</a>
 		<a href="{% url 'userManagement:register_guest' %}">Continue as Guest</a>
-        <script>
-            document.getElementById("42Btn").addEventListener("click", function() {
-            console.log("42btn");
-            window.location.href="{% provider_login_url 'provider' %}";
-        });
-        </script>
 	{% endif %}
 </div>
 {% endblock %}  
