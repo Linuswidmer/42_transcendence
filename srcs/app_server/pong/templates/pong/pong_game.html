@@ -1,4 +1,4 @@
-{% extends 'pong/home.html' %}
+{% include "includes/navbar.html" %}
 {% load static %}
 {% block title %}
 PONG GAME
@@ -22,7 +22,7 @@ PONG GAME
     </div>
 {% endblock %}
     <script src="{% static 'pong/pong_local.js' %}"></script>
-    
+
     <script>
             const startButton = document.getElementById('startButton');
                 if (startButton) {
@@ -32,4 +32,3 @@ PONG GAME
                     });
                 }
     </script>
-

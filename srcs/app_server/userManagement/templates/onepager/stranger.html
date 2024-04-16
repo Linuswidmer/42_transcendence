@@ -1,9 +1,11 @@
 
 {% load static %}
 {% load socialaccount %}
+<link rel="stylesheet" href="{% static 'pong/styles.css' %}">
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
-    <h1>Welcome Stranger</h1>
-<div class="container">
+<div id="content">
+  <h1>Welcome Stranger</h1>
   <div class="image-container">
     <img src="{% static 'pong/michael.jpg' %}" alt="Image description">
   </div>
@@ -69,7 +71,6 @@
         `;
          // Add the modal HTML to the container
          document.getElementById("modalContainer").innerHTML = modalHtml;
-
           // Show the modal
           const modal = document.getElementById(`${containerId}Modal`);
           modal.classList.add('show');
@@ -137,6 +138,14 @@
                         .catch(error => console.error('Error fetching form:', error));
                     }
 
+        function executeJavaScriptInContent(html) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const scriptElements = doc.querySelectorAll('script');
+        scriptElements.forEach(script => {
+            eval(script.textContent);
+        });
+    }
 // Function to retrieve CSRF token from cookies
 function getCookie(name) {
     let cookieValue = null;
@@ -163,6 +172,7 @@ const csrftoken = getCookie('csrftoken');
             .then(html => {
                 // Replace the content of the main container with the logged-in content
                 document.getElementById("content").innerHTML = html;
+                executeJavaScriptInContent(html);
             })
             .catch(error => console.error('Error loading logged-in content:', error));
     }

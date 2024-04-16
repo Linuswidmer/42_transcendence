@@ -9,50 +9,27 @@
     {% block styles %}
         <link rel="stylesheet" href="{% static 'pong/styles.css' %}">
         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-        <style>
-        #navbar {
-          display: none;
-      }
-      </style>
+
         {% endblock %}
     <!-- Add your JavaScript imports and scripts here -->
 </head>
 <body>
-  <nav id="navbar">
-    {% include 'includes/navbar.html'%}
-  </nav>
-  <div id="content">
-    {% block content %}
-    <!-- Content -->
-      {% if user.is_authenticated %}
-      {% include 'onepager/logged_in.html'%}
-      {% else %}
-      {% include 'onepager/stranger.html' %}
-      {% endif %}
 
+  {% block content %}
+  {% if user.is_authenticated %}
+  {% include 'onepager/logged_in.html' %}
+  {% else %}
+  {% include 'onepager/stranger.html' %}
+  {% endif %}
+
+    <!-- Content -->
         <!-- Content will be dynamically loaded here -->
         {% endblock %}
-    </div>
+
 
     <!-- Footer -->
     {% include 'includes/footer.html' %}
-    {% block scripts %}
 
-    {% endblock %}
-    <script>
-    const isAuthenticated = {{ user.is_authenticated|lower }};
-    // Function to toggle the display of the navbar based on authentication status
-    function toggleNavbarDisplay(isAuthenticated) {
-            const navbar = document.getElementById('navbar');
-            navbar.style.display = isAuthenticated ? 'block' : 'none';
-        }
 
-        // Check authentication status when the DOM content is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            // Replace this with your actual authentication check logic
-            const isAuthenticated = true;
-            toggleNavbarDisplay(isAuthenticated);
-        });
-</script>
 </body>
 </html>
