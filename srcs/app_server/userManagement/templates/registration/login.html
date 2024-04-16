@@ -2,16 +2,22 @@
 
 {% block content %}
 {% load socialaccount %}
-<div  class="block">
-    <h2>Login</h2>
+<div class="block">
     <form method="post" id="loginModalContainerForm">
         {% csrf_token %}
         {{ form.as_p }}
-        <input type="submit" value="Login">
+        <input type="submit" value="Login" class="button">
     </form>
-
-    <a href="{% url 'userManagement:register_user' %}">I don't have an account yet</a>
-    <a href="{% provider_login_url 'provider' %}">Sign In with 42</a>
-    <a href="{% url 'userManagement:register_guest' %}">Continue as Guest</a>
+    <div class="row">
+      <div class="col">
+        <a href="{% url 'userManagement:register_user' %}" class="button">Create account</a>
+      </div>
+      <div class="col">
+        <a href="{% provider_login_url 'provider' %}" class="button">Login with 42</a>
+      </div>
+      <div class="col">
+        <a href="{% url 'userManagement:register_guest' %}" class="button">Continue as Guest</a>
+      </div>
+    </div>
 </div>
 {% endblock %}

@@ -22,7 +22,7 @@
                 function loadContent() {
             // Check if the user is authenticated
             const isAuthenticated = {% if user.is_authenticated %} true {% else %} false {% endif %};
-            
+
             // Load content accordingly
             if (isAuthenticated) {
                 loadLoggedInContent();
@@ -43,7 +43,7 @@
                     })
                     .catch(error => console.error('Error loading content:', error));
             }
-    
+
             // Function to load content for non-authenticated users
             function loadNonAuthenticatedContent() {
                 fetch("{% url 'stranger' %}")
@@ -62,4 +62,3 @@
         </script>
 </body>
 </html>
-

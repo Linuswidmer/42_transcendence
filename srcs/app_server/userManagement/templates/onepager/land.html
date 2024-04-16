@@ -15,7 +15,7 @@
 </head>
 <body>
 
-  {% block content %}
+
   {% if user.is_authenticated %}
   {% include 'onepager/logged_in.html' %}
   {% else %}
@@ -24,11 +24,11 @@
 
     <!-- Content -->
         <!-- Content will be dynamically loaded here -->
-        {% endblock %}
 
 
-    <!-- Footer -->
-    {% include 'includes/footer.html' %}
+        <!-- Footer -->
+        {% include 'includes/footer.html' %}
+
 
 
 </body>

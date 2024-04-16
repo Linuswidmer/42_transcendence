@@ -50,15 +50,54 @@
   text-align: center;
 }
 
+.col {
+  padding: 0 !important;
+}
+
 .column:not(:last-child) {
   border-right: 1px solid #fff;
 }
 /* ---------------------------- MAIN -------------------------------*/
 
-html {
+body, html {
   background-color: #fff; /* Light gray background */
   color: #6a0dad;
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
+
+#wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+#content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: 100vh;
+  flex: 1; /* Make content area take up remaining space */
+  overflow: hidden; /* Hide overflow */
+  padding-bottom: 100;
+}
+
+.welcome-container {
+  text-align: center;
+  margin-top: 20px; /* Adjust top margin as needed */
+}
+
+.image-container {
+  text-align: center;
+}
+
+.button-container {
+  margin-top: 10px;
+  padding-bottom: 10px;
+}
+
 .container {
   background-color: #fff;
   max-width: 800px;
@@ -66,9 +105,18 @@ html {
   padding: 50px 20px;
   text-align: center;
 }
-h1 {
+
+h1, .modal-title, .modal-body {
   color: #6a0dad; /* White heading color */
   background-color: #fff;
+  text-align: center;
+}
+
+.modal-title {
+  font-size: 25px !important;
+}
+label {
+  font-size: 20px;
 }
 .button {
   display: inline-block;
@@ -79,10 +127,12 @@ h1 {
   text-decoration: none;
   border-radius: 5px;
   transition: background-color 0.3s, background-color 0.3s;
+  text-align: center;
 }
 .button:hover {
   color: #fff; /* White text color on hover */
   background-color: #6a0dad;
+  text-decoration: none;
 }
 .image-container {
   margin-bottom: 30px;
