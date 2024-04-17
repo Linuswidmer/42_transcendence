@@ -56,6 +56,7 @@ class Lobby {
     handle_message(e) {
         try {
             const data = JSON.parse(e.data);
+			console.log("data from server: ", data);
 			switch (data.type) {
 				case 'lobby_update':
 					this.update_lobby(data);
@@ -100,7 +101,8 @@ class Lobby {
 
 	update_lobby(data) {
 		let matches_info = data.matches_info;
-		let tournaments_info = data.tournament_info;
+		let tournaments_info = data.tournaments_info;
+		console.log("lobby_update tm-info: ", tournaments_info);
 
 		//clear remote_game_list div
 		this.remote_game_list_DIV.innerHTML = '';
