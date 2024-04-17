@@ -25,10 +25,10 @@
 ////////////////////////////////
 
 
-///////////////////////////////
-// General Setup
-const canvas = document.getElementById('pongCanvas');
-const ctx = canvas.getContext('2d');
+	///////////////////////////////
+	// General Setup
+	const canvas = document.getElementById('pongCanvas');
+	const ctx = canvas.getContext('2d');
 
 const ws = window.ws;
 
@@ -42,9 +42,9 @@ function norm2height(relativeY) {
 	return (relativeY * canvas.height)
 }
 
-function norm2width(relativeX) {
-	return (relativeX * canvas.width)
-}
+	function norm2width(relativeX) {
+		return (relativeX * canvas.width)
+	}
 
 class Entity {
 	constructor(x, y, type) {

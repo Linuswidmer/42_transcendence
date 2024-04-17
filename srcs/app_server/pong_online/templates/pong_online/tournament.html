@@ -1,0 +1,33 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tournament Visualization</title>
+<link rel="stylesheet" type="text/css" href="{% static 'pong_online/styles.css' %}">
+</head>
+<body>
+
+<div class="tournament-container">
+    <!-- Tournament name -->
+    <div class="tournament-name" id="tournamentName">
+        Tournament Name
+    </div>
+
+    <!-- Players in the tournament -->
+    <div class="tournament-players" id="tournamentPlayers">
+        <!-- Players will be dynamically added here -->
+    </div>
+
+    <!-- Tournament rounds -->
+    <div class="rounds" id="rounds">
+        <!-- Rounds will be dynamically added here -->
+    </div>
+</div>
+
+<script  src="{% static 'pong_online/tournament.js' %}"></script>
+
+</body>
+</html>

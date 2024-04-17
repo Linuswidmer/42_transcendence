@@ -1,38 +1,26 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div>
-      {% if gld.userGameStats.score > gld.opponentGameStats.score  %}
-            <h1 class="title is-1">{{ gld.userGameStats.user }} won {{ gld.game.matchName }}</h1>
-      {% else %}
-            <h1 class="title is-1">{{ gld.opponentGameStats.user }} won {{ gld.game.matchName }}</h1> 
-      {% endif %}
-      <ul>
-          <strong>Overall Game Data for game {{ gld.game.matchName }}:</strong>
-          <li>Game Type: {{ gld.game.gameType }}</li>
-          <li>Duration: {{ gld.game.gameDuration }}</li>
-          <li>Date: {{ gld.game.matchDate }}</li>
-          <li>Time: {{ gld.game.matchTime }}</li>
-          <li>Tournament: {{ gld.game.tournament.id }}</li>
-      
-          <strong>Stats from <a href="/profile/{{ gld.userGameStats.user.username }}">{{ gld.userGameStats.user }}</a>:</strong>
-          <li>Score: {{ gld.userGameStats.score }}</li>
-          <li>Ball Hits: {{ gld.userGameStats.ballHits }}</li>
-          <li>Ball Misses: {{ gld.userGameStats.ballMisses }}</li>
-          <li>Highest Streak: {{ gld.userGameStats.highestStreak }}</li>
-          <li>Longest Ball Rally: {{ gld.userGameStats.longestBallRallyHits }}</li>
-      
-            {% if gld.opponentGameStats.user != None %}
-                  <strong>Stats from <a href="/profile/{{ gld.opponentGameStats.user.username }}">{{ gld.opponentGameStats.user }}</a>:</strong>
-            {% endif %}
-            {% if gld.opponentGameStats.user == None %}
-                  <strong>Stats from Guest:</strong>
-            {% endif %}
-          <li>Score: {{ gld.opponentGameStats.score }}</li>
-          <li>Ball Hits: {{ gld.opponentGameStats.ballHits }}</li>
-          <li>Ball Misses: {{ gld.opponentGameStats.ballMisses }}</li>
-          <li>Highest Streak: {{ gld.opponentGameStats.highestStreak }}</li>
-          <li>Longest Ball Rally: {{ gld.opponentGameStats.longestBallRallyHits }}</li>
-      </ul>
-</div>
+<ul>
+      <strong>Overall Game Data for game {{ gld.game.matchName }}:</strong>
+      <li>Game Type: {{ gld.game.gameType }}</li>
+      <li>Duration: {{ gld.game.gameDuration }}</li>
+      <li>Date: {{ gld.game.matchDate }}</li>
+      <li>Time: {{ gld.game.matchTime }}</li>
+      <li>Tournament: {{ gld.game.tournament.tournament_id }}</li>
+
+      <strong>Stats from <a href="/profile/{{ gld.userGameStats.user.username}}">{{ gld.userGameStats.user }}</a>:</strong>
+      <li>Score: {{ gld.userGameStats.score }}</li>
+      <li>Ball Hits: {{ gld.userGameStats.ballHits }}</li>
+      <li>Ball Misses: {{ gld.userGameStats.ballMisses }}</li>
+      <li>Highest Sreak: {{ gld.userGameStats.highestStreak }}</li>
+      <li>Longest Ball Rally: {{ gld.userGameStats.longestBallRallyHits }}</li>
+
+      <strong>Stats from <a href="/profile/{{ gld.opponentGameStats.user.username}}">{{ gld.opponentGameStats.user }}</a>:</strong>
+      <li>Score: {{ gld.opponentGameStats.score }}</li>
+      <li>Ball Hits: {{ gld.opponentGameStats.ballHits }}</li>
+      <li>Ball Misses: {{ gld.opponentGameStats.ballMisses }}</li>
+      <li>Highest Sreak: {{ gld.opponentGameStats.highestStreak }}</li>
+      <li>Longest Ball Rally: {{ gld.opponentGameStats.longestBallRallyHits }}</li>
+</ul>
 {% endblock %}

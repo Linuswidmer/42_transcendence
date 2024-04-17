@@ -52,7 +52,7 @@ def register_guest(request):
 			user.groups.add(guest_users)
 			user.set_unusable_password()
 			user.save()
-			login(request, user)
+			login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 			return redirect("userManagement:profile_list")
 		else:
 			return render(
