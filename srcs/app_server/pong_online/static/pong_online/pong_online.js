@@ -27,8 +27,8 @@
 
 	///////////////////////////////
 	// General Setup
-	const canvas = document.getElementById('pongCanvas');
-	const ctx = canvas.getContext('2d');
+const canvas = document.getElementById('pongCanvas');
+const ctx = canvas.getContext('2d');
 
 const ws = window.ws;
 
@@ -144,6 +144,42 @@ class Game {
 					default:
 						console.log('Unknown message', data);
 				}
+			} else if (data.type == 'redirect_to_tournament_lobby') {
+				console.log('/tournament/' + data.tournament_id)
+				fetch('/tournament/' + data.tournament_id + '/')
+					.then(response => response.text())
+					/* .then(data => {
+						document.body.innerHTML = data
+					}) */
+					.then(data => {
+						// Create a temporary DOM div element
+						var tempDiv = document.createElement('div');
+	
+						// Set its innerHTML to the fetched HTML data
+						tempDiv.innerHTML = data;
+				
+						// Extract the src attribute from the script tag
+						var scriptSrc = tempDiv.querySelector('script').src;
+				
+						// Use the fetched HTML data
+						document.body.innerHTML = data;
+				
+						//console.log(data);
+						// Create a new script element
+						var script = document.createElement('script');
+				
+						// Set its src attribute to the extracted src
+						script.src = scriptSrc;
+						
+						// Append the script element to the body of the document
+						document.body.appendChild(script);
+	
+					})
+					.catch((error) => {
+						console.error('Error:', error);
+					});
+				//update tournament lobby after fetch
+				ws.send(JSON.stringify({type: 'lobby_update'}));
 			}
             
         } catch (error) {

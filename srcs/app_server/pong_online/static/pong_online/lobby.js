@@ -25,6 +25,11 @@ class Lobby {
             this.handle_create_game_button_click();
         });
 
+		this.play_local_button = document.getElementById('create_tournament');
+		this.play_local_button.addEventListener('click', () => {
+            this.handle_create_tournament_button_click();
+        });
+
 		this.play_local_button = document.getElementById('play_local');
 		this.play_local_button.addEventListener('click', () => {
             this.handle_play_local_button_click();
@@ -36,6 +41,7 @@ class Lobby {
         });
 
 		this.remote_game_list_DIV = document.getElementById('remote_game_list');
+		this.tournament_list_DIV = document.getElementById('tournament_list');
 
 		this.ws.onopen = (e) => this.send_initial_data_to_server(e);
         this.ws.onmessage = (e) => this.handle_message(e);
@@ -57,6 +63,9 @@ class Lobby {
 				case 'join':
 					this.join_game(data.modus);
 					break;
+				case 'join_tournament':
+					this.join_tournament(data);
+					break;
 				default:
 					console.log('Unknown message', data);
 			}
@@ -68,6 +77,12 @@ class Lobby {
 	handle_create_game_button_click() {
 		console.log("Create game button clicked");
 		ws.send(JSON.stringify({type: 'lobby_update', 'action': 'create',
+			'username': this.username}));
+	}
+
+	handle_create_tournament_button_click() {
+		console.log("Create tournament button clicked");
+		ws.send(JSON.stringify({type: 'lobby_update', 'action': 'create_tournament',
 			'username': this.username}));
 	}
 
@@ -85,9 +100,11 @@ class Lobby {
 
 	update_lobby(data) {
 		let matches_info = data.matches_info;
+		let tournaments_info = data.tournament_info;
 
 		//clear remote_game_list div
 		this.remote_game_list_DIV.innerHTML = '';
+		this.tournament_list_DIV.innerHTML = '';
 
 		for (var match_id in matches_info) {
 			((id) => {
@@ -109,6 +126,28 @@ class Lobby {
 						'match_id': id, 'username': this.username, 'modus': 'remote'}));
 				});
 			})(match_id);
+		}
+
+		for (var tournament_id in tournaments_info) {
+			((id) => {
+				var registered_users = tournaments_info[id];
+		
+				var tournamentElement = document.createElement('div');
+				tournamentElement.innerHTML = `
+					<h2>Tournament ID: ${id}</h2>
+					<p>Registered Users: ${registered_users.join(', ')}</p>
+					<button class="join" data-tournament-id="${id}">Join Tournament</button>
+				`;
+		
+				this.tournament_list_DIV.appendChild(tournamentElement);
+		
+				let joinButton = tournamentElement.querySelector('.join');
+				joinButton.addEventListener('click', () => {
+					console.log("Join button clicked for tournament id: ", id);
+					ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join_tournament',
+						'tournament_id': id, 'username': this.username}));
+				});
+			})(tournament_id);
 		}
 	}
 
@@ -141,6 +180,44 @@ class Lobby {
 				.catch((error) => {
 					console.error('Error:', error);
 				});
+	}
+
+	join_tournament(data) {
+		// console.log('/tournament/' + data.tournament_id)
+		fetch('/tournament/' + data.tournament_id + '/')
+			.then(response => response.text())
+			/* .then(data => {
+				document.body.innerHTML = data
+			}) */
+			.then(data => {
+				// Create a temporary DOM div element
+				var tempDiv = document.createElement('div');
+
+				// Set its innerHTML to the fetched HTML data
+				tempDiv.innerHTML = data;
+		
+				// Extract the src attribute from the script tag
+				var scriptSrc = tempDiv.querySelector('script').src;
+		
+				// Use the fetched HTML data
+				document.body.innerHTML = data;
+		
+				//console.log(data);
+				// Create a new script element
+				var script = document.createElement('script');
+		
+				// Set its src attribute to the extracted src
+				script.src = scriptSrc;
+				
+				// Append the script element to the body of the document
+				document.body.appendChild(script);
+
+			})
+			.catch((error) => {
+				console.error('Error:', error);
+			});
+		//update tournament lobby after fetch
+		ws.send(JSON.stringify({type: 'lobby_update'}));
 	}
 }
 
