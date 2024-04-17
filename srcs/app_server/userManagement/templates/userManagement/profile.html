@@ -128,6 +128,19 @@
         </div>
     </div>
 
+    <!-- New section for All Tournaments -->
+    <div class="block">
+        <h3 class="title is-4">All Tournaments:</h3>
+        <div class="content">
+            <ul>
+                <!-- Loop through all games and display relevant information -->
+                {% for tm in stats.tournaments %}
+                    <li><a href="/tournament_stats/{{ tm.tournament_id }}"> {{ tm.tournament_id }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
 
 <div class="column is-one-third">
     {% if user == request.user %}

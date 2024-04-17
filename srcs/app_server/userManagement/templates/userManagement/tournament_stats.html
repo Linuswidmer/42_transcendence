@@ -1,0 +1,88 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tournament Visualization</title>
+<link rel="stylesheet" type="text/css" href="{% static 'pong_online/styles.css' %}">
+</head>
+<body>
+<h1>{{ tm.tournament_id }}</h1>
+<div class="tournament-container">
+    <!-- Tournament name -->
+    <div class="tournament-name" id="tournamentName">
+        Tournament Name
+    </div>
+
+    <!-- Tournament rounds -->
+    <div class="rounds" id="rounds">
+        <!-- Rounds will be dynamically added here -->
+    </div>
+</div>
+
+<script>
+	var tournament_data = JSON.parse('{{ tm_data | escapejs }}');
+
+    const tournamentNameElement = document.getElementById('tournamentName');
+    tournamentNameElement.textContent = '';
+    tournamentNameElement.textContent = '{{tm_name}}';
+
+    // Get rounds container
+    const roundsContainer = document.getElementById('rounds');
+    roundsContainer.textContent = '';
+
+    // Iterate through rounds
+    for (const roundKey in tournament_data) {
+		console.log(roundKey)
+        const round = tournament_data[roundKey];
+
+        // Create round element
+        const roundElement = document.createElement('div');
+        roundElement.classList.add('round');
+
+        // Add round title
+        const roundTitle = document.createElement('h2');
+        roundTitle.classList.add('round-title');
+        roundTitle.textContent = `Round ${parseInt(roundKey) + 1}`;
+        roundElement.appendChild(roundTitle);
+
+        // Create container for matches
+        const matchesContainer = document.createElement('div');
+        matchesContainer.classList.add('matches-container');
+
+        // Iterate through matches in the round
+        for (const matchKey in round) {
+			console.log(matchKey)
+            const match = round[matchKey];
+            // Create match element
+            const matchElement = document.createElement('div');
+            matchElement.classList.add('match');
+
+            // Add match info
+            const matchLink = document.createElement('a');
+            matchLink.classList.add('match-info');
+            if (match.winner != "None"){
+                matchLink.href = 'http://localhost:8443/singleGameStats/?matchName=' + matchKey + '&username=' + match.winner; // Set the href to google.com
+                matchLink.target = '_blank'; // Open the link in a new tab
+                matchLink.innerHTML = `<strong>${matchKey}</strong>: <br>Winner: ${match.winner} <br>Loser: ${match.loser}`;
+            }else{
+                matchLink.innerHTML = `<strong>${matchKey}</strong>: <br>Not played yet!`;
+            }
+            matchElement.appendChild(matchLink);
+
+            // Append match to matches container
+            matchesContainer.appendChild(matchElement);
+        }
+
+        // Append matches container to round
+        roundElement.appendChild(matchesContainer);
+
+        // Append round to rounds container
+        roundsContainer.appendChild(roundElement);
+    }
+</script>
+
+</body>
+</html>

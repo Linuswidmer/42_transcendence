@@ -1,10 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import JSONField
 
 from django.db import models
 
 class Tournaments(models.Model):
-    tournament_id = models.CharField(primary_key=True, max_length=100, default="NONE")
+	tournament_id = models.CharField(primary_key=True, max_length=100, default="NONE")
+	data = JSONField(default={})
 
 class Games(models.Model):
 	matchName = models.CharField(max_length=200, default='')

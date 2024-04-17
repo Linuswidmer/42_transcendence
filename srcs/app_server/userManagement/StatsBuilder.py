@@ -47,6 +47,8 @@ class StatsBuilder:
 
 		self.gameListData = []
 
+		self.tournaments = []
+
 	#This helper method returns a tupel: first is winner, second is loser. Both the same, when draw.
 	def _getWinnerLoser(self, game: Games):
 		stats = UserGameStats.objects.filter(game_id=game.id).order_by('id')
@@ -58,9 +60,9 @@ class StatsBuilder:
 
 	#This helper method goes through all tournaments and their games for the user
 	# and set the best rank of the user in all these tournaments
-	def _setBestTournamentRank(self, tournaments: Set[Tournaments]):
+	def _setBestTournamentRank(self, tournaments_set: Set[Tournaments]):
 		#go through each tournament
-		for tm in tournaments:
+		for tm in tournaments_set:
 			games = Games.objects.filter(tournament_id=tm)
 			#dictionary that has the users as key and the amount of their won gmaes as values
 			playerWins = {}
@@ -88,7 +90,6 @@ class StatsBuilder:
 
 
 	def build(self):
-		tournaments = []
 		#get all game stats of the current user
 		userGameStats = UserGameStats.objects.filter(user=self.user)
 		
@@ -100,7 +101,7 @@ class StatsBuilder:
 			self.totalMisses += stat.ballMisses
 
 			if stat.game.tournament != None:
-				tournaments.append(stat.game.tournament)
+				self.tournaments.append(stat.game.tournament)
 			
 			#Get both stats from user and opponent and store it grouped in an object
 			# for displaying later
@@ -127,10 +128,10 @@ class StatsBuilder:
 			if gameTypeStat.highestWinningStreak < stat.highestStreak:
 				gameTypeStat.highestWinningStreak = stat.highestStreak
 		
-		self.totalTournaments = len(set(tournaments))
+		self.totalTournaments = len(set(self.tournaments))
 		#since a user can have multiple games in a tournament, we make a set
 		# so that every tournament only occurs on time
-		self._setBestTournamentRank(set(tournaments))
+		self._setBestTournamentRank(set(self.tournaments))
 
 		#since we used the averagePointsPErGame to Sum up all scores,
 		# we now need to divide them through all the games of the gameType (remote, local, ai)
@@ -138,3 +139,4 @@ class StatsBuilder:
 			numGames = len(gameTypeStat.games)
 			if numGames > 0:
 				gameTypeStat.averagePointsPerGame /= len(gameTypeStat.games)
+		print("Stats Builder Tournaments: ", self.tournaments)

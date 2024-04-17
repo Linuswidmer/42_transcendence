@@ -9,7 +9,8 @@ from django.conf import settings
 import os
 import uuid
 from .StatsBuilder import StatsBuilder, GameListData
-from pong_online.models import UserGameStats
+from pong_online.models import UserGameStats, Tournaments
+import json
 
 
 def dashboard(request):
@@ -152,3 +153,7 @@ def single_game_stats(request):
 	for gld in sb.gameListData:
 		if gld.game.matchName == matchName:
 			return render(request, "userManagement/single_game_stats.html", {"gld": gld})
+		
+def tournament_stats(request, tournament_name):
+	tournament = Tournaments.objects.get(tournament_id=tournament_name)
+	return render(request, "userManagement/tournament_stats.html", {"tm_name": tournament.tournament_id, "tm_data": json.dumps(tournament.data)})

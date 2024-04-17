@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import dashboard, profile_list, profile, register_user, register_guest, update_user, update_profile, change_password, single_game_stats
+from .views import dashboard, profile_list, profile, register_user, register_guest, update_user, update_profile, change_password, single_game_stats, tournament_stats
 
 app_name = "userManagement"
 
@@ -14,5 +14,6 @@ urlpatterns = [
     path('profile/<str:username>/', profile, name='profile'),
     path("change_password/", change_password, name="change_password"),
 
-	path("singleGameStats/", single_game_stats, name="single_game_stats")
+	path("singleGameStats/", single_game_stats, name="single_game_stats"),
+	path("tournament_stats/<str:tournament_name>/", tournament_stats, name="tournament_stats")
 ]

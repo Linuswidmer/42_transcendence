@@ -435,9 +435,13 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		
 		tournament_id = event["tournament_id"]
 		tournament = self.lobby.tournaments[tournament_id]
-			
+		
+		if (len(tournament.players) == 1 and tournament.round != 0):
+			tournament.django_tournament.data = tournament.data
+			await sync_to_async(tournament.django_tournament.save)()
+
 		# if full do matchmaking and send start_round to all group members
-		if (len(tournament.players) == tournament.number_players - tournament.round * tournament.number_players // 2):
+		if (len(tournament.matches) > 0 and len(tournament.players) == tournament.number_players - tournament.round * tournament.number_players // 2):
 			tournament.visible_in_lobby = False
 			if self.username in tournament.players:
 				match_index = tournament.players.index(self.username) // 2

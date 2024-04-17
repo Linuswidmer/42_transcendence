@@ -131,8 +131,9 @@ class Lobby:
 		
 		self.tournaments[tournament_id] = Tournament(tournament_id, 4)
 		
-		await sync_to_async(self.create_django_tournament)(tournament_id)
-		
+		self.tournaments[tournament_id].django_tournament = await sync_to_async(self.create_django_tournament)(tournament_id)
+		#self.tournaments[tournament_id].django_tournament.data = self.tournaments[tournament_id].data
+		#self.tournaments[tournament_id].django_tournament.save()
 		self.tournaments[tournament_id].players.append(username)
 		# self.registered_players_total.append(username) # Are you sure you need this?
 
@@ -231,6 +232,7 @@ class Tournament:
 		self.matches = []
 		self.data = {}
 		self.round = 0
+		self.django_tournament = None
 		self.visible_in_lobby = True
 		self.number_players = number_players
 		self.generate_matches(number_players)
@@ -239,7 +241,7 @@ class Tournament:
 		return self.players
 
 	def	register_player(self, user_id) -> bool:
-		if len(self.players) == 4:
+		if len(self.players) == self.number_players:
 			return False
 		self.players.append(user_id)
 		return True

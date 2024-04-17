@@ -1,3 +1,4 @@
+var pongModule = (function() {
 //////////////////////////////
 // Establish ws connection manually for now
 // remove later again
@@ -415,3 +416,4 @@ window.addEventListener('beforeunload', function(event) {
 // 					console.error('Error:', error);
 // 				});
 
+})();
