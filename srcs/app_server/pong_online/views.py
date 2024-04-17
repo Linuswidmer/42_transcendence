@@ -3,6 +3,9 @@ import json
 
 from pong_online.lobby import Lobby, Match
 
+def landing_test(request):
+	return render(request, "pong_online/landing_test.html")
+
 # Create your views here.
 def pong_online(request):
 	print("pong online view")

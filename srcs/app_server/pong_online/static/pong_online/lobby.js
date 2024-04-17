@@ -155,33 +155,34 @@ class Lobby {
 
 	join_game(modus) {
 		ws.modus = modus;
-			fetch('/pong_online')
-				.then(response => response.text())
-				.then(data => {
-					// Create a temporary DOM div element
-					var tempDiv = document.createElement('div');
+		showSection('/pong_online');
+			// fetch('/pong_online')
+			// 	.then(response => response.text())
+			// 	.then(data => {
+			// 		// Create a temporary DOM div element
+			// 		var tempDiv = document.createElement('div');
 
-					// Set its innerHTML to the fetched HTML data
-					tempDiv.innerHTML = data;
+			// 		// Set its innerHTML to the fetched HTML data
+			// 		tempDiv.innerHTML = data;
 			
-					// Extract the src attribute from the script tag
-					var scriptSrc = tempDiv.querySelector('script').src;
+			// 		// Extract the src attribute from the script tag
+			// 		var scriptSrc = tempDiv.querySelector('script').src;
 			
-					// Use the fetched HTML data
-					document.body.innerHTML = data;
+			// 		// Use the fetched HTML data
+			// 		document.body.innerHTML = data;
 			
-					// Create a new script element
-					var script = document.createElement('script');
+			// 		// Create a new script element
+			// 		var script = document.createElement('script');
 			
-					// Set its src attribute to the extracted src
-					script.src = scriptSrc;
+			// 		// Set its src attribute to the extracted src
+			// 		script.src = scriptSrc;
 					
-					// Append the script element to the body of the document
-					document.body.appendChild(script);
-				})
-				.catch((error) => {
-					console.error('Error:', error);
-				});
+			// 		// Append the script element to the body of the document
+			// 		document.body.appendChild(script);
+			// 	})
+			// 	.catch((error) => {
+			// 		console.error('Error:', error);
+			// 	});
 	}
 
 	join_tournament(data) {

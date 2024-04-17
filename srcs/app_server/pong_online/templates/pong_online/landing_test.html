@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{% static 'pong/styles.css' %}">
+    <title>Pong Game</title>
+</head>
+<body>
+    {% csrf_token %}
+
+    <!-- CONTENT -->
+    <div id="page">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script>
+        function showSection(url) {  
+			console.log("show section url:", url);
+			let pageDIV = document.querySelector('#page');
+
+            fetch(url)
+            .then(response => response.text())
+            .then(text => {
+                pageDIV.innerHTML = text;
+                // addClickListeners();
+				let fetchedScriptSrc = pageDIV.querySelector('script').src;
+			
+	
+				// Create a new script element
+				let fetchedScript = document.createElement('script');
+		
+				// Set its src attribute to the extracted src
+				fetchedScript.src = fetchedScriptSrc;
+				
+				// Append the script element to the body of the document
+				document.body.appendChild(fetchedScript);
+                console.log('Section loaded');
+            });
+
+
+
+
+			
+        }
+
+        // Add click listeners to all buttons so that they can load the appropriate section
+        function addClickListeners() {
+            document.querySelectorAll('button.section').forEach(button => {
+                button.onclick = function() {
+                    console.log(`Button with section ${this.dataset.section} clicked.`);
+                    showSection(this.dataset.section)
+                }
+            })
+        
+            // const startButton = document.getElementById('startButton');
+            //     if (startButton) {
+            //         startButton.addEventListener('click', function() {
+            //             startLocalGame('Player 1', 'Player 2');
+            //             console.log('Start button clicked');
+            //         });
+            //     }
+        }
+    
+        // request the landing page content when the page loads
+        document.addEventListener("DOMContentLoaded", function() {
+            // Load the landing page content when the page loads
+            showSection('/lobby');
+    
+            // document.querySelectorAll('button').forEach(button => {
+            //     button.onclick = function() {
+            //         console.log(`Button with section ${this.dataset.section} clicked.`);
+            //         showSection(this.dataset.section)
+            //     }
+            // })
+        });
+
+        
+        </script>
+</body>
+</html>
