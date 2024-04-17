@@ -53,7 +53,79 @@
             <a href="{% url 'userManagement:change_password' %}">Change password</a>
         {% endif %}
     </div>
-</div>
+    
+    <div class="block">
+        <h3 class="title is-4"><br>Stats:</h3>
+        <div class="content">
+            <div>
+                <h4>Total Stats:</h4>
+                <ul>
+                    <li>Total Games: {{ stats.totalGames }}</li>
+                    <li>Total Game Time: {{ stats.totalGameTime }}</li>
+                    <li>Total Tournaments: {{ stats.totalTournaments }}</li>
+                    <li>Won Tournaments: {{ stats.wonTournaments }}</li>
+                    <li>Best Tournament Rank: {{ stats.bestTournamentRank }}</li>
+                    <li>Total Misses: {{ stats.totalMisses }}</li>
+                    <li>Total Hits: {{ stats.totalHits }}</li>
+                    <li>Total Wins: {{ stats.totalWins }}</li>
+                    <li>Total Defeats: {{ stats.totalDefeats }}</li>
+                </ul>
+            </div>
+    
+            <div>
+                <h4>Game Type Stats:</h4>
+                <div>
+                    <h5>Local:</h5>
+                    <ul>
+                        <li>Longest Ball Rally: {{ stats.gameTypeStats.local.longestBallRally }}</li>
+                        <li>AVG Points per game: {{ stats.gameTypeStats.local.averagePointsPerGame }}</li>
+                        <li>Best game score: {{ stats.gameTypeStats.local.bestGameScore }}</li>
+                        <li>Highest Winning Streak: {{ stats.gameTypeStats.local.highestWinningStreak }}</li>
+                    </ul>
+                </div>
+    
+                <div>
+                    <h5>Remote:</h5>
+                    <ul>
+                        <li>Longest Ball Rally: {{ stats.gameTypeStats.remote.longestBallRally }}</li>
+                        <li>AVG Points per game: {{ stats.gameTypeStats.remote.averagePointsPerGame }}</li>
+                        <li>Best game score: {{ stats.gameTypeStats.remote.bestGameScore }}</li>
+                        <li>Highest Winning Streak: {{ stats.gameTypeStats.remote.highestWinningStreak }}</li>
+                    </ul>
+                </div>
+    
+                <div>
+                    <h5>AI:</h5>
+                    <ul>
+                        <li>Longest Ball Rally: {{ stats.gameTypeStats.ai.longestBallRally }}</li>
+                        <li>AVG Points per game: {{ stats.gameTypeStats.ai.averagePointsPerGame }}</li>
+                        <li>Best game score: {{ stats.gameTypeStats.ai.bestGameScore }}</li>
+                        <li>Highest Winning Streak: {{ stats.gameTypeStats.ai.highestWinningStreak }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <!-- New section for All Games -->
+     <div class="block">
+        <h3 class="title is-4">All Games:</h3>
+        <div class="content">
+            <ul>
+                <!-- Loop through all games and display relevant information -->
+                {% for gld in stats.gameListData %}
+                    {% if gld.opponentGameStats.user != None %}
+                        <li><a href="/singleGameStats?matchName={{ gld.game.matchName }}&username={{ gld.userGameStats.user.username }}"> {{ gld.game.matchName }} || {{ gld.game.matchDate }} || {{ gld.game.matchTime }} || against: {{ gld.opponentGameStats.user }}</a></li>
+                    {% endif %}
+                    {% if gld.opponentGameStats.user == None %}
+                        <li><a href="/singleGameStats?matchName={{ gld.game.matchName }}&username={{ gld.userGameStats.user.username }}"> {{ gld.game.matchName }} || {{ gld.game.matchDate }} || {{ gld.game.matchTime }} || against: Guest</a></li>
+                    {% endif %}
+                    
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
 
 <div class="column is-one-third">
     {% if user == request.user %}
@@ -103,3 +175,4 @@
     </div>
 
 </div>
+

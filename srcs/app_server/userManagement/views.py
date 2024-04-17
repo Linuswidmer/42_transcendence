@@ -11,9 +11,12 @@ from django.http import JsonResponse, HttpResponse
 from django.template import loader
 from django.contrib.auth.decorators import login_required
 import uuid
+from .StatsBuilder import StatsBuilder, GameListData
+from pong_online.models import UserGameStats
+
 
 def dashboard(request):
-    return render(request, "userManagement/dashboard.html")
+	return render(request, "userManagement/dashboard.html")
 
 def my_view(request):
     if request.user.is_authenticated:
@@ -23,25 +26,25 @@ def my_view(request):
 
 #view for registering a new user
 def register_user(request):
-    if request.method == "GET":
-        return render(
-            request, "userManagement/register.html",
-            {"form": CustomUserCreationForm}
-        )
-    elif request.method == "POST":
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            registered_users, created = Group.objects.get_or_create(name='registered_users')
-            user = form.save()
-            user.groups.add(registered_users)
-            user.save()
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            return redirect(reverse('userManagement:profile', args=[user.username]))
-        else:
-            return render(
-            request, "userManagement/register.html",
-            {"form": form}
-        )
+	if request.method == "GET":
+		return render(
+			request, "userManagement/register.html",
+			{"form": CustomUserCreationForm}
+		)
+	elif request.method == "POST":
+		form = CustomUserCreationForm(request.POST)
+		if form.is_valid():
+			registered_users, created = Group.objects.get_or_create(name='registered_users')
+			user = form.save()
+			user.groups.add(registered_users)
+			user.save()
+			login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+			return redirect(reverse('userManagement:profile', args=[user.username]))
+		else:
+			return render(
+			request, "userManagement/register.html",
+			{"form": form}
+		)
 
 #view for registering a new guest
 def register_guest(request):
@@ -68,47 +71,47 @@ def register_guest(request):
 
 #view for updating existing user
 def update_user(request):
-    if request.method == "GET":
-        form = CustomUserChangeForm(instance=request.user)
-        return render(
-            request, "userManagement/register.html",
-            {"form": form}
-        )
-    elif request.method == "POST":
-        form = CustomUserChangeForm(request.POST, instance=request.user)
-        if form.is_valid():
-            user = form.save()
-            return redirect(reverse('userManagement:profile', args=[request.user.username]))
-        else:
-            return render(
-            request, "userManagement/register.html",
-            {"form": form}
-        )
+	if request.method == "GET":
+		form = CustomUserChangeForm(instance=request.user)
+		return render(
+			request, "userManagement/register.html",
+			{"form": form}
+		)
+	elif request.method == "POST":
+		form = CustomUserChangeForm(request.POST, instance=request.user)
+		if form.is_valid():
+			user = form.save()
+			return redirect(reverse('userManagement:profile', args=[request.user.username]))
+		else:
+			return render(
+			request, "userManagement/register.html",
+			{"form": form}
+		)
 
 #view for changing profile picture
 def update_profile(request):
-    if request.method == "GET":
-        form = CustomProfileChangeForm(instance=request.user.profile)
-        return render(
-            request, "userManagement/update_profile.html",
-            {"form": form}
-        )
-    elif request.method == "POST":
-        current_avatar = request.user.profile.avatar
-        #delete the current avatar if there is a new one
-        if current_avatar and request.FILES and str(current_avatar) != "profile_images/default.jpg":
-            avatar_path = os.path.join(settings.MEDIA_ROOT, str(current_avatar))
-            if os.path.exists(avatar_path):
-                os.remove(avatar_path)
-        form = CustomProfileChangeForm(request.POST, request.FILES, instance=request.user.profile)
-        if form.is_valid():
-            form.save()
-            return redirect(reverse('userManagement:profile', args=[request.user.username]))
-        else:
-            return render(
-            request, "userManagement/update_profile.html",
-            {"form": form}
-        )
+	if request.method == "GET":
+		form = CustomProfileChangeForm(instance=request.user.profile)
+		return render(
+			request, "userManagement/update_profile.html",
+			{"form": form}
+		)
+	elif request.method == "POST":
+		current_avatar = request.user.profile.avatar
+		#delete the current avatar if there is a new one
+		if current_avatar and request.FILES and str(current_avatar) != "profile_images/default.jpg":
+			avatar_path = os.path.join(settings.MEDIA_ROOT, str(current_avatar))
+			if os.path.exists(avatar_path):
+				os.remove(avatar_path)
+		form = CustomProfileChangeForm(request.POST, request.FILES, instance=request.user.profile)
+		if form.is_valid():
+			form.save()
+			return redirect(reverse('userManagement:profile', args=[request.user.username]))
+		else:
+			return render(
+			request, "userManagement/update_profile.html",
+			{"form": form}
+		)
 
 def change_password(request):
     if request.method == "GET":
@@ -129,14 +132,16 @@ def change_password(request):
         )
 
 def profile_list(request):
-    #registered_user_group = Group.objects.get(name='registered_users')
-    #registered_users = registered_user_group.user_set.all()
-    all_users = User.objects.all()
-    return render(request, "userManagement/profile_list.html", {"registered_users": all_users})
+	#registered_user_group = Group.objects.get(name='registered_users')
+	#registered_users = registered_user_group.user_set.all()
+	all_users = User.objects.all()
+	return render(request, "userManagement/profile_list.html", {"registered_users": all_users})
 
 @login_required
 def profile(request):
     user = get_object_or_404(User, username=request.user)
+    sb = StatsBuilder(user)
+	  sb.build()
     if request.method == "POST":
         current_user_profile = request.user.profile
         data = request.POST
@@ -146,7 +151,7 @@ def profile(request):
         elif action == "unfollow":
             current_user_profile.follows.remove(user.profile)
         current_user_profile.save()
-    return render(request, "userManagement/profile.html", {"user": user})
+    return render(request, "userManagement/profile.html", {"user": user, "stats": sb})
 
 def logged_in(request):
     return render(request, 'onepager/logged_in.html')
@@ -172,3 +177,14 @@ def navbar(request):
 
 def navigation(request):
     return render(request, 'includes/navigation.html')
+
+def single_game_stats(request):
+	matchName = request.GET.get('matchName')
+	username = request.GET.get('username')
+	user = User.objects.get(username=username)
+	sb = StatsBuilder(user)
+	sb.build()
+	for gld in sb.gameListData:
+		if gld.game.matchName == matchName:
+			return render(request, "userManagement/single_game_stats.html", {"gld": gld})
+

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<ul>
+      <strong>Overall Game Data for game {{ gld.game.matchName }}:</strong>
+      <li>Game Type: {{ gld.game.gameType }}</li>
+      <li>Duration: {{ gld.game.gameDuration }}</li>
+      <li>Date: {{ gld.game.matchDate }}</li>
+      <li>Time: {{ gld.game.matchTime }}</li>
+      <li>Tournament: {{ gld.game.tournament.tournament_id }}</li>
+
+      <strong>Stats from <a href="/profile/{{ gld.userGameStats.user.username}}">{{ gld.userGameStats.user }}</a>:</strong>
+      <li>Score: {{ gld.userGameStats.score }}</li>
+      <li>Ball Hits: {{ gld.userGameStats.ballHits }}</li>
+      <li>Ball Misses: {{ gld.userGameStats.ballMisses }}</li>
+      <li>Highest Sreak: {{ gld.userGameStats.highestStreak }}</li>
+      <li>Longest Ball Rally: {{ gld.userGameStats.longestBallRallyHits }}</li>
+
+      <strong>Stats from <a href="/profile/{{ gld.opponentGameStats.user.username}}">{{ gld.opponentGameStats.user }}</a>:</strong>
+      <li>Score: {{ gld.opponentGameStats.score }}</li>
+      <li>Ball Hits: {{ gld.opponentGameStats.ballHits }}</li>
+      <li>Ball Misses: {{ gld.opponentGameStats.ballMisses }}</li>
+      <li>Highest Sreak: {{ gld.opponentGameStats.highestStreak }}</li>
+      <li>Longest Ball Rally: {{ gld.opponentGameStats.longestBallRallyHits }}</li>
+</ul>
+{% endblock %}

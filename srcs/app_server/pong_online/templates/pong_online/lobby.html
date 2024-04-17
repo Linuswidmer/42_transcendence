@@ -1,0 +1,14 @@
+{% load static %}
+
+<div>
+	<button id="create_game">Create remote game</button>
+	<button id="create_tournament">Create tournament</button>
+	<button id="play_ai">Play against Ai</button>
+	<button id="play_local">Play local</button>
+</div>	
+
+<div id="remote_game_list"></div>
+<div id="tournament_list"></div>
+
+
+<script src="{% static 'pong_online/lobby.js' %}" defer data-username="{{ username }}"></script>

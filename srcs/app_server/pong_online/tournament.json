@@ -1,0 +1,18 @@
+{
+	"0": {
+		"match_1": {
+			"winner": "Alex",
+			"loser": "Yann"
+		},
+		"match_2": {
+			"winner": "Linus",
+			"loser": "Leon"
+		}
+	},
+	"1": {
+		"match_3": {
+			"winner": "None",
+			"loser": "None"
+		}
+	}
+}

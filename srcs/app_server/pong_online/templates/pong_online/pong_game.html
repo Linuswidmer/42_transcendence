@@ -11,32 +11,26 @@
     {% csrf_token %}
     <!-- HEADER -->
     <h1>PONG GAME</h1>
-    <div id="loggedInMessage">Playing as: Guest</div>
+    <div id="loggedInMessage">Logged in as: </div>
 
     <div id="centeredContent">
 
         <!-- *** PONG GAME ***-->
         <div class="container" id="pongGamePage">
             <div id="scoreBoard">
-                <div id="leftScore" >0</div>
-                <div id="rightScore">0</div>
+                <div id="leftScore"></div>
+				<div id="leftPlayerName">Left player: </div>
+				<div id="rightScore"></div>
+				<div id="rightPlayerName">Right player: </div>
             </div>
-            <h2 id="gameOverMessage" style="display: none; position: absolute; top: 90%; left: 50%; transform: translate(-50%, -50%);">Game Over</h2>
             <canvas id="pongCanvas" width="600" height="400"></canvas>
         </div>
-        <button id="startButton">Start game</button>
+        <button id="startButtonRemote">Remote</button>
+		<button id="startButtonLocal">Local</button>
+		<button id="startButtonAi">Ai</button>
+		<button id="leaveGame">leaveGame_backToLobby</button>
     </div>
-    
     <script src="{% static 'pong_online/pong_online.js' %}"></script>
     
-    <!-- <script>
-            const startButton = document.getElementById('startButton');
-                if (startButton) {
-                    startButton.addEventListener('click', function() {
-                        join_game("");
-                        console.log('Start button clicked');
-                    });
-                }
-    </script> -->
 </body>
 </html>
