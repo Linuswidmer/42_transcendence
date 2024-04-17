@@ -15,6 +15,7 @@ console.log("username from request", username);
 class Lobby {
 	constructor(ws, username) {
         this.ws = ws;
+		ws.username = username;  //maybe change later
 		this.username = username;
 
 		this.modus = null;
