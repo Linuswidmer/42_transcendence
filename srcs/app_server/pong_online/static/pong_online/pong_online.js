@@ -123,6 +123,7 @@ class Game {
     handle_message(e) {
         try {
             const data = JSON.parse(e.data);
+			console.log("pong message: ", data)
 			if (data.type === 'send_to_group') {
 				switch (data.identifier) {
 					case 'game_end':
@@ -145,6 +146,9 @@ class Game {
 					default:
 						console.log('Unknown message', data);
 				}
+			} else if (data.type == 'redirect_to_tournament_stats') {
+				console.log(window.location.origin + '/tournament_stats/' + data.tournament_id)
+				window.location.href = window.location.origin + '/tournament_stats/' + data.tournament_id;
 			} else if (data.type == 'redirect_to_tournament_lobby') {
 				console.log('/tournament/' + data.tournament_id)
 				fetch('/tournament/' + data.tournament_id + '/')
