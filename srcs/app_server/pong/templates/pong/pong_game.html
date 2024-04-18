@@ -1,17 +1,11 @@
+{% include "includes/navbar.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="{% static 'pong/styles.css' %}">
-    <title>Pong Game</title>
-</head>
-<body>
-    {% csrf_token %}
-    <!-- HEADER -->
-    <h1>PONG GAME</h1>
-    <div id="loggedInMessage">Playing as: Guest</div>
+{% block title %}
+PONG GAME
+{% endblock %}
+
+{% block content %}
+    <div id="loggedInMessage">Playing as: {{ user.username }}</div>
 
     <div id="centeredContent">
 
@@ -26,9 +20,9 @@
         </div>
         <button id="startButton">Start game</button>
     </div>
-    
+{% endblock %}
     <script src="{% static 'pong/pong_local.js' %}"></script>
-    
+
     <script>
             const startButton = document.getElementById('startButton');
                 if (startButton) {
@@ -38,5 +32,3 @@
                     });
                 }
     </script>
-</body>
-</html>

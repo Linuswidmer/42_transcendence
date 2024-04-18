@@ -1,9 +1,7 @@
 <!-- dwitter/templates/dwitter/profile.html -->
 
-{% extends 'base.html' %}
 
-{% block content %}
-
+{% include 'includes/navbar.html' %}
 <div class="column">
     <div class="block">
         <div class="media-left">
@@ -14,13 +12,13 @@
         </div>
         {% if user == request.user %}
             <a href="{% url 'userManagement:update_profile' %}">Change Profile Picture</a>
-        {% endif %} 
+        {% endif %}
     <h1 class="title is-1">
         {{user.username}}'s Profile
         {% if user.profile.logged_in is True  %}
             <span style="color: green; margin-left: 5px; font-size: 0.5em;">Online</span>
         {% else %}
-            <span style="color: red; margin-left: 5px; font-size: 0.5em;">Offline</span>    
+            <span style="color: red; margin-left: 5px; font-size: 0.5em;">Offline</span>
         {% endif %}
     </h1>
     </div>
@@ -37,7 +35,7 @@
 		{% endif %}
 		</div>
 	</form>
-    {% endif %} 
+    {% endif %}
     <div class="block">
         <h3 class="title is-4"><br>Personal Info:</h3>
         <div class="content">
@@ -53,7 +51,7 @@
         {% if user == request.user %}
             <a href="{% url 'userManagement:update_user' %}">Update Profile Info</a>
             <a href="{% url 'userManagement:change_password' %}">Change password</a>
-        {% endif %} 
+        {% endif %}
     </div>
     
     <div class="block">
@@ -137,7 +135,7 @@
 			<button type="submit">logout</button>
 		</form>
     </div>
-    {% endif %} 
+    {% endif %}
     <div class="block">
 		<a href="{% url 'userManagement:profile_list' %}">
             <button class="button is-dark is-outlined is-fullwidth">
@@ -178,4 +176,3 @@
 
 </div>
 
-{% endblock content %}

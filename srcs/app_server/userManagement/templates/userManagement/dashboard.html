@@ -1,8 +1,8 @@
 <!--users/templates/users/dashboard.html-->
 
-{% extends 'base.html' %}
+{% include 'includes/navbar.html' %}
 {% load socialaccount %}
-{% block content %}
+
 <div  class="block">
 	<h1 class="title is-1">Hello, {{ user.username|default:'Guest' }}!</h1>
     {% if user.is_authenticated %}
@@ -16,4 +16,3 @@
 		<a href="{% url 'userManagement:register_guest' %}">Continue as Guest</a>
 	{% endif %}
 </div>
-{% endblock %}

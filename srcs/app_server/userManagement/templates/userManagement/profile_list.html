@@ -1,9 +1,6 @@
 <!-- dwitter/templates/dwitter/profile_list.html -->
 
-{% extends 'base.html' %}
-
-{% block content %}
-
+{% include 'includes/navbar.html' %}
 <div class="column">
   <h1 class="title is-1">All registered users</h1>
 {% for user in registered_users %}
@@ -21,7 +18,7 @@
               </div>
               <div class="media-content">
                 <p class="title is-4">
-                  {{ user.username }} 
+                  {{ user.username }}
                 </p>
                 <p class="subtitle is-6">
                   @{{ user.username|lower }}
@@ -41,5 +38,3 @@
 {% endfor %}
 
 </div>
-
-{% endblock content %}

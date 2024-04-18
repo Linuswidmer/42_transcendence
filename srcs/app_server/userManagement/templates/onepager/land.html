@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Pong{% endblock %}</title>
+    <!-- Add your CSS and JavaScript links here -->
+    {% block styles %}
+        <link rel="stylesheet" href="{% static 'pong/styles.css' %}">
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+        {% endblock %}
+    <!-- Add your JavaScript imports and scripts here -->
+</head>
+<body>
+
+
+  {% if user.is_authenticated %}
+  {% include 'onepager/logged_in.html' %}
+  {% else %}
+  {% include 'onepager/stranger.html' %}
+  {% endif %}
+
+    <!-- Content -->
+        <!-- Content will be dynamically loaded here -->
+
+
+        <!-- Footer -->
+        {% include 'includes/footer.html' %}
+
+
+
+</body>
+</html>
