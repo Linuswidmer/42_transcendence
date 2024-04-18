@@ -68,7 +68,7 @@ class Lobby {
 					this.join_tournament(data);
 					break;
 				default:
-					console.log('Unknown message', data);
+					console.log('Unknown message: ', data.type);
 			}
         } catch (error) {
             console.log('Error parsing JSON:', error);
@@ -184,14 +184,16 @@ class Lobby {
 				});
 	}
 
-	join_tournament(data) {
-		// console.log('/tournament/' + data.tournament_id)
+	join_tournament(data1) {
+		console.log('LOAD THE TM LOBBY')
+		document.body.innerHTML = '';
 		fetch('/tournament/' + data.tournament_id + '/')
 			.then(response => response.text())
 			/* .then(data => {
 				document.body.innerHTML = data
 			}) */
 			.then(data => {
+				console.log('/tournament/' + data1.tournament_id)
 				// Create a temporary DOM div element
 				var tempDiv = document.createElement('div');
 
@@ -210,16 +212,20 @@ class Lobby {
 		
 				// Set its src attribute to the extracted src
 				script.src = scriptSrc;
+
+				script.onload = function() {
+					// This function will be called when the script is fully loaded and executed
+					console.log('Script loaded');
+					// Send WebSocket message here
+					ws.send(JSON.stringify({type: 'tournament_lobby_update', 'tournament_id': data1.tournament_id}));
+				};
 				
 				// Append the script element to the body of the document
 				document.body.appendChild(script);
-
 			})
 			.catch((error) => {
 				console.error('Error:', error);
 			});
-		//update tournament lobby after fetch
-		ws.send(JSON.stringify({type: 'lobby_update'}));
 	}
 }
 

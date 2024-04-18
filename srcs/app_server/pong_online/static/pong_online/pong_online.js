@@ -152,18 +152,18 @@ class Game {
 					/* .then(data => {
 						document.body.innerHTML = data
 					}) */
-					.then(data => {
+					.then(inner_data => {
 						// Create a temporary DOM div element
 						var tempDiv = document.createElement('div');
 	
 						// Set its innerHTML to the fetched HTML data
-						tempDiv.innerHTML = data;
+						tempDiv.innerHTML = inner_data;
 				
 						// Extract the src attribute from the script tag
 						var scriptSrc = tempDiv.querySelector('script').src;
 				
 						// Use the fetched HTML data
-						document.body.innerHTML = data;
+						document.body.innerHTML = inner_data;
 				
 						//console.log(data);
 						// Create a new script element
@@ -171,6 +171,13 @@ class Game {
 				
 						// Set its src attribute to the extracted src
 						script.src = scriptSrc;
+
+						script.onload = function() {
+							// This function will be called when the script is fully loaded and executed
+							console.log('Script loaded');
+							// Send WebSocket message here
+							ws.send(JSON.stringify({type: 'tournament_lobby_update', 'tournament_id': data.tournament_id}));
+						};
 						
 						// Append the script element to the body of the document
 						document.body.appendChild(script);
@@ -179,8 +186,6 @@ class Game {
 					.catch((error) => {
 						console.error('Error:', error);
 					});
-				//update tournament lobby after fetch
-				ws.send(JSON.stringify({type: 'lobby_update'}));
 			}
             
         } catch (error) {

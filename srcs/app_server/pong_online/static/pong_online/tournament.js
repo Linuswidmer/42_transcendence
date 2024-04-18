@@ -3,7 +3,6 @@ if (typeof ws1 === 'undefined') {
 }
 
 ws1.onmessage = function(e) {
-	console.log()
 	try{
 		const data = JSON.parse(e.data);
 		console.log("ws1.onmessage:", data);
@@ -14,6 +13,7 @@ ws1.onmessage = function(e) {
 			ws1.send(JSON.stringify({type: 'lobby_update', 'action': 'join', 'match_id': data.match_id, 'tournament_id': data.tournament_id, 'username': username, 'modus': 'remote'}));
 		}
 		if (data.type === "tournament_lobby_update") {
+			console.log('Update tm lobby');
 			updateTournamentLobby(data);
 		}
 		if (data.type === "leave_tournament"){
