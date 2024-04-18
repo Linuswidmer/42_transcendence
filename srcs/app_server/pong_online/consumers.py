@@ -311,12 +311,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				await self.channel_layer.group_add(
 					tournament_id, self.channel_name
 				)
-				json_from_client["type"] = "group_lobby_update"
-				await self.channel_layer.group_send(
-					"lobby",
-					json_from_client,
-				)
-				return None
 			else:
 				json_from_client["error"] = message
 
@@ -327,12 +321,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				await self.channel_layer.group_add(
 					tournament_id, self.channel_name
 				)
-				json_from_client["type"] = "group_lobby_update"
-				await self.channel_layer.group_send(
-					"lobby",
-					json_from_client,
-				)
-				return None
 			else:
 				json_from_client["error"] = message
 		
@@ -445,8 +433,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				match_index = tournament.players.index(self.username) // 2
 				basic_update["match_id"] = tournament.matches[match_index].group_name
 				basic_update["action"] = "start_tournament_round"
-		else:
-			basic_update["action"] = "waiting_for_other_games"
 		
 		basic_update["tournament_id"] = tournament_id
 		basic_update["players"] = tournament.players
@@ -484,20 +470,12 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		)
 	
 	async def	show_tournament_lobby(self, event):
-		print('show tm lobby group msg')
 		if not "finished" in event:
 			await self.send(text_data=json.dumps({"type": "redirect_to_tournament_lobby", "tournament_id": event["tournament_id"]}))
 			await self.channel_layer.group_send(
 				event["tournament_id"],
 				{"type": "group_tournament_update", "tournament_id" : event["tournament_id"]},
 			)	
-		else:
-			await self.channel_layer.group_send(
-				event["tournament_id"],
-				{"type": "group_tournament_update", "action": "redirect_to_tournament_stats", "tournament_id": event["tournament_id"]},
-			)
-			await self.send(text_data=json.dumps({"type": "redirect_to_tournament_stats", "tournament_id": event["tournament_id"]}))
-
 
 	#update game_data with keypress, if we are in a consumer that
 	#is not hosting the game, we ignore it
@@ -632,12 +610,17 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				message["finished"] = "True"
 				tournament.django_tournament.data = tournament.data
 				await sync_to_async(tournament.django_tournament.save)()
+				await self.channel_layer.group_send(
+					self.match.tournament_id,
+					{"type": "group_tournament_update", "action": "redirect_to_tournament_stats", "tournament_id": self.match.tournament_id},
+				)
 				del tournament
+				#here the group could be deleted
+				return
 			#increment tournament round if its last game of round
 			else:
 				if (len(tournament.players) == tournament.number_players - (tournament.round + 1) * tournament.number_players // 2):
 					tournament.round += 1
-			print('Message after game', message)
 
 			await self.channel_layer.group_send(
 				self.game_group_name,
