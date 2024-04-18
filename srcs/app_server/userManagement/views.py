@@ -124,8 +124,6 @@ def change_password(request):
 		) 
 
 def profile_list(request):
-	#registered_user_group = Group.objects.get(name='registered_users')
-	#registered_users = registered_user_group.user_set.all()
 	all_users = User.objects.all()
 	return render(request, "userManagement/profile_list.html", {"registered_users": all_users})
 

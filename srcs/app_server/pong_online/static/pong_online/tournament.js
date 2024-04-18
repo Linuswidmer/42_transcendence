@@ -16,6 +16,10 @@ ws1.onmessage = function(e) {
 			console.log('Update tm lobby');
 			updateTournamentLobby(data);
 		}
+		if (data.type === "redirect_to_tournament_stats") {
+			console.log(window.location.origin + '/tournament_stats/' + data.tournament_id)
+			window.location.href = window.location.origin + '/tournament_stats/' + data.tournament_id;
+		}
 		if (data.type === "leave_tournament"){
 			console.log(window.location.origin + '/lobby/');
 			window.location.href = window.location.origin + '/lobby/';
