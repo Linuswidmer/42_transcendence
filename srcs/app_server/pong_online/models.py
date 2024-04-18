@@ -1,8 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from django.db import models
+
 class Tournaments(models.Model):
-	pass
+    tournament_id = models.CharField(primary_key=True, max_length=100, default="NONE")
 
 class Games(models.Model):
 	matchName = models.CharField(max_length=200, default='')
@@ -13,8 +15,8 @@ class Games(models.Model):
 	tournament = models.ForeignKey(Tournaments, on_delete=models.CASCADE, null=True)
 
 class UserGameStats(models.Model):
-	user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-	game = models.ForeignKey(Games, on_delete=models.CASCADE, null=True)
+	user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+	game = models.ForeignKey(Games, on_delete=models.SET_NULL, null=True)
 	score = models.IntegerField(default=0)
 	ballHits = models.IntegerField(default=0)
 	ballMisses = models.IntegerField(default=0)

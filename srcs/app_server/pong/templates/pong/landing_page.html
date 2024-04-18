@@ -1,6 +1,64 @@
-{% include "pong/header.html" %}
+<!DOCTYPE html>
+{% load static %}
+{% load socialaccount %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pong</title>
+    <link rel="stylesheet" href="{% static 'pong/styles.css' %}">
+    <!-- Add any other meta tags, links to CSS files, or scripts here -->
+</head>
+<body>
+    <div id="app">
 
-<div id="content">
-    <button class="section" data-section="choose_game">Play</button>
-    <button class="section" data-section="dashboards">Dashboards</button>
-</div>
+        <div id="content">
+          <!-- Content will be dynamically loaded here -->
+        </div>
+    </div>
+    {% include 'includes/footer.html' %}
+
+          <script>
+                function loadContent() {
+            // Check if the user is authenticated
+            const isAuthenticated = {% if user.is_authenticated %} true {% else %} false {% endif %};
+
+            // Load content accordingly
+            if (isAuthenticated) {
+                loadLoggedInContent();
+            } else {
+                loadNonAuthenticatedContent();
+            }
+        }
+            // Function to load content for logged-in users
+            function loadLoggedInContent() {
+                fetch("{% url 'logged_in' %}")
+                    .then(response => response.text())
+                    .then(html => {
+                        document.getElementById('content').innerHTML = html;
+                        const scripts = document.getElementById('content').querySelectorAll('script');
+                        scripts.forEach(script => {
+                            eval(script.innerText);
+                        });
+                    })
+                    .catch(error => console.error('Error loading content:', error));
+            }
+
+            // Function to load content for non-authenticated users
+            function loadNonAuthenticatedContent() {
+                fetch("{% url 'stranger' %}")
+                    .then(response => response.text())
+                    .then(html => {
+                        document.getElementById('content').innerHTML = html;
+                        // Execute any JavaScript code included in the loaded content
+                        const scripts = document.getElementById('content').querySelectorAll('script');
+                        scripts.forEach(script => {
+                            eval(script.innerText);
+                        });
+                    })
+                    .catch(error => console.error('Error loading content:', error));
+            }
+            loadContent();
+        </script>
+</body>
+</html>

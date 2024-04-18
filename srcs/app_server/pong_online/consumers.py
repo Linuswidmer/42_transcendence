@@ -28,6 +28,8 @@ class apiConsumer(AsyncWebsocketConsumer):
 		super().__init__(*args, **kwargs)
 		self.id = str(uuid.uuid4())
 		self.lobby = Lobby()
+		self.listen_group_name = None
+		self.listen_match = None
 
 	async def connect(self):
 		await self.accept()
@@ -43,14 +45,15 @@ class apiConsumer(AsyncWebsocketConsumer):
 		await self.close()
 
 	async def receive(self, text_data):
+		print("api_text_data: ", text_data)
 		# Split the received text into command and arguments
 		tokens = text_data.strip().split()
 		command = tokens.pop(0)
 		option = tokens.pop(0) if tokens else None
 		args = tokens
 
+		response = command + ": "
 		if command == "match":
-			response = command + ": "
 			if not option:
 				response += "no option provided"
 
@@ -69,19 +72,67 @@ class apiConsumer(AsyncWebsocketConsumer):
 					response += "added player successfully"
 				else:
 					response += option + ": " + message
+
+			elif option == "listen" and len(args) == 1:
+				if await self.listen_to_match(args[0]):
+					return
+				else:
+					response += option + ": valid arguments are a valid match ID or stop"
 			else:
 				response += option + ": not a valid option"
 
 		elif command == "exit":
 			await self.disconnect("user closed connection")
 			return
-
+		
+		elif command == "listen":
+			if await self.listen_to_match(option):
+				return
+			else:
+				response += option + ": not a valid option"
 
 		else:
 			response += "invalid command"
 
 		await self.send(response)
+	
+	async def listen_to_match(self, option):
+		if option == "stop":
+			print("Listen stop")
+			if self.listen_group_name:
+				await self.channel_layer.group_discard(self.listen_group_name, self.channel_name)
+				self.listen_group_name = None
+			return True
+		elif option in self.lobby.get_all_matches():
+			print("Listen start")
+			self.listen_group_name = option
+			self.listen_match = self.lobby.get_match(option)
+			await self.channel_layer.group_add(self.listen_group_name, self.channel_name)
+			return True
+		return False
 
+	async def end_game_player_left(self,event):
+		pass
+
+	async def	show_stats_end_game(self, event):
+		await self.channel_layer.group_discard(self.listen_group_name, self.channel_name)
+		self.listen_group_name = None
+		self.listen_match = None
+
+	async def group_game_state_update(self, event):
+		# print("game_state:", " leon:", event["entity_data"]["leon"]["relativeY"], " local_opponent:", event["entity_data"]["local_opponent"]["relativeY"])
+		extracted_data = {name: event["entity_data"][name] for name in self.listen_match.get_registered_players()}
+		if event["entity_data"]["game_over"]:
+			response = "Game over: " + str(extracted_data)
+		else:
+			response = extracted_data
+
+
+
+		# await asyncio.sleep(3)
+		await self.send(
+			text_data=json.dumps(response)
+		)
 
 
 
@@ -103,8 +154,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		# self.match = self.lobby.get_match_by_player_id()
 
 		self.in_game = False
-
-		self.game_data = {}
 
 		self.match = None
 
@@ -132,24 +181,43 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#everything that the client send through the websocket is received here
 	#everything that is send by the client needs to have a type field
 	#describing the type of message to deal with the information accordingly
-
 	async def receive(self, text_data):
 		logger.debug("data received in receive: %s", text_data)
-		print("text data from client in receive:", text_data)
+		print("receive:", text_data)
 
 		json_from_client = json.loads(text_data)
 
 		message_type = json_from_client.get("type", "")
 
+		if message_type == "player_left":
+			print('Player left in receive')
+			await self.channel_layer.group_send(
+				self.game_group_name,
+				{"type": "end_game_player_left", "player": json_from_client.get("player", "")},
+			)
+
 		if message_type == "username":
 			self.username = json_from_client.get("username", "")
 
+		#maybe rethink later if start local game need to go through lobby update
+		#i add this for solo testing the pong_game site
+		# if message_type == "start" and (json_from_client["modus"] == "local" or json_from_client["modus"] == "ai"):
+		# 	await self.join_local_game(json_from_client["modus"])
+
+
+
+
 		if message_type == "start" and self.hosts_game:
 			logger.debug("start game with modus:%s", json_from_client["modus"])
+			await self.channel_layer.group_send(
+				self.game_group_name,
+				{"type": "send_to_group", "identifier": "start_game"},
+			)
+
 			asyncio.create_task(self.game_loop(json_from_client["modus"]))
 
 		#only process lobby updates. when not inga,e
-		if not self.in_game and message_type == "lobby_update":
+		if (not self.in_game and message_type == "lobby_update") or message_type == "leave":
 			#process button presses and update lobby content if necessary
 			updated_lobby_info = await self.process_lobby_update_in_consumer(json_from_client)
 			logger.debug("updated_lobby_info:%s", updated_lobby_info)
@@ -177,52 +245,150 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	async def process_lobby_update_in_consumer(self, json_from_client):
 		action = json_from_client.get("action", "")
 		match_id = json_from_client.get("match_id", "")
+		tournament_id = json_from_client.get("tournament_id", None)
 		modus = json_from_client.get("modus", "")
+		
 
-		if action == "register":
-			success, message, match = self.lobby.register_player_match(
-				self.username, match_id
-			)
-			if success:
-				self.game_group_name = match_id
-				self.match = match
-				await self.channel_layer.group_add(
-					self.game_group_name, self.channel_name
-				)
+		#check if registered -> if not try to register then join
+		# if registered -> try to join immediately
+		if action == "join" and modus == "remote":
+			match = self.lobby.get_match_by_player_id(self.username)
+			#player is not registered at all -> register
+			if not match:
+				# if match has tournament id get the match from tournament and not lobby
+				if tournament_id != None:
+					tournament = self.lobby.get_tournament(tournament_id)
+					match = tournament.get_match(match_id)
+				else:
+					match = self.lobby.get_match(match_id) 
+				success, message = self.lobby.register_player_match(
+						self.username, match
+						)
+				if success:
+					self.game_group_name = match_id
+					self.match = match
+					await self.channel_layer.group_add(
+						self.game_group_name, self.channel_name
+					)
+				else:
+					json_from_client["error"] = message
+
+			#player is registered to this game -> join
+			if match.group_name == match_id:
+				success, message = self.lobby.join(self.username, match)
+				if success:
+					await self.join_remote_game()
+					# return None
+				else:
+					json_from_client["error"] = message
+			#player is registered, but to a diffrent match -> cannot join
 			else:
-				json_from_client["error"] = message
+				json_from_client["error"] = "player cannot join, already registered to a different game"
+
 
 		if action == "create":
 			success, message = self.lobby.add_match(str(generate()))
 			if not success:
 				json_from_client["error"] = message
-
-		if action == "join" and modus == "remote":
-			success, message = self.lobby.join(self.username, self.match)
+		
+		if action == "leave" and modus == "remote":
+			success, message = self.lobby.leave(self.username, self.match)
 			if success:
-				await self.join_remote_game()
+				self.in_game = False
+				self.hosts_game = False
+			else:
+				json_from_client["error"] = message			
+
+		if action == "create_tournament":
+			tournament_id = str(generate())
+			success, message = await self.lobby.add_tournament(tournament_id, self.username)
+			if success:
+				await self.send(text_data=json.dumps({"type": "join_tournament", "tournament_id": tournament_id}))
+				await self.channel_layer.group_add(
+					tournament_id, self.channel_name
+				)
+				json_from_client["type"] = "group_lobby_update"
+				await self.channel_layer.group_send(
+					"lobby",
+					json_from_client,
+				)
+				json_from_client["type"] = "group_tournament_update"
+				json_from_client["tournament_id"] = tournament_id
+				await self.channel_layer.group_send(
+					tournament_id,
+					json_from_client,
+				)
+				return None
+			else:
+				json_from_client["error"] = message
+
+		if action == "join_tournament":
+			success, message = self.lobby.register_player_tournament(self.username, tournament_id)
+			if success:
+				await self.send(text_data=json.dumps({"type": "join_tournament", "tournament_id": tournament_id}))
+				await self.channel_layer.group_add(
+					tournament_id, self.channel_name
+				)
+				json_from_client["type"] = "group_lobby_update"
+				await self.channel_layer.group_send(
+					"lobby",
+					json_from_client,
+				)
+				json_from_client["type"] = "group_tournament_update"
+				json_from_client["tournament_id"] = tournament_id
+				await self.channel_layer.group_send(
+					tournament_id,
+					json_from_client,
+				)
 				return None
 			else:
 				json_from_client["error"] = message
 		
+		if action == "leave_tournament":
+			success, message = self.lobby.unregister_player_tournament(self.username, tournament_id)
+			if success:
+				await self.send(text_data=json.dumps({"type": "leave_tournament", "tournament_id": tournament_id}))
+				await self.channel_layer.group_discard(
+    				tournament_id, self.channel_name
+				)
+				json_from_client["type"] = "group_lobby_update"
+				await self.channel_layer.group_send(
+					"lobby",
+					json_from_client,
+				)
+				json_from_client["type"] = "group_tournament_update"
+				json_from_client["tournament_id"] = tournament_id
+				await self.channel_layer.group_send(
+					tournament_id,
+					json_from_client,
+				)
+				return None
+			else:
+				json_from_client["error"] = message
+		
+
 		if action == "join" and (modus == "local" or modus == "ai"):
 			await self.join_local_game(modus)
 			return None
 			
-		
 		json_from_client["type"] = "group_lobby_update"
 		return json_from_client
 
 	async def join_local_game(self, modus):
-		local_opponent_name = modus + "_opponent"
 		if modus == "ai":
 			local_opponent_name = "AI_Ursula"
+		if modus == 'local':
+			local_opponent_name = 'DUMP_LOCAL'
+		if modus == 'local':
+			local_opponent_name = 'DUMP_LOCAL'
 		self.in_game = True
 		self.hosts_game = True
-		match_id = generate()
+		match_id = str(generate())
 		self.match = self.lobby.create_local_match(match_id)
 		self.match.add_player_to_gamedata(self.username)
 		self.match.add_player_to_gamedata(local_opponent_name)
+		self.match.registered_players.append(self.username)
+		self.match.registered_players.append(local_opponent_name)
 		self.game_group_name = match_id
 		
 		await self.channel_layer.group_add(
@@ -239,27 +405,97 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 
 	async def group_lobby_update(self, event):
+		print("group_lobby_update: ", event)
 		basic_update = {"type": "lobby_update"}
 		
 		if "error" in event and self.username in event["username"]:
 			basic_update["error"] = event["error"]
-		
-		
 
 		#return all matches with registered players to display the lobby in the fronend
 		matches_info = self.lobby.get_all_matches()
+		tournaments_info = self.lobby.get_all_tournaments()
 		basic_update["matches_info"] = matches_info
+		basic_update["tournaments_info"] = tournaments_info
 		await self.send(
 			text_data=json.dumps(basic_update)
 		)
 
+	async def end_game_player_left(self,event):
+		if self.hosts_game:
+			losing_player = event["player"]
+			if self.match.registered_players[0] == losing_player:
+				winning_player = self.match.registered_players[1]
+			else:
+				winning_player = self.match.registered_players[0]
+			self.match.game_data[winning_player]["score"] = 3
 
-	async def group_game_state_update(self, event):
-		# print("game_state:", " leon:", event["entity_data"]["leon"]["relativeY"], " local_opponent:", event["entity_data"]["local_opponent"]["relativeY"])
+	async def group_tournament_update(self, event):
+		print("TM Update ", self.username)
+		basic_update = {"type": "tournament_lobby_update"}
+
+		if "error" in event and self.username in event["username"]:
+			basic_update["error"] = event["error"]
+		
+		tournament_id = event["tournament_id"]
+		tournament = self.lobby.tournaments[tournament_id]
+			
+		# if full do matchmaking and send start_round to all group members
+		if (len(tournament.players) == tournament.number_players - tournament.round * tournament.number_players // 2):
+			tournament.visible_in_lobby = False
+			if self.username in tournament.players:
+				match_index = tournament.players.index(self.username) // 2
+				basic_update["match_id"] = tournament.matches[match_index].group_name
+				basic_update["action"] = "start_tournament_round"
+			else:
+				None
+		else:
+			basic_update["action"] = "waiting_for_other_games"
+		#basic_update["tournaments_info"] = tournaments_info
+		basic_update["tournament_id"] = tournament_id
+		basic_update["players"] = tournament.players
+		basic_update["tournament_data"] = tournament.data
+
+		await self.send(
+			text_data=json.dumps(basic_update)
+		)
+	
+	async def end_game_player_left(self,event):
+		if self.hosts_game:
+			losing_player = event["player"]
+			if self.match.registered_players[0] == losing_player:
+				winning_player = self.match.registered_players[1]
+			else:
+				winning_player = self.match.registered_players[0]
+			self.match.game_data[winning_player]["score"] = 3
+
+	async def send_to_group(self, event):
+		#check again
+		if ("game_over" in event and event["game_over"] == True):
+			self.in_game = False
+			return
 		await self.send(
 			text_data=json.dumps(event)
 		)
 	
+	async def	show_stats_end_game(self, event):
+		await self.send(
+			text_data=json.dumps({
+				"type": "redirect_to_game_page",
+				"matchName": self.match.group_name,
+				"user": self.username
+				})
+		)
+	
+	async def	show_tournament_lobby(self, event):
+		await self.send(text_data=json.dumps({"type": "redirect_to_tournament_lobby", "tournament_id": event["tournament_id"]}))
+		basic_update = {}
+		basic_update["type"] = "group_tournament_update"
+		basic_update["tournament_id"] = event["tournament_id"]
+		await self.channel_layer.group_send(
+			event["tournament_id"],
+			basic_update,
+		)
+
 	#update game_data with keypress, if we are in a consumer that
 	#is not hosting the game, we ignore it
 	async def process_keypress(self, keypress):
@@ -289,9 +525,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		else:
 			self.match.game_data[player_id]["direction"] = 0
 
-	from django.contrib.auth.models import User
 
-	def create_data_collector(self, modus, username1, username2, matchName):
+	def create_data_collector(self, modus, username1, username2, matchName, tournament):
 		try:
 			user1 = User.objects.get(username=username1)
 			user2 = User.objects.get(username=username2)
@@ -299,7 +534,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			# Handle the case where one or both users don't exist
 			raise ValueError("One or both users do not exist.")
 
-		return GameDataCollector(user1=user1, user2=user2, matchName=matchName, type=modus)
+		return GameDataCollector(user1=user1, user2=user2, matchName=matchName, type=modus, tournament=tournament)
 
 	
 	#i dont think we need a lock here, as we work with the instances own game_data
@@ -308,59 +543,85 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#here we could import the game from another file to keep things separated
 	async def game_loop(self, modus):
 		players = list(self.match.game_data.keys())
-		print("players:", players)
-		if modus == 'remote' or modus == 'ai':
-			players = list(self.match.game_data.keys())
-			self.gdc = await sync_to_async(self.create_data_collector)(modus, players[0], players[1], self.match.group_name)
-		if modus == 'local':
-			self.gdc = await sync_to_async(self.create_data_collector)(modus, self.username, 'DUMP_LOCAL', self.match.group_name)
+		self.gdc = await sync_to_async(self.create_data_collector)(modus, players[0], players[1], self.match.group_name, self.match.tournament_id)
 		logger.debug("new game loop started")
 		pong_instance = Pong(self.gdc)
 		FPS = 60
+		AI_REFRESH_THRESHOLD = 1
 		iteration_time = 1 / FPS
 		if modus == "ai":
-			ai = AIPongOpponent(
-				pong_instance.rightPaddle.y,
-				pong_instance.rightPaddle.x,
-				pong_instance.ball.x,
-				pong_instance.ball.y,
-				pong_instance.ball.dx,
-				pong_instance.ball.dy,
-				pong_instance.rightPaddle.dy,
-				pong_instance.rightPaddle.height,
-				iteration_time,
-				10)
+			ai = AIPongOpponent(pong_instance, iteration_time, 10)
 			ai_refresh_timer = time.time()
 		should_run = True
+		initial_entity_data = pong_instance.get_initial_entity_data(self.match.game_data)
+		await self.channel_layer.group_send(
+				self.game_group_name,
+				{"type": "send_to_group", "identifier": "initial_game_data", 
+	 			"initial_entity_data": initial_entity_data,
+				"iteration_time": iteration_time, "modus": modus},
+			)
 		while should_run:
 			if modus == "ai":
-				if (time.time() - ai_refresh_timer >= 1):
-					ai.setGameState(
-						pong_instance.rightPaddle.y,
-						pong_instance.rightPaddle.x,
-						pong_instance.ball.x,
-						pong_instance.ball.y,
-						pong_instance.ball.dx,
-						pong_instance.ball.dy,
-						pong_instance.rightPaddle.dy,
-						pong_instance.rightPaddle.height)
+				if (time.time() - ai_refresh_timer >= AI_REFRESH_THRESHOLD):
+					ai.setGameState(pong_instance)
 					ai_refresh_timer = time.time()
 				ai_decision = ai.getAIDecision()
 				self.match.game_data["AI_Ursula"]["direction"] = ai_decision
-
 			#update entities with the iteration_time and keypresses
 			entity_data = await pong_instance.update_entities(iteration_time, self.match.game_data)
 			should_run = not entity_data["game_over"]
 			#send all entity data to clients, so they can render the game
-			# print(entity_data)
 			await self.channel_layer.group_send(
 				self.game_group_name,
-				{"type": "group_game_state_update", "entity_data": entity_data},
+				{"type": "send_to_group", "identifier": "game_update", "entity_data": entity_data},
 			)
 			await asyncio.sleep(iteration_time)
 
-			# end_time = time.time()  # End time of the iteration
-			# iteration_time_measured = end_time - start_time
-			# margin = 0.1
-			# if iteration_time_measured  > (iteration_time * (1 + margin)):
-			# 	print("Warning: Server cannot keep up with the desired framerate.", iteration_time_measured, ">", iteration_time)
+		#Prevent the 'beforeunload' to trigger the end game logic in the end_game_player_left()
+		#and the game is over so it actually makes sense :D
+		self.hosts_game = False
+
+		await self.channel_layer.group_send(
+				self.game_group_name,
+				{"type": "send_to_group", "game_over": True},
+			)
+
+		#remove player from registred after match, so the player can play again
+		#also remove the match from the lobby and update the lobby
+		if (modus == 'remote'):
+			if (self.match.tournament_id == None):
+				self.lobby.delete_match(self.match)
+			self.lobby.remove_registered_player(players[0])
+			self.lobby.remove_registered_player(players[1])
+			if (self.match.tournament_id == None):
+				await self.channel_layer.group_send(
+						"lobby",
+						{"type" : "group_lobby_update"},
+				)
+
+		if (self.match.tournament_id == None):
+			await self.channel_layer.group_send(
+				self.game_group_name,
+				{"type": "send_to_group", "identifier": "game_end",
+	 			"matchName": self.match.group_name, "user": self.username},
+			)
+		else:
+			tournament = self.lobby.get_tournament(self.match.tournament_id)
+			#delete loser from tournamnt players
+			if self.gdc.django_userstats_1.score == 3:
+				tournament.data[tournament.round][self.match.group_name]["winner"] = players[0]
+				tournament.data[tournament.round][self.match.group_name]["loser"] = players[1]
+				tournament.players.remove(players[1])
+			else:
+				tournament.data[tournament.round][self.match.group_name]["winner"] = players[1]
+				tournament.data[tournament.round][self.match.group_name]["loser"] = players[0]
+				tournament.players.remove(players[0])
+			#delete this match from tournmanet matches
+			tournament.matches.remove(self.match)
+			#increment tournament round if its last game of tournament
+			if (len(tournament.players) == tournament.number_players - (tournament.round + 1) * tournament.number_players // 2):
+				tournament.round += 1
+			await self.channel_layer.group_send(
+				self.game_group_name,
+				{"type": "show_tournament_lobby", "tournament_id" : self.match.tournament_id},
+			)

@@ -1,7 +1,6 @@
 <!-- dwitter/templates/dwitter/profile.html -->
-
-{% extends 'base.html' %}
-
+{% extends 'base.html' %}    
+{% load static %}
 {% block content %}
 
 <div class="container">
@@ -211,9 +210,23 @@
                             <tbody>
                                 {% for gld in stats.gameListData %}
                                 <tr>
-                                    <td class="text-center"><a href="/singleGameStats?gameID={{ gld.game.id }}&userID={{ gld.userGameStats.user.id }}">{{ gld.game.matchName }}</a></td>
+                                    <!-- {% if gld.opponentGameStats.user != None %}
+                                    <td><a href="/singleGameStats?matchName={{ gld.game.matchName }}&username={{ gld.userGameStats.user.username }}"> {{ gld.game.matchName }} || {{ gld.game.matchDate }} || {{ gld.game.matchTime }} || against: {{ gld.opponentGameStats.user }}</a></td>
+                                    {% endif %}
+                                    {% if gld.opponentGameStats.user == None %}
+                                    <td><a href="/singleGameStats?matchName={{ gld.game.matchName }}&username={{ gld.userGameStats.user.username }}"> {{ gld.game.matchName }} || {{ gld.game.matchDate }} || {{ gld.game.matchTime }} || against: Guest</a></td>
+                                    {% endif %} -->
+                                    
+                                    <td class="text-center"><a href="/singleGameStats?matchName={{ gld.game.matchName }}&username={{ gld.userGameStats.user.username }}">{{ gld.game.matchName }}</a></td>
                                     <td class="text-center">{{ gld.game.matchDate }} {{ gld.game.matchTime }} </td>
+                                
+                                    {% if gld.opponentGameStats.user != None %}
                                     <td class="text-center"><a href="/profile/{{ gld.opponentGameStats.user }}">{{ gld.opponentGameStats.user }}</a></td>
+                                    {% endif %}
+                                    {% if gld.opponentGameStats.user == None %}
+                                    <td class="text-center">Guest</td>
+                                    {% endif %}
+                                    <!-- <td class="text-center"><a href="/singleGameStats?gameID={{ gld.game.id }}&userID={{ gld.userGameStats.user.id }}">{{ gld.game.matchName }}</a></td> -->
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -288,6 +301,7 @@
     </a>
     {% endif %}
 </div>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
     // this will only work while the js is not a separate file
     var chartElement = document.getElementById('winLossChart');

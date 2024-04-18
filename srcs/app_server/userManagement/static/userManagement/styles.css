@@ -19,8 +19,3 @@
     display: flex; 
     justify-content: center;
 }
-
-#gameStatsRemote,
-#gameStatsAI {
-    display: none;
-}

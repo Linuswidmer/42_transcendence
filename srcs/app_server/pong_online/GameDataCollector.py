@@ -6,7 +6,6 @@ from .models import Tournaments
 
 class GameDataCollector:
 	def __init__(self, user1, user2, matchName, type='', tournament=None):
-
 		self.django_games = Games.objects.create(
 			gameType = type,
 			matchName = matchName,
@@ -14,7 +13,12 @@ class GameDataCollector:
 			matchTime = datetime.datetime.now().strftime("%H:%M:%S")
 		)
 		if tournament != None:
-				self.django_games.tournament_id = tournament.id
+				self.django_tournament = Tournaments.objects.get(
+					tournament_id = tournament
+				)
+				self.django_games.tournament_id = self.django_tournament
+		else:
+			self.django_tournament = None
 
 		self.django_userstats_1 = UserGameStats.objects.create(
 			user_id = user1.id,
@@ -31,6 +35,13 @@ class GameDataCollector:
 		self.streakCtrUser1 = 0
 		self.streakCtrUser2 = 0
 
+	def makeUserWin(self, left=True):
+		if left:
+			self.django_userstats_1.score = 3
+			self.django_userstats_2.score = 0
+		else:
+			self.django_userstats_1.score = 0
+			self.django_userstats_2.score = 3
 
 	def endGame(self):
 		print("GameDataCollector: End Game")
@@ -40,6 +51,8 @@ class GameDataCollector:
 		self.django_games.save()
 		self.django_userstats_1.save()
 		self.django_userstats_2.save()
+		if self.django_tournament != None:
+			self.django_tournament.save()
 
 	def ballHit(self, left=True):
 		self.currentRallyHits += 1

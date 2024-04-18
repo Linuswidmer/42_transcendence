@@ -1,89 +1,148 @@
-/* ---------------------------- HEADER -------------------------------*/
 
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    background-color: grey;
+/* ---------------------------- NAVBAR -------------------------------*/
+.navbar {
+  background-color: #6a0dad;
+  padding: 10px;
+  color: white;
+  display: flex;
+  font-size: 16px;
+  justify-content: space-between;
+  border-bottom: 1px solid #ccc;
 }
 
-.header h1 {
-    margin: 0;
+ /* Styling for buttons inside the navbar */
+ .navbar-button {
+  background-color: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: color 0.3s;
+  font-size: 16px;
+}
+
+.navbar-button:hover {
+  color: rgba(255, 255, 255, 1);
+}
+
+.logo {
+  height: 40px; /* Adjust the height of the logo */
+  margin-right: 20px; /* Add some margin to the right of the logo */
 }
 
 
-.header a {
-    text-decoration: none;
-    color: inherit;
+/* ---------------------------- FOOTER -------------------------------*/
+.footer {
+  background-color: #6a0dad;
+  font-size: 16px;
+  padding: 10px;
+  color: white;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  border-top: 1px solid #ccc;
 }
 
-.header button {
-    padding: 10px 20px;
-    border: none;
-    background-color: #007bff;
-    color: white;
-    cursor: pointer;
+.column {
+  flex: 1;
+  text-align: center;
 }
 
-/* ---------------------------- CONTENT -------------------------------*/
+.col {
+  padding: 0 !important;
+}
+
+.column:not(:last-child) {
+  border-right: 1px solid #fff;
+}
+/* ---------------------------- MAIN -------------------------------*/
+
+body, html {
+  background-color: #fff; /* Light gray background */
+  color: #6a0dad;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+#wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
 
 #content {
-    margin-top: 20px;
-    background-color: #f0f0f0;
-    padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: 100vh;
+  flex: 1; /* Make content area take up remaining space */
+  overflow: hidden; /* Hide overflow */
+  padding-bottom: 100;
 }
 
-#content button {
-    padding: 10px 20px;
-    margin: 10px;
-    border: none;
-    background-color: black;
-    color: white;
-    cursor: pointer;
+.welcome-container {
+  text-align: center;
+  margin-top: 20px; /* Adjust top margin as needed */
 }
 
-/* ---------------------------- FORM -------------------------------*/
-form {
-    background-color: #f8f9fa;
-    padding: 20px;
-    border-radius: 5px;
-    width: 300px;
-    margin: auto;
+.image-container {
+  text-align: center;
 }
 
-form h2 {
-    text-align: center;
+.button-container {
+  margin-top: 10px;
+  padding-bottom: 10px;
 }
 
-form p {
-    text-align: center;
+.container {
+  background-color: #fff;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 50px 20px;
+  text-align: center;
 }
 
-form input[type="text"] {
-    width: 100%;
-    padding: 12px 20px;
-    margin: 8px 0;
-    box-sizing: border-box;
-    border: 2px solid #ccc;
-    border-radius: 4px;
+h1, .modal-title, .modal-body {
+  color: #6a0dad; /* White heading color */
+  background-color: #fff;
+  text-align: center;
 }
 
-form input[type="submit"] {
-    background-color: #4CAF50;
-    color: white;
-    padding: 14px 20px;
-    margin: 8px 0;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    width: 100%;
+.modal-title {
+  font-size: 25px !important;
+}
+label {
+  font-size: 20px;
+}
+.button {
+  display: inline-block;
+  margin: 10px;
+  padding: 15px 30px;
+  background-color: #fff; /* White button color */
+  color: #6a0dad; /* Purple text color */
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background-color 0.3s, background-color 0.3s;
+  text-align: center;
+}
+.button:hover {
+  color: #fff; /* White text color on hover */
+  background-color: #6a0dad;
+  text-decoration: none;
+}
+.image-container {
+  margin-bottom: 30px;
 }
 
-form input[type="submit"]:hover {
-    background-color: #45a049;
+.modalContainer {
+  background-color: #6a0dad; /* Light gray background */
+  font-family: Arial, sans-serif;
+  color: #fff;
 }
-
 /* ---------------------------- GAME -------------------------------*/
 
 canvas {
@@ -91,23 +150,23 @@ canvas {
 }
 
 #leftPlayerName {
-    position: absolute; 
-    left: 30px; 
+    position: absolute;
+    left: 30px;
     top:65%;
     font-size: large;
 }
 
 #rightPlayerName {
-    position: absolute; 
-    right: 30px; 
+    position: absolute;
+    right: 30px;
     top: 65%;
     font-size: large;
 }
 
 #leftScore {
     position: absolute;
-    left: 50%; 
-    transform: translateX(-50%); 
+    left: 50%;
+    transform: translateX(-50%);
     top: 10px;
 }
 
