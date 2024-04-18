@@ -35,7 +35,6 @@
 
     // Iterate through rounds
     for (const roundKey in tournament_data) {
-		console.log(roundKey)
         const round = tournament_data[roundKey];
 
         // Create round element
@@ -54,7 +53,6 @@
 
         // Iterate through matches in the round
         for (const matchKey in round) {
-			console.log(matchKey)
             const match = round[matchKey];
             // Create match element
             const matchElement = document.createElement('div');

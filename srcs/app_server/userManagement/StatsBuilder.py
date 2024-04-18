@@ -47,7 +47,7 @@ class StatsBuilder:
 
 		self.gameListData = []
 
-		self.tournaments = []
+		self.tournaments = set()
 
 	#This helper method returns a tupel: first is winner, second is loser. Both the same, when draw.
 	def _getWinnerLoser(self, game: Games):
@@ -101,7 +101,7 @@ class StatsBuilder:
 			self.totalMisses += stat.ballMisses
 
 			if stat.game.tournament != None:
-				self.tournaments.append(stat.game.tournament)
+				self.tournaments.add(stat.game.tournament)
 			
 			#Get both stats from user and opponent and store it grouped in an object
 			# for displaying later
@@ -128,10 +128,10 @@ class StatsBuilder:
 			if gameTypeStat.highestWinningStreak < stat.highestStreak:
 				gameTypeStat.highestWinningStreak = stat.highestStreak
 		
-		self.totalTournaments = len(set(self.tournaments))
+		self.totalTournaments = len(self.tournaments)
 		#since a user can have multiple games in a tournament, we make a set
 		# so that every tournament only occurs on time
-		self._setBestTournamentRank(set(self.tournaments))
+		self._setBestTournamentRank(self.tournaments)
 
 		#since we used the averagePointsPErGame to Sum up all scores,
 		# we now need to divide them through all the games of the gameType (remote, local, ai)
@@ -139,4 +139,3 @@ class StatsBuilder:
 			numGames = len(gameTypeStat.games)
 			if numGames > 0:
 				gameTypeStat.averagePointsPerGame /= len(gameTypeStat.games)
-		print("Stats Builder Tournaments: ", self.tournaments)
