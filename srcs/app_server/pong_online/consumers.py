@@ -138,6 +138,10 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	n_connected_websockets = 0
 
 	update_lock = asyncio.Lock()
+
+	async def load_generated_names_db_async(self):
+		await sync_to_async(self.lobby.load_generated_names_db)()
+	
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		MultiplayerConsumer.n_connected_websockets += 1
@@ -148,6 +152,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		self.game_group_name = ""
 
 		self.lobby = Lobby()
+		asyncio.create_task(self.load_generated_names_db_async())
 		# self.match = self.lobby.get_match_by_player_id()
 
 		self.in_game = False
@@ -291,10 +296,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 
 		if action == "create":
-			success, message = self.lobby.add_match(str(generate()))
-			if not success:
-				json_from_client["error"] = message
-		
+			self.lobby.add_match()
+
 		if action == "leave" and modus == "remote":
 			success, message = self.lobby.leave(self.username, self.match)
 			if success:
@@ -304,15 +307,11 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				json_from_client["error"] = message			
 
 		if action == "create_tournament":
-			tournament_id = str(generate())
-			success, message = await self.lobby.add_tournament(tournament_id, self.username)
-			if success:
-				await self.send(text_data=json.dumps({"type": "join_tournament", "tournament_id": tournament_id}))
-				await self.channel_layer.group_add(
+			tournament_id = await self.lobby.add_tournament(self.username)
+			await self.send(text_data=json.dumps({"type": "join_tournament", "tournament_id": tournament_id}))
+			await self.channel_layer.group_add(
 					tournament_id, self.channel_name
-				)
-			else:
-				json_from_client["error"] = message
+			)
 
 		if action == "join_tournament":
 			success, message = self.lobby.register_player_tournament(self.username, tournament_id)
@@ -363,13 +362,12 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			local_opponent_name = 'DUMP_LOCAL'
 		self.in_game = True
 		self.hosts_game = True
-		match_id = str(generate())
-		self.match = self.lobby.create_local_match(match_id)
+		self.match = self.lobby.create_local_match()
 		self.match.add_player_to_gamedata(self.username)
 		self.match.add_player_to_gamedata(local_opponent_name)
 		self.match.registered_players.append(self.username)
 		self.match.registered_players.append(local_opponent_name)
-		self.game_group_name = match_id
+		self.game_group_name = self.match.group_name
 		
 		await self.channel_layer.group_add(
 			self.game_group_name, self.channel_name

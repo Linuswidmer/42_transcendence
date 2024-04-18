@@ -1,7 +1,7 @@
 from uuid import uuid4
 from adjectiveanimalnumber import generate
 import copy
-from .models import Tournaments
+from .models import Tournaments, Games
 from asgiref.sync import sync_to_async
 import math
 import json
@@ -15,11 +15,17 @@ class Lobby:
 			cls._instance.matches = {}
 			cls._instance.tournaments = {}
 			cls._instance.registered_players_total = []
-			#nameMatch1 = "1"
-			#cls._instance.add_match(nameMatch1)
-			#match1 = cls._instance.get_match(nameMatch1)
-			#match1.register_player("yann")
+			cls._instance.used_generated_names = set()
 		return cls._instance
+
+	def load_generated_names_db(self):
+		games = Games.objects.all()
+		tournaments = Tournaments.objects.all()
+		for game in games:
+			self.used_generated_names.add(game.matchName)
+		for tm in tournaments:
+			self.used_generated_names.add(tm.tournament_id)
+		print('loaded used names: ', self.used_generated_names)
 
 	#return correct match instance to consumer
 	def get_match_by_player_id(self, player_id):
@@ -115,32 +121,48 @@ class Lobby:
 			return True
 		return False
 	
+	def generate_name(self):
+		name = str(generate())
+		while (name in self.used_generated_names):
+			print('Name already in use: ', name)
+			name = str(generate())
+		self.used_generated_names.add(name)
+		print('Generate name func() --> ', name)
+		print(self.used_generated_names)
+		return name
+
 	# rename to create_match
-	def add_match(self, match_id) -> bool:
-		if match_id in self.matches:
-			return False, "match name already exists"
-		self.matches[match_id] = Match(match_id)
-		return True, ""
+	def add_match(self) -> bool:
+		match_name = self.generate_name()
+		self.matches[match_name] = Match(match_name)
+		return match_name
 
 	def create_django_tournament(self, tournament_id):
 		return Tournaments.objects.create(tournament_id=tournament_id)
 
-	async def add_tournament(self, tournament_id, username) -> bool:
-		if tournament_id in self.tournaments:
-			return False, "tournament name already exists"
-		
+	async def add_tournament(self, username) -> bool:
+		tournament_id = self.generate_name()
+		print('Create Tournamnet, generated name: ', tournament_id)
 		self.tournaments[tournament_id] = Tournament(tournament_id, 4)
-		
 		self.tournaments[tournament_id].django_tournament = await sync_to_async(self.create_django_tournament)(tournament_id)
-		#self.tournaments[tournament_id].django_tournament.data = self.tournaments[tournament_id].data
-		#self.tournaments[tournament_id].django_tournament.save()
 		self.tournaments[tournament_id].players.append(username)
 		# self.registered_players_total.append(username) # Are you sure you need this?
 
-		return True, ""
+		return tournament_id
 
+	def load_generated_names_db(self):
+		print('Hallo')
+		games = Games.objects.all()
+		tournaments = Tournaments.objects.all()
+		for game in games:
+			self.used_generated_names.add(game.matchName)
+		for tm in tournaments:
+			self.used_generated_names.add(tm.tournament_id)
+
+		print('used names: ', self.used_generated_names)
 	
-	def	create_local_match(self, match_id) -> bool:
+	def	create_local_match(self) -> bool:
+		match_id = self.generate_name()
 		return Match(match_id)
 
 	def get_match(self, match_id):
@@ -245,7 +267,7 @@ class Tournament:
 			return False
 		self.players.append(user_id)
 		return True
-	
+
 	def generate_matches(self, num_participants):
 		games_per_round = int(num_participants / 2) #start, gets divided by two every time
 		games_added = 0
@@ -256,7 +278,7 @@ class Tournament:
 				games_per_round /= 2
 				current_round += 1
 			match_id = str(generate())
-			while match_id in self.matches:
+			while match_id in self.matches and match_id in self.gam:
 				match_id = str(generate())
 			if current_round in self.data:
 				# If the round already exists, add the match to it
@@ -280,4 +302,3 @@ class Tournament:
 		for match in self.matches:
 			if match.group_name == match_id:
 				return match
-	
