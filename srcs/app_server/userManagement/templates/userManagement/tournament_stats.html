@@ -63,7 +63,6 @@
             matchLink.classList.add('match-info');
             if (match.winner != "None"){
                 matchLink.href = 'http://localhost:8443/singleGameStats/?matchName=' + matchKey + '&username=' + match.winner; // Set the href to google.com
-                matchLink.target = '_blank'; // Open the link in a new tab
                 matchLink.innerHTML = `<strong>${matchKey}</strong>: <br>Winner: ${match.winner} <br>Loser: ${match.loser}`;
             }else{
                 matchLink.innerHTML = `<strong>${matchKey}</strong>: <br>Not played yet!`;

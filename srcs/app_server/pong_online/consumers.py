@@ -151,6 +151,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		self.username = ""
 		self.game_group_name = ""
 
+		#Load all the game and tournaments from the db, to proof the 
+		# generated later on, to avoid duplicates
 		self.lobby = Lobby()
 		asyncio.create_task(self.load_generated_names_db_async())
 		# self.match = self.lobby.get_match_by_player_id()
