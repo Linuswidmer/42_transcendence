@@ -4,18 +4,59 @@
 
 {% block content %}
 
-<div class="d-flex justify-content-center">
-    <img class="rounded-circle profile-image" src="{{ user.profile.avatar.url }}" alt="Placeholder image">
-</div>
-<h2 class="text-center text-dark my-4 stylish-font"> 
-    {{user.username}}'s Profile 
-    {% if user.profile.logged_in is True  %}
-        <span style="color: green; margin-left: 5px; font-size: 0.5em;">Online</span>
-    {% else %}
-        <span style="color: red; margin-left: 5px; font-size: 0.5em;">Offline</span>    
-    {% endif %}
-</h2>
+<div class="container">
+    <div class="row">
+        <!-- Column for profile picture -->
+        <div class="col">
+            <div class="d-flex justify-content-center">
+                <img class="rounded-circle profile-image" src="{{ user.profile.avatar.url }}" alt="Placeholder image">
+            </div>
+        </div>
 
+        <!-- Column for name and logged in status -->
+        <div class="col">
+            <h2 class="text-center text-dark my-4 stylish-font"> 
+                {{user.username}}'s Profile 
+                {% if user.profile.logged_in is True  %}
+                <span style="color: green; margin-left: 5px; font-size: 0.5em;">Online</span>
+                {% else %}
+                <span style="color: red; margin-left: 5px; font-size: 0.5em;">Offline</span>    
+                {% endif %}
+            </h2>
+        </div>
+
+        <!-- Column for logout and all profiles buttons -->
+        <div class="col">
+            <div style="width: 200px; margin: 20px;">
+                {% if user == request.user %}
+                <form method="post" action="{% url 'userManagement:logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-block">logout</button>
+                </form>
+                {% endif %} 
+                <a href="{% url 'userManagement:profile_list' %}" class="btn btn-success btn-block">
+                    All Profiles
+                </a>
+            </div>
+            {% if user != request.user %}
+            <div style="width: 200px; margin: 20px;">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="buttons has-addons">
+                        {% if user.profile in request.user.profile.follows.all %}
+                        <button class="button is-success is-static btn btn-success btn-block">Follow</button>
+                        <button class="button is-danger btn btn-danger btn-block" name="follow" value="unfollow">Unfollow</button>
+                        {% else %}
+                        <button class="button is-success btn btn-success btn-block" name="follow" value="follow">Follow</button>
+                        <button class="button is-danger is-static btn btn-danger btn-block">Unfollow</button>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
 
 <div class="container my-4">
     <div class="card">
@@ -102,7 +143,6 @@
                 {% endif %}
             </div>
         </div>
-    </div>
 </div>
 
 <div class="container my-4">
@@ -128,34 +168,18 @@
                         <table class="table table-hover">
                             <thead class>
                                 <tr>
-                                    <th class="text-center">Longest Ball Rally</th>
                                     <th class="text-center">AVG Points Per Game</th>
                                     <th class="text-center">Best Game Score</th>
                                     <th class="text-center">Highest Winning Streak</th>
+                                    <th class="text-center">Longest Ball Rally</th>
                                 </tr>
                             </thead>
-                                <tbody id="gameStatsLocal">
+                                <tbody id="gameStats">
                                     <tr>
-                                        <td class="text-center">{{stats.gameTypeStats.local.longestBallRally}}</td>
-                                        <td class="text-center">{{stats.gameTypeStats.local.averagePointsPerGame}}</td>
-                                        <td class="text-center">{{stats.gameTypeStats.local.bestGameScore}}</td>
-                                        <td class="text-center">{{stats.gameTypeStats.local.highestWinningStreak}}</td>
-                                    </tr>
-                                </tbody>
-                                <tbody  id="gameStatsRemote">
-                                    <tr>
-                                        <td class="text-center">{{stats.gameTypeStats.remote.longestBallRally}}</td>
-                                        <td class="text-center">{{stats.gameTypeStats.remote.averagePointsPerGame}}</td>
-                                        <td class="text-center">{{stats.gameTypeStats.remote.bestGameScore}}</td>
-                                        <td class="text-center">{{stats.gameTypeStats.remote.highestWinningStreak}}</td>
-                                    </tr>
-                                </tbody>
-                                <tbody id="gameStatsAI">
-                                    <tr>
-                                        <td class="text-center">{{stats.gameTypeStats.ai.longestBallRally}}</td>
-                                        <td class="text-center">{{stats.gameTypeStats.ai.averagePointsPerGame}}</td>
-                                        <td class="text-center">{{stats.gameTypeStats.ai.bestGameScore}}</td>
-                                        <td class="text-center">{{stats.gameTypeStats.ai.highestWinningStreak}}</td>
+                                        <td class="text-center"></td>
+                                        <td class="text-center"></td>
+                                        <td class="text-center"></td>
+                                        <td class="text-center"></td>
                                     </tr>
                                 </tbody>
                         </table>
@@ -166,144 +190,104 @@
     </div>
 </div>
 
-<div class="column">
-    <div class="block">
-        <h3 class="title is-4"><br>Stats:</h3>
-        <div class="content">
 
-            <div>
-                <h4>Game Type Stats:</h4>
-                <div>
-                    <h5>Local:</h5>
-                    <ul>
-                        <li>Longest Ball Rally: {{ stats.gameTypeStats.local.longestBallRally }}</li>
-                        <li>AVG Points per game: {{ stats.gameTypeStats.local.averagePointsPerGame }}</li>
-                        <li>Best game score: {{ stats.gameTypeStats.local.bestGameScore }}</li>
-                        <li>Highest Winning Streak: {{ stats.gameTypeStats.local.highestWinningStreak }}</li>
-                    </ul>
-                </div>
-    
-                <div>
-                    <h5>Remote:</h5>
-                    <ul>
-                        <li>Longest Ball Rally: {{ stats.gameTypeStats.remote.longestBallRally }}</li>
-                        <li>AVG Points per game: {{ stats.gameTypeStats.remote.averagePointsPerGame }}</li>
-                        <li>Best game score: {{ stats.gameTypeStats.remote.bestGameScore }}</li>
-                        <li>Highest Winning Streak: {{ stats.gameTypeStats.remote.highestWinningStreak }}</li>
-                    </ul>
-                </div>
-    
-                <div>
-                    <h5>AI:</h5>
-                    <ul>
-                        <li>Longest Ball Rally: {{ stats.gameTypeStats.ai.longestBallRally }}</li>
-                        <li>AVG Points per game: {{ stats.gameTypeStats.ai.averagePointsPerGame }}</li>
-                        <li>Best game score: {{ stats.gameTypeStats.ai.bestGameScore }}</li>
-                        <li>Highest Winning Streak: {{ stats.gameTypeStats.ai.highestWinningStreak }}</li>
-                    </ul>
+<div class="container my-4">
+    <div class="card">
+        <div class="card-header text-center text-white bg-purple">
+            <h4>All Games</h4>
+        </div>
+        <div class="card-body">
+            <div class="row justify-content-center">
+                <div class="col-md-10">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class>
+                                <tr>
+                                    <th class="text-center">ID</th>
+                                    <th class="text-center">Date & Time</th>
+                                    <th class="text-center">Opponent</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for gld in stats.gameListData %}
+                                <tr>
+                                    <td class="text-center"><a href="/singleGameStats?gameID={{ gld.game.id }}&userID={{ gld.userGameStats.user.id }}">{{ gld.game.matchName }}</a></td>
+                                    <td class="text-center">{{ gld.game.matchDate }} {{ gld.game.matchTime }} </td>
+                                    <td class="text-center"><a href="/profile/{{ gld.opponentGameStats.user }}">{{ gld.opponentGameStats.user }}</a></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-     <!-- New section for All Games -->
-     <div class="block">
-        <h3 class="title is-4">All Games:</h3>
-        <div class="content">
-            <ul>
-                <!-- Loop through all games and display relevant information -->
-                {% for gld in stats.gameListData %}
-                    <li><a href="/singleGameStats?gameID={{ gld.game.id }}&userID={{ gld.userGameStats.user.id }}"> {{ gld.game.matchName }} || {{ gld.game.matchDate }} || {{ gld.game.matchTime }} || against: {{ gld.opponentGameStats.user }}</a></li>
-                {% endfor %}
-            </ul>
-        </div>
-    </div>
-
-
-<div class="column is-one-third">
-    {% if user == request.user %}
-    <div class="block">
-        <form method="post" action="{% url 'userManagement:logout' %}">
-			{% csrf_token %}
-			<button type="submit">logout</button>
-		</form>
-    </div>
-    {% endif %} 
-    <div class="block">
-		<a href="{% url 'userManagement:profile_list' %}">
-            <button class="button is-dark is-outlined is-fullwidth">
-                All Profiles
-            </button>
-        </a>
-    </div>
-
-    <div class="block">
-        <h3 class="title is-4">
-            {{user.username}} follows:
-        </h3>
-        <div class="content">
-            <ul>
-            {% for following in user.profile.follows.all %}
-                <li>
-                    <a href="{% url 'userManagement:profile' following.user.username %}">{{ following }}</a>
-                </li>
-            {% endfor %}
-            </ul>
-        </div>
-    </div>
-
-    <div class="block">
-        <h3 class="title is-4">
-            {{user.username}} is followed by:
-        </h3>
-        <div class="content">
-            <ul>
-            {% for follower in user.profile.followed_by.all %}
-                <li>
-                    <a href="{% url 'userManagement:profile' follower.user.username %}">{{ follower }}</a>
-                </li>
-            {% endfor %}
-            </ul>
-        </div>
-    </div>
-
-    <div class="block">
-        {% if user == request.user %}
-            <a href="{% url 'userManagement:update_profile' %}">Change Profile Picture</a>
-        {% endif %} 
-    <h1 class="title is-1">
-        {{user.username}}'s Profile
-        {% if user.profile.logged_in is True  %}
-            <span style="color: green; margin-left: 5px; font-size: 0.5em;">Online</span>
-        {% else %}
-            <span style="color: red; margin-left: 5px; font-size: 0.5em;">Offline</span>    
-        {% endif %}
-    </h1>
-
-    {% if user == request.user %}
-            <a href="{% url 'userManagement:update_user' %}">Update Profile Info</a>
-            <a href="{% url 'userManagement:change_password' %}">Change password</a>
-        {% endif %} 
-    </div>
-
-    <!-- IMPORTANT !!!! -->
-    {% if user != request.user %}
-	<form method="post">
-		{% csrf_token %}
-		<div class="buttons has-addons">
-		{% if user.profile in request.user.profile.follows.all %}
-			<button class="button is-success is-static">Follow</button>
-			<button class="button is-danger" name="follow" value="unfollow">Unfollow</button>
-		{% else %}
-			<button class="button is-success" name="follow" value="follow">Follow</button>
-			<button class="button is-danger is-static">Unfollow</button>
-		{% endif %}
-		</div>
-	</form>
-    {% endif %} 
-
 </div>
 
+<div class="container my-4">
+    <div class="card">
+        <div class="card-header text-center text-white bg-purple">
+            <h4>{{user.username}} follows</h4>
+        </div>
+        <div class="card-body">
+            <div class="row justify-content-center">
+                <div class="col-md-10">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <tbody>
+                                {% for following in user.profile.follows.all %}
+                                <tr>
+                                    <td class="text-center"><a href="{% url 'userManagement:profile' following.user.username %}"></a>{{ following }}</a></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-4">
+    <div class="card">
+        <div class="card-header text-center text-white bg-purple">
+            <h4>{{user.username}} is followed by</h4>
+        </div>
+        <div class="card-body">
+            <div class="row justify-content-center">
+                <div class="col-md-10">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <tbody>
+                                {% for follower in user.profile.followed_by.all %}
+                                <tr>
+                                    <td class="text-center"><a href="{% url 'userManagement:profile' follower.user.username %}">{{ follower }} </a></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if user == request.user %}
+<div class="d-flex justify-content-center">
+    <a href="{% url 'userManagement:update_profile' %}" class="btn btn-secondary" role="button" style="margin-right: 15px;">
+        Change Profile Picture
+    </a>
+    <a href="{% url 'userManagement:update_user' %}" class="btn btn-secondary" role="button" style="margin-right: 15px;">
+        Update Profile Info
+    </a>
+    <a href="{% url 'userManagement:change_password' %}" class="btn btn-secondary" role="button">
+        Change Password
+    </a>
+    {% endif %}
+</div>
 <script>
     // this will only work while the js is not a separate file
     var chartElement = document.getElementById('winLossChart');
@@ -356,22 +340,48 @@
         });
     }
 
+    var localAveragePointsPerGame = {{ stats.gameTypeStats.local.averagePointsPerGame }};
+    var localBestGameScore = {{ stats.gameTypeStats.local.bestGameScore }};
+    var localHighestWinningStreak = {{ stats.gameTypeStats.local.highestWinningStreak }};
+    var localLongestBallRally = {{ stats.gameTypeStats.local.longestBallRally }};
+
+    var remoteAveragePointsPerGame = {{ stats.gameTypeStats.remote.averagePointsPerGame }};
+    var remoteBestGameScore = {{ stats.gameTypeStats.remote.bestGameScore }};
+    var remoteHighestWinningStreak = {{ stats.gameTypeStats.remote.highestWinningStreak }};
+    var remoteLongestBallRally = {{ stats.gameTypeStats.remote.longestBallRally }};
+
+
+    var aiAveragePointsPerGame = {{ stats.gameTypeStats.ai.averagePointsPerGame }};
+    var aiBestGameScore = {{ stats.gameTypeStats.ai.bestGameScore }};
+    var aiHighestWinningStreak = {{ stats.gameTypeStats.ai.highestWinningStreak }};
+    var aiLongestBallRally = {{ stats.gameTypeStats.ai.longestBallRally }};
+
+    function setTableData(averagePointsPerGame, bestGameScore, highestWinningStreak, longestBallRally) {
+        // Get the table body
+        var tbody = document.getElementById('gameStats');
+
+        // Get all the td elements in the tbody
+        var tds = tbody.getElementsByTagName('td');
+
+        // Set the content of the td elements
+        tds[0].textContent = averagePointsPerGame;
+        tds[1].textContent = bestGameScore;
+        tds[2].textContent = highestWinningStreak;
+        tds[3].textContent = longestBallRally;
+    }
+
+    setTableData(localAveragePointsPerGame, localBestGameScore, localHighestWinningStreak, localLongestBallRally);
+
     document.getElementById('localGamesButton').addEventListener('click', function() {
-    document.getElementById('gameStatsLocal').style.display = 'block';
-    document.getElementById('gameStatsRemote').style.display = 'none';
-    document.getElementById('gameStatsAI').style.display = 'none';
+        setTableData(localAveragePointsPerGame, localBestGameScore, localHighestWinningStreak, localLongestBallRally);
     });
 
     document.getElementById('remoteGamesButton').addEventListener('click', function() {
-        document.getElementById('gameStatsLocal').style.display = 'none';
-        document.getElementById('gameStatsRemote').style.display = 'block';
-        document.getElementById('gameStatsAI').style.display = 'none';
+        setTableData(remoteAveragePointsPerGame, remoteBestGameScore, remoteHighestWinningStreak, remoteLongestBallRally);
     });
 
     document.getElementById('aiGamesButton').addEventListener('click', function() {
-        document.getElementById('gameStatsLocal').style.display = 'none';
-        document.getElementById('gameStatsRemote').style.display = 'none';
-        document.getElementById('gameStatsAI').style.display = 'block';
+        setTableData(aiAveragePointsPerGame, aiBestGameScore, aiHighestWinningStreak, aiLongestBallRally);
     });
 </script>
 

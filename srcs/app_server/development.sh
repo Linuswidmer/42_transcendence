@@ -17,4 +17,5 @@ docker run -d \
     --name redis_container \
     redis:latest
 
+python3 manage.py shell < create_default_users.py
 python3 manage.py runserver 127.0.0.1:8443
