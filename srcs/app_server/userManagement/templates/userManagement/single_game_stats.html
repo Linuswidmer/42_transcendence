@@ -1,26 +1,120 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<ul>
-      <strong>Overall Game Data for game {{ gld.game.matchName }}:</strong>
-      <li>Game Type: {{ gld.game.gameType }}</li>
-      <li>Duration: {{ gld.game.gameDuration }}</li>
-      <li>Date: {{ gld.game.matchDate }}</li>
-      <li>Time: {{ gld.game.matchTime }}</li>
-      <li>Tournament: {{ gld.game.tournament.tournament_id }}</li>
 
-      <strong>Stats from <a href="/profile/{{ gld.userGameStats.user.username}}">{{ gld.userGameStats.user }}</a>:</strong>
-      <li>Score: {{ gld.userGameStats.score }}</li>
-      <li>Ball Hits: {{ gld.userGameStats.ballHits }}</li>
-      <li>Ball Misses: {{ gld.userGameStats.ballMisses }}</li>
-      <li>Highest Sreak: {{ gld.userGameStats.highestStreak }}</li>
-      <li>Longest Ball Rally: {{ gld.userGameStats.longestBallRallyHits }}</li>
+<h2 id="vs" class="text-center text-dark my-4 stylish-font"> {{ gld.userGameStats.user }} vs. {{ gld.opponentGameStats.user }} </h2>
 
-      <strong>Stats from <a href="/profile/{{ gld.opponentGameStats.user.username}}">{{ gld.opponentGameStats.user }}</a>:</strong>
-      <li>Score: {{ gld.opponentGameStats.score }}</li>
-      <li>Ball Hits: {{ gld.opponentGameStats.ballHits }}</li>
-      <li>Ball Misses: {{ gld.opponentGameStats.ballMisses }}</li>
-      <li>Highest Sreak: {{ gld.opponentGameStats.highestStreak }}</li>
-      <li>Longest Ball Rally: {{ gld.opponentGameStats.longestBallRallyHits }}</li>
-</ul>
+<div class="container my-4">
+    <div class="card">
+        <div class="card-header text-center text-white bg-purple">
+            <h4>Player Stats</h4>
+        </div>
+        <div class="card-body">
+            <div class="row justify-content-center">
+                <div class="col-md-10">
+                    <div class="table-responsive">
+                        <table id="stats-table" class="table table-hover">
+                            <colgroup>
+                                <col span="1" style="width: 33%;">
+                                <col span="1" style="width: 33%;">
+                                <col span="1" style="width: 33%;">
+                            </colgroup>
+                            <thead class>
+                                <tr>
+                                    <th class="text-center">{{ gld.userGameStats.user }}</th>
+                                    <th class="text-center">Stats</th>
+                                    <th class="text-center">{{ gld.opponentGameStats.user }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-center">{{ gld.userGameStats.score }}</td>
+                                    <td class="text-center">Score</td>
+                                    <td class="text-center">{{ gld.opponentGameStats.score }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-center">{{ gld.userGameStats.ballHits }}</td>
+                                    <td class="text-center">Ball Hits</td>
+                                    <td class="text-center">{{ gld.opponentGameStats.ballHits }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-center">{{ gld.userGameStats.highestStreak }}</td>
+                                    <td class="text-center">Highest Streak</td>
+                                    <td class="text-center">{{ gld.opponentGameStats.highestStreak }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-4">
+    <div class="card">
+        <div class="card-header text-center text-white bg-purple">
+            <h4>Game Stats</h4>
+        </div>
+        <div class="card-body">
+            <div class="row justify-content-center">
+                <div class="col-md-10">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class>
+                                <tr>
+                                    <th class="text-center">Longest Ball Rally</th>
+                                    <th class="text-center">Game Duration (seconds)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-center">{{ gld.userGameStats.longestBallRallyHits }}</td>
+                                    <td class="text-center">{{ gld.game.gameDuration }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<p class="text-center text-dark my-4 stylish-font">Local Game {{ gld.game.matchDate }} {{ gld.game.matchTime }}</h2>
+
+<!-- <h2 class="text-center text-primary my-4">Game: {{ gld.game.matchName }}:</h2> -->
+
+<script>
+    var statsTable = document.getElementById('stats-table');
+    var rows = statsTable.getElementsByTagName('tr');
+    
+    for (var i = 1; i < rows.length; i++) {
+        var cells = rows[i].getElementsByTagName('td');
+        var player1Stat = parseInt(cells[0].innerText);
+        var player2Stat = parseInt(cells[2].innerText);
+        
+        if (player1Stat > player2Stat) {
+            cells[0].classList.add('winner-border');
+        } else if (player2Stat > player1Stat) {
+            cells[2].classList.add('winner-border'); 
+        }
+    }
+
+    // Get the h2 element
+    var h2 = document.getElementById('vs');
+
+    // Get the scores
+    var userScore = parseInt(cells[0].innerText);
+    var opponentScore = parseInt(cells[2].innerText);
+
+    // Add the crown emoji to the player with the higher score
+    if (userScore > opponentScore) {
+        h2.innerHTML = '👑 ' + h2.innerHTML;
+        console.log('User wins');
+    } else if (opponentScore > userScore) {
+        h2.innerHTML = h2.innerHTML + ' 👑';
+    }
+</script>
+
 {% endblock %}
+

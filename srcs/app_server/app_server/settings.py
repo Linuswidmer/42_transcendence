@@ -9,6 +9,8 @@ DEBUG = os.environ.get("DJANGO_DEBUG")
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '').split()
 # ALLOWED_HOSTS = ["127.0.0.1", "localhost", "10.15.9.8"]
 
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split()
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -109,6 +111,14 @@ AUTH_PASSWORD_VALIDATORS = [
     # },
 ]
 
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+    "django.contrib.auth.hashers.ScryptPasswordHasher",
+]
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -141,3 +151,4 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 OAUTH_SERVER_BASEURL = 'https://api.intra.42.fr'
+SOCIALACCOUNT_LOGIN_ON_GET = True #remove the middle screen "You are about to sign in using a third-party"

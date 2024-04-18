@@ -1,0 +1,44 @@
+{% load static %}
+<div class="navbar">
+  <nav>
+  <a class="navLeft" href="/" style="text-decoration: none">
+    <img src="{% static 'pong/pong_logo.png' %}" alt="Logo" class="logo">
+  </a>
+  </nav>
+  </div>
+  <main></main>
+  <script>
+    const main = document.querySelector('main');
+    const linkClickHandler = (event)=>{
+        event.preventDefault();
+        let path = event.target.getAttribute('href') || "/"; if(!path.startsWith("/")) path = "/"+path;
+        history.pushState({},null,path);
+        route();
+    };
+    document.querySelector("nav a").addEventListener("click",linkClickHandler);
+    window.addEventListener('popstate',()=>{
+        route();
+      });
+    const route = ()=>{
+    let path = location.pathname;
+    let pathName = path.replace(/\/+$/, path === '/' ? '/' : '');
+    switch (pathName) {
+        case '/': case 'onepager/land.html': Home(); break;
+        case '/game': Game(); break;
+        case '/dashboard/': Dashboard(); break;
+        default: notFound(); break;
+    }
+    };
+    var home;
+    const Home = ()=>{
+    if (!home) {
+        let homeUi = "example of home";
+        home = document.createElement("div");
+        home.classList.add("home");
+        home.innerHTML = homeUi;
+        home.lastElementChild.addEventListener("click",linkClickHandler);
+    }
+    main.replaceChildren(home);
+};
+   route();
+  </script>

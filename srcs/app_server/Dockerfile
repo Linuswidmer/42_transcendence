@@ -22,6 +22,7 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 
 #entry point file
 COPY ./entrypoint.sh /usr/src/app/entrypoint.sh
+COPY ./create_default_users.py /usr/src/app/create_default_users.py
 
 COPY . /usr/src/app
 
