@@ -12,7 +12,7 @@ done
 
 
 # Run the setup script
-/docker-entrypoint-initdb.d/setup_users.sh
+# /docker-entrypoint-initdb.d/setup_users.sh
 
 # Bring the PostgreSQL server to the foreground
 wait $!
