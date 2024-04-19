@@ -1,5 +1,6 @@
+{% extends 'onepager/land.html' %} 
 {% load static %}
-
+{% block content %}
 <div>
 	<button id="create_game">Create remote game</button>
 	<button id="create_tournament">Create tournament</button>
@@ -11,4 +12,7 @@
 <div id="tournament_list"></div>
 
 
+{% endblock content %}
+{% block extra_scripts %}
 <script src="{% static 'pong_online/lobby.js' %}" defer data-username="{{ username }}"></script>
+{% endblock extra_scripts %}
