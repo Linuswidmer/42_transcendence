@@ -17,7 +17,8 @@ services:
     env_file:
       - env.prod
     environment:
-      - DJANGO_SETTINGS_MODULE=app_server.settings
+      - LOCAL_IP=${LOCAL_IP}
+      - LOCAL_IP_CSRF=${LOCAL_IP_CSRF}
     depends_on:
       - postgres
     restart: always

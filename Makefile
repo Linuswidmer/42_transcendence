@@ -1,8 +1,17 @@
+all: prod
+
+prod: export LOCAL_IP = $(shell ifconfig | grep -A 1 'eno2' | tail -1 | awk '{ print $$2}')
+prod: export LOCAL_IP_CSRF = https://$(shell ifconfig | grep -A 1 'eno2' | tail -1 | awk '{ print $$2}'):8443
+prod: clean
+	( sleep 5 && xdg-open https://$(LOCAL_IP):8443/dashboard ) &
+	cd srcs && docker compose up --build
+
+open: 
+	export LOCAL_IP=$(shell ifconfig | grep -A 1 'eno2' | tail -1 | awk '{ print $$2}') && \
+	xdg-open https://$$LOCAL_IP:8443/lobby
+
 dev: clean
 	make -C ./srcs/app_server dev
-
-prod: clean
-	cd srcs && docker compose up --build
 
 clean:
 	-docker stop $(shell docker ps -aq)
@@ -15,7 +24,7 @@ setup:
 	virtualenv venv
 	. venv/bin/activate && pip install -r ./srcs/app_server/requirements.txt
 
-delete_db:
+flush_db:
 	docker exec -it django python3 manage.py flush --no-input
 
-re: fclean prod
+re: fclean all

@@ -27,7 +27,7 @@ python3 manage.py migrate
 python3 manage.py shell < create_default_users.py
 
 # Start the gunicorn server in the background
-gunicorn app_server.wsgi:application --bind 0.0.0.0:8000 &
+gunicorn app_server.wsgi:application --bind 0.0.0.0:8000 --log-level critical &
 
 # Save the PID of the gunicorn server
 GUNICORN_PID=$!
