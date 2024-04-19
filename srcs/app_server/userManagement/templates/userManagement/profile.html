@@ -430,7 +430,9 @@
                             const modal = document.getElementById(`${containerId}Modal`);
                             modal.classList.remove('show');
                             modal.style.display = 'none';
-                            reloadProfilePage();
+                            if (containerId == 'profilePicture' || containerId == 'updateProfile'){
+                                reloadProfilePage();
+                            }
                         } else {
                             // Login failed
                             // Display error message

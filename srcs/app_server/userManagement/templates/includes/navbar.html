@@ -68,8 +68,11 @@
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
         const scriptElements = doc.querySelectorAll('script');
+        //console.log(scriptElements[0].textContent);
+        //console.log(scriptElements[1].textContent);
+        //eval(scriptElements[1].textContent)
         scriptElements.forEach(script => {
-            eval(script.textContent);
+             eval(script.textContent);
         });
     }
           // Function to retrieve CSRF token from cookies
