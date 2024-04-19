@@ -8,9 +8,14 @@ clean:
 	-docker stop $(shell docker ps -aq)
 	-docker rm $(shell docker ps -aq)
 
+fclean: clean
+	-docker rmi $(shell docker images -q)
+
 setup:
 	virtualenv venv
 	. venv/bin/activate && pip install -r ./srcs/app_server/requirements.txt
 
 delete_db:
 	docker exec -it django python3 manage.py flush --no-input
+
+re: fclean prod
