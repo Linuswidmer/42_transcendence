@@ -11,46 +11,12 @@
     {% csrf_token %}
 
     <!-- CONTENT -->
-    <div id="dynamicDIV"></div>
+    <div id="dynamicDIV">This is the dynamic div</div>
 
-    <script>
-        function showSection(url) {  
-			console.log("show section url:", url);
-			//get DIV element where we want to display the new HTML
-			let dynamicDIV = document.getElementById('dynamicDIV');
 
-			//fetch HTML
-            fetch(url)
-            .then(response => response.text())
-            .then(text => {
-				//set fetched HTML in the DIV
-                dynamicDIV.innerHTML = text;
-				
-				//try to get the script element
-				let scriptElement = dynamicDIV.querySelector('script');
-
-				//if there is a script element, attach it to the DIV
-				if (scriptElement) {
-					console.log("showSection: there is a script tag in the html");
-					let fetchedScriptSrc = scriptElement.src;
-					// Create a new script element
-					let fetchedScript = document.createElement('script');
-					
-					// Set its src attribute to the extracted src
-					fetchedScript.src = fetchedScriptSrc;
-					
-					// Append the script element to the body of the document
-					document.body.appendChild(fetchedScript);
-				} else {
-					console.log("showSection: there is no script tag in the html");
-				}
 	
-				
-                console.log('Section loaded');
-            });
-        }
+	<button id="lobbyBtn">Lobby</button>
 
-		showSection('/dashboard');
-        </script>
+    <script type="module" src="{% static 'pong_online/landing_test.js' %}"></script>
 </body>
 </html>

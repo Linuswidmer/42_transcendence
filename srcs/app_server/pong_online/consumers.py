@@ -168,12 +168,13 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		)
 
 	async def disconnect(self, close_code):
-		await self.channel_layer.group_discard(
-			"lobby", self.channel_name
-		)
-		await self.channel_layer.group_discard(
-			self.game_group_name, self.channel_name
-		)
+		pass
+		# await self.channel_layer.group_discard(
+		# 	"lobby", self.channel_name
+		# )
+		# await self.channel_layer.group_discard(
+		# 	self.game_group_name, self.channel_name
+		# )
 
 	#everything that the client send through the websocket is received here
 	#everything that is send by the client needs to have a type field

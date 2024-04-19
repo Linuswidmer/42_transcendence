@@ -27,24 +27,24 @@
 
 	///////////////////////////////
 	// General Setup
-const canvas = document.getElementById('pongCanvas');
-const ctx = canvas.getContext('2d');
+// const canvas = document.getElementById('pongCanvas');
+// const ctx = canvas.getContext('2d');
 
-const ws = window.ws;
+// const ws = window.ws;
 
-let loggedInMsg = document.getElementById('loggedInMessage');
-loggedInMsg.textContent += ws.username;
+// let loggedInMsg = document.getElementById('loggedInMessage');
+// loggedInMsg.textContent += ws.username;
 
-
+import fetch_html_replace_dynamicDIV_activate_js from "./landing_test.js";
 //////////////////////////////
 // Helper functions
 function norm2height(relativeY) {
 	return (relativeY * canvas.height)
 }
 
-	function norm2width(relativeX) {
-		return (relativeX * canvas.width)
-	}
+function norm2width(relativeX) {
+	return (relativeX * canvas.width)
+}
 
 class Entity {
 	constructor(x, y, type) {
@@ -106,18 +106,59 @@ class Paddle extends Entity {
 	}
 }
 
+class js_wrapper {
+	activate() {
+		throw new Error("Subclasses must override this method.");
+	}
+
+	deactivate () {
+		throw new Error("Subclasses must override this method.");
+	}
+}
+
+
 // In the Game class
-class Game {
-	constructor(ws, canvas, ctx) {
+class Game extends js_wrapper {
+	constructor(ws) {
+		super();
         this.ws = ws;
-		this.canvas = canvas;
-		this.ctx = ctx;
+
 
         this.entities = [];
         this.iterationTime = null;
 		this.modus = null;
-        this.ws.onmessage = (e) => this.handle_message(e);
     }
+
+	activate() {
+		this.ws.onmessage = (e) => this.handle_message(e);
+
+		this.canvas = document.getElementById('pongCanvas');
+		this.ctx = this.canvas.getContext('2d');
+
+		this.start_game_button = document.getElementById('startButtonRemote');
+		this.start_game_button.addEventListener('click', 
+			this.handle_start_game_button_click);
+		
+		this.leave_game_button = document.getElementById('leaveGame');
+		this.leave_game_button.addEventListener('click',
+		this.handle_leave_game_button_click);
+	}
+
+	deactivate() {
+		this.ws.onmessage = null;
+		this.start_game_button.removeEventListener('click', this.handle_start_game_button_click);
+        this.leave_game_button.removeEventListener('click', this.handle_leave_game_button_click);
+	}
+
+	handle_start_game_button_click = () => {
+		ws.send(JSON.stringify({'type': 'start', 'modus': 'remote'}));
+		console.log('Start button remote clicked');
+	}
+	
+	handle_leave_game_button_click = () => {
+		ws.send(JSON.stringify({type: 'leave', 'action': 'leave', 'username': username, 'modus': ws.modus}));
+		console.log('leaveButtonclicked');
+	}
 
     handle_message(e) {
         try {
@@ -296,9 +337,9 @@ class Game {
 }
 
 // After establishing the WebSocket connection
-const game = new Game(ws, canvas, ctx);
+// const game = new Game(ws, canvas, ctx);
 
-
+export default Game;
 // function interpolateEntities(entities, iteration_time) {
 // 	var now = +new Date();
 //     var render_timestamp = now - (1000.0 * iteration_time);
@@ -348,45 +389,45 @@ const game = new Game(ws, canvas, ctx);
 // 			// 	draw_entities(entities, ctx);
 // 			// }, 1000 / INTERPOLATION_RATE);
 
-const startButtonRemote = document.getElementById('startButtonRemote');
-if (startButtonRemote) {
-	startButtonRemote.addEventListener('click', function() {
-		ws.send(JSON.stringify({'type': 'start', 'modus': 'remote'}));
-		console.log('Start button remote clicked');
-	});
-}
+// const startButtonRemote = document.getElementById('startButtonRemote');
+// if (startButtonRemote) {
+// 	startButtonRemote.addEventListener('click', function() {
+// 		ws.send(JSON.stringify({'type': 'start', 'modus': 'remote'}));
+// 		console.log('Start button remote clicked');
+// 	});
+// }
 
-////// later only one button for starting the game
+// ////// later only one button for starting the game
 
-const startButtonLocal = document.getElementById('startButtonLocal');
-if (startButtonLocal) {
-	startButtonLocal.addEventListener('click', function() {
-		ws.send(JSON.stringify({'type': 'start', 'modus': 'local'}));
-		console.log('Start button local clicked');
-	});
-}
+// const startButtonLocal = document.getElementById('startButtonLocal');
+// if (startButtonLocal) {
+// 	startButtonLocal.addEventListener('click', function() {
+// 		ws.send(JSON.stringify({'type': 'start', 'modus': 'local'}));
+// 		console.log('Start button local clicked');
+// 	});
+// }
 
-const startButtonAi = document.getElementById('startButtonAi');
-if (startButtonAi) {
-	startButtonAi.addEventListener('click', function() {
-		ws.send(JSON.stringify({'type': 'start', 'modus': 'ai'}));
-		console.log('Start button ai clicked');
-	});
-}
+// const startButtonAi = document.getElementById('startButtonAi');
+// if (startButtonAi) {
+// 	startButtonAi.addEventListener('click', function() {
+// 		ws.send(JSON.stringify({'type': 'start', 'modus': 'ai'}));
+// 		console.log('Start button ai clicked');
+// 	});
+// }
 
-const leaveButton = document.getElementById('leaveGame');
-if (leaveButton) {
-	leaveButton.addEventListener('click', function() {
-		console.log("modus", ws.modus);
-		ws.send(JSON.stringify({type: 'leave', 'action': 'leave', 'username': username, 'modus': ws.modus}));
-		console.log('leaveButtonclicked');
-	});
-}
+// const leaveButton = document.getElementById('leaveGame');
+// if (leaveButton) {
+// 	leaveButton.addEventListener('click', function() {
+// 		console.log("modus", ws.modus);
+// 		ws.send(JSON.stringify({type: 'leave', 'action': 'leave', 'username': username, 'modus': ws.modus}));
+// 		console.log('leaveButtonclicked');
+// 	});
+// }
 
-window.addEventListener('beforeunload', function(event) {
-	//only send when tehre is a game running
-	ws.send(JSON.stringify({'type': 'player_left', 'player': ws.username}));
-});
+// window.addEventListener('beforeunload', function(event) {
+// 	//only send when tehre is a game running
+// 	ws.send(JSON.stringify({'type': 'player_left', 'player': ws.username}));
+// });
 // 		fetch('/lobby')
 // 				.then(response => response.text())
 // 				.then(data => {

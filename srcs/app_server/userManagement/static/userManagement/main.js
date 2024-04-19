@@ -2,13 +2,7 @@ import Lobby from '../pong_online/lobby.js';
 
 let lobby = new Lobby(ws, username);
 
-const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
-    // const wsUrl = protocol + `://${window.location.host}/ws/pong/${roomName}/`; // this has to be modified to be a unique identifier
 
-console.log(protocol + '://' + window.location.host + '/ws/pong_online/game/')
-window.ws = new WebSocket(
-	protocol + '://' + window.location.host + '/ws/pong_online/game/'
-);
 
 function getCookie(name) {
     let cookieValue = null;

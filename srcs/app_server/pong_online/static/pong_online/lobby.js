@@ -1,55 +1,74 @@
+import fetch_html_replace_dynamicDIV_activate_js from "./landing_test.js";
 
-	const data = document.currentScript.dataset;
-	const username = data.username;
-	console.log("username from request", username);
+class js_wrapper {
+	activate() {
+		throw new Error("Subclasses must override this method.");
+	}
+
+	deactivate () {
+		throw new Error("Subclasses must override this method.");
+	}
+}
+
 	
-	
-	class Lobby {
+class Lobby extends js_wrapper {
 	static counter = 0;
-	
+
 	constructor(ws, username) {
+		super();
 		Lobby.counter++;
 		console.log("lobby instances: ", Lobby.counter);
         this.ws = ws;
-		ws.username = username;  //maybe change later
+		this.ws.username = username;  //maybe change later
 		this.username = username;
+		console.log("username:", username);
 		
 		this.modus = null;
-		
-		this.play_local_button = document.getElementById('create_game');
-		this.play_local_button.addEventListener('click', () => {
-			this.handle_create_game_button_click();
-        });
-		
-		this.play_local_button = document.getElementById('create_tournament');
-		this.play_local_button.addEventListener('click', () => {
-			this.handle_create_tournament_button_click();
-        });
-		
-		this.play_local_button = document.getElementById('play_local');
-		this.play_local_button.addEventListener('click', () => {
-			this.handle_play_local_button_click();
-        });
-		
-		this.play_local_button = document.getElementById('play_ai');
-		this.play_local_button.addEventListener('click', () => {
-			this.handle_play_ai_button_click();
-        });
-		
-		this.remote_game_list_DIV = document.getElementById('remote_game_list');
-		this.tournament_list_DIV = document.getElementById('tournament_list');
-		
-		this.ws.onopen = (e) => this.send_initial_data_to_server(e);
-        this.ws.onmessage = (e) => this.handle_message(e);
     }
 	
 	send_initial_data_to_server(e) {
 		console.log('WebSocket connection established');
-		ws.send(JSON.stringify({type: 'username', 'username': this.username}));
-		ws.send(JSON.stringify({type: 'lobby_update', 'action': 'display'}));
+		this.ws.send(JSON.stringify({type: 'username', 'username': this.username}));
+		this.ws.send(JSON.stringify({type: 'lobby_update', 'action': 'display'}));
 	}
 	
+	activate() {
+		this.ws.onmessage = (e) => this.handle_message(e);
+		this.create_game_button = document.getElementById('create_game');
+		this.create_game_button.addEventListener('click', 
+			this.handle_create_game_button_click);
+		
+		this.create_tournament_button = document.getElementById('create_tournament');
+		this.create_tournament_button.addEventListener('click',
+			this.handle_create_tournament_button_click);
+		
+		this.play_local_button = document.getElementById('play_local');
+		this.play_local_button.addEventListener('click', 
+			this.handle_play_local_button_click);
+		
+		this.play_ai_button = document.getElementById('play_ai');
+		this.play_ai_button.addEventListener('click',
+			this.handle_play_ai_button_click);
+		
+		this.remote_game_list_DIV = document.getElementById('remote_game_list');
+		this.tournament_list_DIV = document.getElementById('tournament_list');
+
+		// this.ws.onopen = (e) => this.send_initial_data_to_server(e);
+
+		this.ws.send(JSON.stringify({type: 'lobby_update', 'action': 'display'}));
+	}
+
+	deactivate() {
+		this.create_game_button.removeEventListener('click', this.handle_create_game_button_click);
+        this.create_tournament_button.removeEventListener('click', this.handle_create_tournament_button_click);
+        this.play_local_button.removeEventListener('click', this.handle_play_local_button_click);
+        this.play_ai_button.removeEventListener('click', this.handle_play_ai_button_click);
+
+        this.ws.onmessage = null;
+	}
+
     handle_message(e) {
+		console.log('handle message');
 		try {
 			const data = JSON.parse(e.data);
 			console.log("data from server: ", data);
@@ -69,29 +88,29 @@
 					} catch (error) {
 						console.log('Error parsing JSON:', error);
 					}
-				}
+		}
 				
-				handle_create_game_button_click() {
-					console.log("Create game button clicked");
-					ws.send(JSON.stringify({type: 'lobby_update', 'action': 'create',
-					'username': this.username}));
-				}
-				
-				handle_create_tournament_button_click() {
-					console.log("Create tournament button clicked");
-					ws.send(JSON.stringify({type: 'lobby_update', 'action': 'create_tournament',
+		handle_create_game_button_click = () => {
+			console.log("Create game button clicked");
+			this.ws.send(JSON.stringify({type: 'lobby_update', 'action': 'create',
 			'username': this.username}));
 		}
 		
-		handle_play_local_button_click() {
+		handle_create_tournament_button_click = () => {
+			console.log("Create tournament button clicked");
+			this.ws.send(JSON.stringify({type: 'lobby_update', 'action': 'create_tournament',
+			'username': this.username}));
+		}
+		
+		handle_play_local_button_click = () => {
 			console.log("Local game button clicked");
 			this.ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join', 
 			'username': this.username, 'modus': 'local'}))
 		}
 		
-		handle_play_ai_button_click () {
+		handle_play_ai_button_click = () => {
 			console.log("AI Opponent button clicked");
-			ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join',
+			this.ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join',
 			'username': this.username, 'modus': 'ai'}));
 		}
 		
@@ -150,8 +169,8 @@
 	}
 
 	join_game(modus) {
-		ws.modus = modus;
-		showSection('/pong_online');
+		this.ws.modus = modus;
+		fetch_html_replace_dynamicDIV_activate_js('/pong_online');
 		// fetch('/pong_online')
 		// 	.then(response => response.text())
 		// 	.then(data => {
@@ -216,7 +235,7 @@
 				console.error('Error:', error);
 			});
 		//update tournament lobby after fetch
-		ws.send(JSON.stringify({type: 'lobby_update'}));
+		this.ws.send(JSON.stringify({type: 'lobby_update'}));
 	}
 }
 
