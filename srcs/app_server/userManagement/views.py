@@ -21,7 +21,7 @@ def dashboard(request):
 
 def my_view(request):
     if request.user.is_authenticated:
-        return render(request, "onepager/logged_in.html")
+        return render(request, "onepager/land.html")
     else:
         return render(request, "onepager/stranger.html")
 
@@ -40,7 +40,7 @@ def register_user(request):
 			user.groups.add(registered_users)
 			user.save()
 			login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-			return redirect(reverse('userManagement:profile', args=[user.username]))
+			return redirect(reverse('userManagement:profile'))
 		else:
 			return render(
 			request, "userManagement/register.html",
@@ -82,7 +82,7 @@ def update_user(request):
 		form = CustomUserChangeForm(request.POST, instance=request.user)
 		if form.is_valid():
 			user = form.save()
-			return redirect(reverse('userManagement:profile', args=[request.user.username]))
+			return redirect(reverse('userManagement:profile'))
 		else:
 			return render(
 			request, "userManagement/register.html",
@@ -107,7 +107,7 @@ def update_profile(request):
 		form = CustomProfileChangeForm(request.POST, request.FILES, instance=request.user.profile)
 		if form.is_valid():
 			form.save()
-			return redirect(reverse('userManagement:profile', args=[request.user.username]))
+			return redirect(reverse('userManagement:profile'))
 		else:
 			return render(
 			request, "userManagement/update_profile.html",
@@ -137,8 +137,8 @@ def profile_list(request):
 	return render(request, "userManagement/profile_list.html", {"registered_users": all_users})
 
 @login_required
-def profile(request, username):
-    user = get_object_or_404(User, username=username)
+def profile(request):
+    user = get_object_or_404(User, username=request.user)
     sb = StatsBuilder(user)
     sb.build()
     if request.method == "POST":
@@ -151,7 +151,6 @@ def profile(request, username):
             current_user_profile.follows.remove(user.profile)
         current_user_profile.save()
     return render(request, "userManagement/profile.html", {"user": user, "stats": sb})
-
 
 
 def logged_in(request):

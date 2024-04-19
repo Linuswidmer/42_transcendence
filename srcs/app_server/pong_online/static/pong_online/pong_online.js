@@ -36,7 +36,10 @@ const ws = window.ws;
 let loggedInMsg = document.getElementById('loggedInMessage');
 loggedInMsg.textContent += ws.username;
 
-
+const data = document.currentScript.dataset;
+const username = data.username;
+console.log("coucou");
+console.log(username);
 //////////////////////////////
 // Helper functions
 function norm2height(relativeY) {
@@ -383,6 +386,7 @@ if (startButtonAi) {
 		console.log('Start button ai clicked');
 	});
 }
+
 
 const leaveButton = document.getElementById('leaveGame');
 if (leaveButton) {

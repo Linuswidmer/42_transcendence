@@ -20,7 +20,8 @@
             console.log(target.textContent + ' button clicked');
             switch (target.id) {
                 case 'gameBtn':
-                    fetch("/game")
+                    document.getElementById("content").innerHTML = '';
+                    fetch("/lobby")
                         .then(response => response.text())
                         .then(html => {
                             document.getElementById("content").innerHTML = html;
@@ -38,7 +39,6 @@
                         .catch(error => console.error('Error loading profile page:', error));
                     break;
                 case 'logoutBtn':
-                    console.log('Logout button clicked');
                     fetch("{% url 'userManagement:logout' %}", {
                             method: "POST",
                             headers: {
@@ -68,77 +68,13 @@
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
         const scriptElements = doc.querySelectorAll('script');
+        //console.log(scriptElements[0].textContent);
+        //console.log(scriptElements[1].textContent);
+        //eval(scriptElements[1].textContent)
         scriptElements.forEach(script => {
-            eval(script.textContent);
+             eval(script.textContent);
         });
     }
-        //   attachNavbarEventListeners(); // Attach event listeners after loading navbar
-
-        // // Function to attach event listeners to navbar buttons
-        // function attachNavbarEventListeners() {
-        //     const gameBtn = document.getElementById('gameBtn');
-        //     const profileBtn = document.getElementById('profileBtn');
-        //     const logoutBtn = document.getElementById('logoutBtn');
-
-        //     gameBtn.addEventListener('click', function() {
-        //         console.log('Play button clicked');
-        //         // Add logic for the "Play" button here
-        //         fetch("/game")
-        //         .then(response => response.text())
-        //         .then(html => {
-        //             // Insert the content of game.html into your app's container
-        //             document.getElementById("content").innerHTML = html;
-        //         })
-        //         .catch(error => console.error('Error loading game page:', error));
-        //     });
-
-        //     profileBtn.addEventListener('click', function() {
-        //         console.log('Dashboard button clicked');
-        //         // Add logic for the "Dashboard" button here
-        //         fetch("{% url 'userManagement:profile' %}")
-        //           .then(response => response.text())
-        //           .then(html => {
-        //               // Insert the content of game.html into your app's container
-        //               document.getElementById("content").innerHTML = html;
-        //           })
-        //           .catch(error => console.error('Error loading profile page:', error));
-        //         });
-
-
-        //     logoutBtn.addEventListener('click', function() {
-        //         console.log('Logout button clicked');
-        //         // Add logic for the "Logout" button here
-        //         //if (isAuthenticated) {
-        //           fetch("{% url 'userManagement:logout' %}", {
-        //               method: "POST",
-        //               headers: {
-        //                   "X-CSRFToken": getCookie("csrftoken")
-        //               }
-        //           })
-        //           .then(response => {
-        //               if (response.ok) {
-        //                    // If logout is successful, fetch the content of the stranger template
-        //                    // Clear the content of the app's container
-        //                   // const contentContainer = document.getElementById("content");
-        //                   // while (contentContainer.firstChild) {
-        //                   //     contentContainer.removeChild(contentContainer.firstChild);
-        //                   // }
-        //                   document.getElementById("content").innerHTML = '';
-        //               fetch("/stranger")
-        //               .then(response => response.text())
-        //               .then(html => {
-        //                   // Replace the content of the app's container with the HTML content of the stranger template
-        //                   document.getElementById("content").innerHTML = html;
-        //               })
-        //               .catch(error => console.error('Error loading content:', error));
-        //               } else {
-        //                   // Handle logout error
-        //                   console.error("Logout failed");
-        //               }
-        //           })
-        //           .catch(error => console.error('Error:', error));
-        //         //}
-        //   });
           // Function to retrieve CSRF token from cookies
           function getCookie(name) {
               let cookieValue = null;
@@ -155,8 +91,4 @@
               }
               return cookieValue;
           }
-
-
-
-
       </script>
