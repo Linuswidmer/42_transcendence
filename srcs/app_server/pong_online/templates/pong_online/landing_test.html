@@ -11,72 +11,46 @@
     {% csrf_token %}
 
     <!-- CONTENT -->
-    <div id="page">
-        {% block content %}{% endblock %}
-    </div>
+    <div id="dynamicDIV"></div>
 
     <script>
         function showSection(url) {  
 			console.log("show section url:", url);
-			let pageDIV = document.querySelector('#page');
+			//get DIV element where we want to display the new HTML
+			let dynamicDIV = document.getElementById('dynamicDIV');
 
+			//fetch HTML
             fetch(url)
             .then(response => response.text())
             .then(text => {
-                pageDIV.innerHTML = text;
-                // addClickListeners();
-				let fetchedScriptSrc = pageDIV.querySelector('script').src;
-			
-	
-				// Create a new script element
-				let fetchedScript = document.createElement('script');
-		
-				// Set its src attribute to the extracted src
-				fetchedScript.src = fetchedScriptSrc;
+				//set fetched HTML in the DIV
+                dynamicDIV.innerHTML = text;
 				
-				// Append the script element to the body of the document
-				document.body.appendChild(fetchedScript);
+				//try to get the script element
+				let scriptElement = dynamicDIV.querySelector('script');
+
+				//if there is a script element, attach it to the DIV
+				if (scriptElement) {
+					console.log("showSection: there is a script tag in the html");
+					let fetchedScriptSrc = scriptElement.src;
+					// Create a new script element
+					let fetchedScript = document.createElement('script');
+					
+					// Set its src attribute to the extracted src
+					fetchedScript.src = fetchedScriptSrc;
+					
+					// Append the script element to the body of the document
+					document.body.appendChild(fetchedScript);
+				} else {
+					console.log("showSection: there is no script tag in the html");
+				}
+	
+				
                 console.log('Section loaded');
             });
-
-
-
-
-			
         }
 
-        // Add click listeners to all buttons so that they can load the appropriate section
-        function addClickListeners() {
-            document.querySelectorAll('button.section').forEach(button => {
-                button.onclick = function() {
-                    console.log(`Button with section ${this.dataset.section} clicked.`);
-                    showSection(this.dataset.section)
-                }
-            })
-        
-            // const startButton = document.getElementById('startButton');
-            //     if (startButton) {
-            //         startButton.addEventListener('click', function() {
-            //             startLocalGame('Player 1', 'Player 2');
-            //             console.log('Start button clicked');
-            //         });
-            //     }
-        }
-    
-        // request the landing page content when the page loads
-        document.addEventListener("DOMContentLoaded", function() {
-            // Load the landing page content when the page loads
-            showSection('/lobby');
-    
-            // document.querySelectorAll('button').forEach(button => {
-            //     button.onclick = function() {
-            //         console.log(`Button with section ${this.dataset.section} clicked.`);
-            //         showSection(this.dataset.section)
-            //     }
-            // })
-        });
-
-        
+		showSection('/dashboard');
         </script>
 </body>
 </html>

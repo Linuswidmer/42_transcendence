@@ -12,6 +12,9 @@ from .StatsBuilder import StatsBuilder, GameListData
 from pong_online.models import UserGameStats
 
 
+def index(request):
+	return render(request, "landing/index.html")
+
 def dashboard(request):
 	return render(request, "userManagement/dashboard.html")
 
@@ -128,8 +131,8 @@ def profile_list(request):
 	all_users = User.objects.all()
 	return render(request, "userManagement/profile_list.html", {"registered_users": all_users})
 
-def profile(request, username):
-	user = get_object_or_404(User, username=username)
+def profile(request):
+	user = get_object_or_404(User, username=request.user)
 	sb = StatsBuilder(user)
 	sb.build()
 	if request.method == "POST":
@@ -152,3 +155,9 @@ def single_game_stats(request):
 	for gld in sb.gameListData:
 		if gld.game.matchName == matchName:
 			return render(request, "userManagement/single_game_stats.html", {"gld": gld})
+		
+def logged_in(request):
+	return render(request, 'landing/logged_in.html')
+
+def stranger(request):
+	return render(request, 'landing/stranger.html')
