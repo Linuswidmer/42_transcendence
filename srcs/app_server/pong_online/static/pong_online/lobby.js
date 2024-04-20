@@ -78,7 +78,7 @@ class Lobby {
 	handle_create_game_button_click() {
 		console.log("Create game button clicked");
 		ws.send(JSON.stringify({type: 'lobby_update', 'action': 'create',
-			'username': this.username}));
+			'username': this.username, 'modus': 'remote'}));
 	}
 
 	handle_create_tournament_button_click() {
@@ -175,6 +175,13 @@ class Lobby {
 			
 					// Set its src attribute to the extracted src
 					script.src = scriptSrc;
+
+					script.onload = function() {
+						// This function will be called when the script is fully loaded and executed
+						console.log('loaded pong_online: ');
+						// Send WebSocket message here
+						ws.send(JSON.stringify({type: 'get_game_data'}));
+					};
 					
 					// Append the script element to the body of the document
 					document.body.appendChild(script);
@@ -185,7 +192,6 @@ class Lobby {
 	}
 
 	join_tournament(data1) {
-		console.log('LOAD THE TM LOBBY')
 		document.body.innerHTML = '';
 		fetch('/tournament/' + data.tournament_id + '/')
 			.then(response => response.text())

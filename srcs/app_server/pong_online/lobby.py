@@ -132,9 +132,9 @@ class Lobby:
 		return name
 
 	# rename to create_match
-	def add_match(self) -> bool:
+	def add_match(self, modus) -> bool:
 		match_name = self.generate_name()
-		self.matches[match_name] = Match(match_name)
+		self.matches[match_name] = Match(match_name, modus)
 		return match_name
 
 	def create_django_tournament(self, tournament_id):
@@ -161,9 +161,9 @@ class Lobby:
 
 		print('used names: ', self.used_generated_names)
 	
-	def	create_local_match(self) -> bool:
+	def	create_local_match(self, modus) -> bool:
 		match_id = self.generate_name()
-		return Match(match_id)
+		return Match(match_id, modus)
 
 	def get_match(self, match_id):
 		return self.matches.get(match_id)
@@ -190,10 +190,10 @@ class Lobby:
 	# 	return self.games
 	
 class Match:
-	def __init__(self, match_id, tournament_id=None) -> None:
+	def __init__(self, match_id, modus, tournament_id=None) -> None:
 		#generate unique identifier for group communication
 		self.group_name = match_id
-		self.modus = ""
+		self.modus = modus
 		self.n_registered_players = 0
 		self.registered_players = []
 		self.tournament_id = tournament_id
@@ -206,11 +206,11 @@ class Match:
 			"moveDown": False,
 			"direction": 0,
 		}
-	
+
 	def	change_score(self, username, score):
 		if username in self.registered_players:
 			self.game_data[username]["score"] = score
-		
+
 	def move_paddle(self, username, direction):
 		if username in self.registered_players:
 			if direction == 1:
@@ -268,6 +268,12 @@ class Tournament:
 		self.players.append(user_id)
 		return True
 
+	def get_match_for_player_id(self, player):
+		for match in self.matches:
+			if player in match.registered_players:
+				return match
+		return None
+
 	def generate_matches(self, num_participants):
 		games_per_round = int(num_participants / 2) #start, gets divided by two every time
 		games_added = 0
@@ -295,7 +301,7 @@ class Tournament:
 					}
 				}
 			games_added += 1
-			self.matches.append(Match(match_id, self.tournament_name))
+			self.matches.append(Match(match_id, "remote", self.tournament_name))
 		print(json.dumps(self.data, indent=4))
 
 	def get_match(self, match_id):

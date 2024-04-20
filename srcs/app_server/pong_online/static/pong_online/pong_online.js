@@ -87,7 +87,7 @@ class Paddle extends Entity {
 		// console.log("paddle username:", this.username);
 		this.screen_pos = screen_pos;
 		this.score_display = document.getElementById(this.screen_pos === 'left' ? 'leftScore' : 'rightScore');
-        this.name_display = document.getElementById(this.screen_pos === 'left' ? 'leftPlayerName' : 'rightPlayerName');
+        //this.name_display = document.getElementById(this.screen_pos === 'left' ? 'leftPlayerName' : 'rightPlayerName');
         this.name_display.textContent += this.username;
 	}
 
@@ -124,6 +124,9 @@ class Game {
         try {
             const data = JSON.parse(e.data);
 			console.log("pong message: ", data)
+			// if (data.type === "deliver_init_game_data"){
+			// 	this.handle_game_view_population(data)
+			// }
 			if (data.type === 'send_to_group') {
 				switch (data.identifier) {
 					case 'game_end':
@@ -191,7 +194,6 @@ class Game {
 						console.error('Error:', error);
 					});
 			}
-            
         } catch (error) {
             console.log('Error parsing JSON:', error);
         }
@@ -207,6 +209,9 @@ class Game {
 	}
 
 	handle_initial_game_data(data) {
+		var prompt = document.getElementById('userPrompt');
+		prompt.textContent = "Good Luck - Play SAUBER!"
+
 		for (var id in data.initial_entity_data.entities) {
 			var entity = data.initial_entity_data.entities[id];
 			
@@ -281,6 +286,8 @@ class Game {
 
 		for (var id in server_entities) {
 			var entity = this.entities[id];
+		
+		console.log("ENTITIY: ", entity)
 	
 			// entity.position_buffer.push([server_entity_data.timestamp,
 			// 	norm2width(server_entities[id].relX),
@@ -302,7 +309,29 @@ class Game {
 			});
 	}
 
-    // ...
+	// handle_game_view_population(data)
+	// {
+	// 	var left_name_display = document.getElementById('leftPlayerName');
+	// 	var right_name_display = document.getElementById('rightPlayerName');
+	// 	var prompt = document.getElementById('userPrompt');
+
+	// 	if (data.hasOwnProperty("player1")){
+	// 		right_name_display.textContent += data["player1"]
+	// 	}
+	// 	if (!data.hasOwnProperty("player2")){
+	// 		left_name_display.textContent += "?";
+	// 		prompt.textContent = "Waiting for another Player . . .";
+	// 	}
+	// 	if (data.hasOwnProperty("player2")){
+	// 		left_name_display.textContent += data["player2"];
+	// 		if (ws.username == data["player2"]) {
+	// 			prompt.textContent = data["player1"] + " is waiting. Press start to play!";
+	// 		}
+	// 		else {
+	// 			prompt.textContent = "Wait for " + data["player2"] + " to start the match";
+	// 		}
+	// 	}
+	// } 
 }
 
 // After establishing the WebSocket connection
@@ -358,31 +387,31 @@ const game = new Game(ws, canvas, ctx);
 // 			// 	draw_entities(entities, ctx);
 // 			// }, 1000 / INTERPOLATION_RATE);
 
-const startButtonRemote = document.getElementById('startButtonRemote');
-if (startButtonRemote) {
-	startButtonRemote.addEventListener('click', function() {
-		ws.send(JSON.stringify({'type': 'start', 'modus': 'remote'}));
+const startGameButton = document.getElementById('startGameButton');
+if (startGameButton) {
+	startGameButton.addEventListener('click', function() {
+		ws.send(JSON.stringify({'type': 'start'}));
 		console.log('Start button remote clicked');
 	});
 }
 
 ////// later only one button for starting the game
 
-const startButtonLocal = document.getElementById('startButtonLocal');
-if (startButtonLocal) {
-	startButtonLocal.addEventListener('click', function() {
-		ws.send(JSON.stringify({'type': 'start', 'modus': 'local'}));
-		console.log('Start button local clicked');
-	});
-}
+// const startButtonLocal = document.getElementById('startButtonLocal');
+// if (startButtonLocal) {
+// 	startButtonLocal.addEventListener('click', function() {
+// 		ws.send(JSON.stringify({'type': 'start', 'modus': 'local'}));
+// 		console.log('Start button local clicked');
+// 	});
+// }
 
-const startButtonAi = document.getElementById('startButtonAi');
-if (startButtonAi) {
-	startButtonAi.addEventListener('click', function() {
-		ws.send(JSON.stringify({'type': 'start', 'modus': 'ai'}));
-		console.log('Start button ai clicked');
-	});
-}
+// const startButtonAi = document.getElementById('startButtonAi');
+// if (startButtonAi) {
+// 	startButtonAi.addEventListener('click', function() {
+// 		ws.send(JSON.stringify({'type': 'start', 'modus': 'ai'}));
+// 		console.log('Start button ai clicked');
+// 	});
+// }
 
 const leaveButton = document.getElementById('leaveGame');
 if (leaveButton) {

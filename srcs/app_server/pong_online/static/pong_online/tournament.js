@@ -46,6 +46,13 @@ ws1.onmessage = function(e) {
 			
 					// Set its src attribute to the extracted src
 					script.src = scriptSrc;
+					// script.onload = function() {
+					// 	// This function will be called when the script is fully loaded and executed
+					// 	console.log('loaded pong_online: ');
+					// 	// Send WebSocket message here
+					// 	ws.send(JSON.stringify({type: 'get_game_data'}));
+					// };
+					
 					
 					// Append the script element to the body of the document
 					document.body.appendChild(script);
