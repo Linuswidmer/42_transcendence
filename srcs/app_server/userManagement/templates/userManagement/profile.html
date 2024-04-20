@@ -33,7 +33,7 @@
                     <button type="submit" class="btn btn-danger btn-block">logout</button>
                 </form>
                 {% endif %} 
-                <a href="{% url 'userManagement:profile_list' %}" class="btn btn-success btn-block">
+                <a href="{% url 'userManagement:profile_list' %}" style="color: white;" class="button is-danger btn btn-block bg-purple">
                     All Profiles
                 </a>
             </div>
@@ -43,11 +43,9 @@
                     {% csrf_token %}
                     <div class="buttons has-addons">
                         {% if user.profile in request.user.profile.follows.all %}
-                        <button class="button is-success is-static btn btn-success btn-block">Follow</button>
                         <button class="button is-danger btn btn-danger btn-block" name="follow" value="unfollow">Unfollow</button>
                         {% else %}
                         <button class="button is-success btn btn-success btn-block" name="follow" value="follow">Follow</button>
-                        <button class="button is-danger is-static btn btn-danger btn-block">Unfollow</button>
                         {% endif %}
                     </div>
                 </form>
