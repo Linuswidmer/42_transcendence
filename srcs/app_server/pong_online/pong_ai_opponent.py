@@ -1,8 +1,6 @@
 import random
 
 class AIPongOpponent:
-
-	#def __init__(self, paddleY, paddleX, ballX, ballY, ballVelocityX, ballVelocityY, paddleStepSize, paddleHeight, dt, level):
 	def __init__(self, pong_instance, dt, level):
 		self.screen_height = pong_instance.screen_height
 		self.screen_width = pong_instance.screen_width
@@ -16,7 +14,6 @@ class AIPongOpponent:
 		else:
 			self.level = level
 		self.setGameState(pong_instance)
-		#self.setGameState(paddleY, paddleX, ballX, ballY, ballVelocityX, ballVelocityY, paddleStepSize, paddleHeight)
 
 	def __predict_y_on_ai_paddleside(self):
 		triangleHieght = (self.ballVelocityY/self.ballVelocityX) * (self.paddleX - self.ballX)
@@ -29,7 +26,7 @@ class AIPongOpponent:
 			return y_virtual_hit % self.screen_height
 		elif ((y_virtual_hit // self.screen_height) % 2 != 0):
 			return self.screen_height - (y_virtual_hit % self.screen_height)
-		
+
 	def __moveInternalPaddle(self, aimedPosition):
 		paddleCenterY = self.paddleY + self.paddleHeight / 2
 		if (abs(paddleCenterY - aimedPosition) < self.paddleStepSize * self.dt):
@@ -57,7 +54,6 @@ class AIPongOpponent:
 		if self.paddleY > self.ballY:
 			errorFactor *= -1
 		self.geometricPredictedY = self.__predict_y_on_ai_paddleside() + (self.screen_height * errorFactor) + randomFactor * self.paddleHeight * 0.45
-
 
 	def getAIDecision(self):
 		screenCenterY = self.screen_height / 2

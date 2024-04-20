@@ -313,23 +313,23 @@ class Game {
 
 		if (data.hasOwnProperty("player1")){
 			if (data["player1"] == ws.username) {
-				right_name_display.textContent = "Left Player: You";
+				right_name_display.textContent = "Right Player: You";
 				startGameButton.style.display = 'none';
 			}else{
-				right_name_display.textContent = "Left Player: " + data["player1"];
+				right_name_display.textContent = "Right Player: " + data["player1"];
 			}
 		}
 		if (!data.hasOwnProperty("player2")){
-			left_name_display.textContent = "Right Player: ?";
+			left_name_display.textContent = "Left Player: ?";
 			prompt.textContent = "Waiting for another Player . . .";
 		}
 		if (data.hasOwnProperty("player2")){
 			if (ws.username == data["player2"]) {
-				left_name_display.textContent = "Right Player: You";
+				left_name_display.textContent = "Left Player: You";
 				prompt.textContent = data["player1"] + " is waiting. Press start to play " + data.match_name + " !";
 			}
 			else {
-				left_name_display.textContent = "Right Player: " + data["player2"];
+				left_name_display.textContent = "Left Player: " + data["player2"];
 				prompt.textContent = "Wait for " + data["player2"] + " to start the match " + data.match_name + " !";
 			}
 		}
@@ -394,26 +394,9 @@ if (startGameButton) {
 	startGameButton.addEventListener('click', function() {
 		ws.send(JSON.stringify({'type': 'start'}));
 		console.log('Start button remote clicked');
+		startGameButton.style.display = 'none';
 	});
 }
-
-////// later only one button for starting the game
-
-// const startButtonLocal = document.getElementById('startButtonLocal');
-// if (startButtonLocal) {
-// 	startButtonLocal.addEventListener('click', function() {
-// 		ws.send(JSON.stringify({'type': 'start', 'modus': 'local'}));
-// 		console.log('Start button local clicked');
-// 	});
-// }
-
-// const startButtonAi = document.getElementById('startButtonAi');
-// if (startButtonAi) {
-// 	startButtonAi.addEventListener('click', function() {
-// 		ws.send(JSON.stringify({'type': 'start', 'modus': 'ai'}));
-// 		console.log('Start button ai clicked');
-// 	});
-// }
 
 const leaveButton = document.getElementById('leaveGame');
 if (leaveButton) {

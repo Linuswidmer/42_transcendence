@@ -227,12 +227,10 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			if len(match.registered_players) == 1:
 				data["match_name"] = match.group_name
 				data["player1"] = match.registered_players[0]
-				#await self.send(text_data=json.dumps({"type": "deliver_init_game_data", "player1": match.registered_players[0]}))
 			elif len(match.registered_players) == 2:
 				data["match_name"] = match.group_name
 				data["player1"] = match.registered_players[0]
 				data["player2"] = match.registered_players[1]
-				#await self.send(text_data=json.dumps({"type": "deliver_init_game_data", "player1": match.registered_players[0], "player2": match.registered_players[1]}))
 			await self.channel_layer.group_send(
 				self.game_group_name,
 				data,
@@ -403,8 +401,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		self.in_game = True
 		self.hosts_game = True
 		self.match = self.lobby.create_local_match(modus)
-		self.match.add_player_to_gamedata(self.username)
 		self.match.add_player_to_gamedata(local_opponent_name)
+		self.match.add_player_to_gamedata(self.username)
 		self.match.registered_players.append(local_opponent_name)
 		self.match.registered_players.append(self.username)
 		self.game_group_name = self.match.group_name
@@ -553,7 +551,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			# Handle the case where one or both users don't exist
 			raise ValueError("One or both users do not exist.")
 
-		return GameDataCollector(user1=user1, user2=user2, matchName=matchName, type=modus, tournament=tournament)
+		return GameDataCollector(left_player=user1, right_player=user2, matchName=matchName, type=modus, tournament=tournament)
 
 	
 	#i dont think we need a lock here, as we work with the instances own game_data
@@ -561,8 +559,9 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#when an update happens, all game_datas are updated
 	#here we could import the game from another file to keep things separated
 	async def game_loop(self, modus):
-		players = list(self.match.game_data.keys())
-		self.gdc = await sync_to_async(self.create_data_collector)(modus, players[0], players[1], self.match.group_name, self.match.tournament_id)
+		players = self.match.registered_players
+		print('Players: ', players)
+		self.gdc = await sync_to_async(self.create_data_collector)(modus, players[1], players[0], self.match.group_name, self.match.tournament_id)
 		logger.debug("new game loop started")
 		pong_instance = Pong(self.gdc)
 		FPS = 60
@@ -578,7 +577,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				{"type": "send_to_group", "identifier": "initial_game_data", 
 	 			"initial_entity_data": initial_entity_data,
 				"iteration_time": iteration_time, "modus": modus},
-			)
+		)
 		while should_run:
 			if modus == "ai":
 				if (time.time() - ai_refresh_timer >= AI_REFRESH_THRESHOLD):

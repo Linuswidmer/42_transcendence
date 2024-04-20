@@ -5,7 +5,7 @@ from .models import UserGameStats
 from .models import Tournaments
 
 class GameDataCollector:
-	def __init__(self, user1, user2, matchName, type='', tournament=None):
+	def __init__(self, left_player, right_player, matchName, type='', tournament=None):
 		self.django_games = Games.objects.create(
 			gameType = type,
 			matchName = matchName,
@@ -21,19 +21,19 @@ class GameDataCollector:
 			self.django_tournament = None
 
 		self.django_userstats_1 = UserGameStats.objects.create(
-			user_id = user1.id,
+			user_id = left_player.id,
 			game_id = self.django_games.id
 		)
 		
 		self.django_userstats_2 = UserGameStats.objects.create(
-			user_id = user2.id,
+			user_id = right_player.id,
 			game_id = self.django_games.id
 		)
 
 		self.gameStartTime = time.time()
 		self.currentRallyHits = 0
-		self.streakCtrUser1 = 0
-		self.streakCtrUser2 = 0
+		self.streakCtrLeftPlayer = 0
+		self.streakCtrRightPlayer = 0
 
 	def makeUserWin(self, left=True):
 		if left:
@@ -71,17 +71,17 @@ class GameDataCollector:
 		self.currentRallyHits = 0
 		if leftUserWon:
 			print("GameDataCollector: End Rally Left Won")
-			self.streakCtrUser2 = 0
-			self.streakCtrUser1 += 1
-			if self.streakCtrUser1 > self.django_userstats_1.highestStreak:
-					self.django_userstats_1.highestStreak = self.streakCtrUser1
+			self.streakCtrRightPlayer = 0
+			self.streakCtrLeftPlayer += 1
+			if self.streakCtrLeftPlayer > self.django_userstats_1.highestStreak:
+					self.django_userstats_1.highestStreak = self.streakCtrLeftPlayer
 			self.django_userstats_1.score += 1
 		else:
 			print("GameDataCollector: End Rally Right Won")
-			self.streakCtrUser1 = 0
-			self.streakCtrUser2 += 1
-			if self.streakCtrUser2 > self.django_userstats_2.highestStreak:
-					self.django_userstats_2.highestStreak = self.streakCtrUser2
+			self.streakCtrLeftPlayer = 0
+			self.streakCtrRightPlayer += 1
+			if self.streakCtrRightPlayer > self.django_userstats_2.highestStreak:
+					self.django_userstats_2.highestStreak = self.streakCtrRightPlayer
 			self.django_userstats_2.score += 1
 	
 	def printData(self):
