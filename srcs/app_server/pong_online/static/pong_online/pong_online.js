@@ -81,30 +81,28 @@ class Ball extends Entity {
 }
 
 class Paddle extends Entity {
-	constructor(username, x, y, screen_pos) {
-		super(x, y, 'paddle');
-		this.username = username;
-		// console.log("paddle username:", this.username);
-		this.screen_pos = screen_pos;
-		this.score_display = document.getElementById(this.screen_pos === 'left' ? 'leftScore' : 'rightScore');
-        //this.name_display = document.getElementById(this.screen_pos === 'left' ? 'leftPlayerName' : 'rightPlayerName');
-        this.name_display.textContent += this.username;
-	}
+    constructor(username, x, y, screen_pos) {
+      super(x, y, 'paddle');
+      this.username = username;
+      // console.log("paddle username:", this.username);
+      this.screen_pos = screen_pos;
+      this.score_display = document.getElementById(this.screen_pos === 'left' ? 'leftScore' : 'rightScore');
+    }
 
-	set_score(score) {
-		this.score_display.textContent = score;
-	}
+    set_score(score) {
+      this.score_display.textContent = score;
+    }
 
-	set_dimensions(width, height) {
-		this.width = width;
-		this.height = height;
-	}
+    set_dimensions(width, height) {
+      this.width = width;
+      this.height = height;
+    }
 
-	draw(context) {
-		// console.log("draw paddle", this);
-		context.fillStyle = '#000';
-    	context.fillRect(this.x, this.y, this.width, this.height);
-	}
+    draw(context) {
+      // console.log("draw paddle", this);
+      context.fillStyle = '#000';
+        context.fillRect(this.x, this.y, this.width, this.height);
+    }
 }
 
 // In the Game class
@@ -124,11 +122,11 @@ class Game {
         try {
             const data = JSON.parse(e.data);
 			console.log("pong message: ", data)
-			// if (data.type === "deliver_init_game_data"){
-			// 	this.handle_game_view_population(data)
-			// }
 			if (data.type === 'send_to_group') {
 				switch (data.identifier) {
+					case 'deliver_init_game_data':
+						this.handle_game_view_population(data);
+						break;
 					case 'game_end':
 						this.handle_game_over(data);
 						break;
@@ -286,8 +284,6 @@ class Game {
 
 		for (var id in server_entities) {
 			var entity = this.entities[id];
-		
-		console.log("ENTITIY: ", entity)
 	
 			// entity.position_buffer.push([server_entity_data.timestamp,
 			// 	norm2width(server_entities[id].relX),
@@ -309,29 +305,35 @@ class Game {
 			});
 	}
 
-	// handle_game_view_population(data)
-	// {
-	// 	var left_name_display = document.getElementById('leftPlayerName');
-	// 	var right_name_display = document.getElementById('rightPlayerName');
-	// 	var prompt = document.getElementById('userPrompt');
+	handle_game_view_population(data)
+	{
+		var left_name_display = document.getElementById('leftPlayerName');
+		var right_name_display = document.getElementById('rightPlayerName');
+		var prompt = document.getElementById('userPrompt');
 
-	// 	if (data.hasOwnProperty("player1")){
-	// 		right_name_display.textContent += data["player1"]
-	// 	}
-	// 	if (!data.hasOwnProperty("player2")){
-	// 		left_name_display.textContent += "?";
-	// 		prompt.textContent = "Waiting for another Player . . .";
-	// 	}
-	// 	if (data.hasOwnProperty("player2")){
-	// 		left_name_display.textContent += data["player2"];
-	// 		if (ws.username == data["player2"]) {
-	// 			prompt.textContent = data["player1"] + " is waiting. Press start to play!";
-	// 		}
-	// 		else {
-	// 			prompt.textContent = "Wait for " + data["player2"] + " to start the match";
-	// 		}
-	// 	}
-	// } 
+		if (data.hasOwnProperty("player1")){
+			if (data["player1"] == ws.username) {
+				right_name_display.textContent = "Left Player: You";
+				startGameButton.style.display = 'none';
+			}else{
+				right_name_display.textContent = "Left Player: " + data["player1"];
+			}
+		}
+		if (!data.hasOwnProperty("player2")){
+			left_name_display.textContent = "Right Player: ?";
+			prompt.textContent = "Waiting for another Player . . .";
+		}
+		if (data.hasOwnProperty("player2")){
+			if (ws.username == data["player2"]) {
+				left_name_display.textContent = "Right Player: You";
+				prompt.textContent = data["player1"] + " is waiting. Press start to play " + data.match_name + " !";
+			}
+			else {
+				left_name_display.textContent = "Right Player: " + data["player2"];
+				prompt.textContent = "Wait for " + data["player2"] + " to start the match " + data.match_name + " !";
+			}
+		}
+	} 
 }
 
 // After establishing the WebSocket connection
