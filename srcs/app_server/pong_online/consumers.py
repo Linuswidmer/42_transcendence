@@ -477,15 +477,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		await self.send(
 			text_data=json.dumps(basic_update)
 		)
-	
-	async def end_game_player_left(self,event):
-		if self.hosts_game:
-			losing_player = event["player"]
-			if self.match.registered_players[0] == losing_player:
-				winning_player = self.match.registered_players[1]
-			else:
-				winning_player = self.match.registered_players[0]
-			self.match.game_data[winning_player]["score"] = 3
 
 	async def send_to_group(self, event):
 		#check again
@@ -560,7 +551,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#here we could import the game from another file to keep things separated
 	async def game_loop(self, modus):
 		players = self.match.registered_players
-		print('Players: ', players)
 		self.gdc = await sync_to_async(self.create_data_collector)(modus, players[1], players[0], self.match.group_name, self.match.tournament_id)
 		logger.debug("new game loop started")
 		pong_instance = Pong(self.gdc)
@@ -586,7 +576,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				ai_decision = ai.getAIDecision()
 				self.match.game_data["AI_Ursula"]["direction"] = ai_decision
 			#update entities with the iteration_time and keypresses
-			entity_data = await pong_instance.update_entities(iteration_time, self.match.game_data)
+			entity_data = await pong_instance.update_entities(iteration_time, self.match.game_data, self.match.registered_players)
 			should_run = not entity_data["game_over"]
 			#send all entity data to clients, so they can render the game
 			await self.channel_layer.group_send(
@@ -626,14 +616,15 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		else:
 			tournament = self.lobby.get_tournament(self.match.tournament_id)
 			#delete loser from tournamnt players
+			#userstats1 belongs to he left (so the hosting player), which is the player[1]
 			if self.gdc.django_userstats_1.score == 3:
-				tournament.data[tournament.round][self.match.group_name]["winner"] = players[0]
-				tournament.data[tournament.round][self.match.group_name]["loser"] = players[1]
-				tournament.players.remove(players[1])
-			else:
 				tournament.data[tournament.round][self.match.group_name]["winner"] = players[1]
 				tournament.data[tournament.round][self.match.group_name]["loser"] = players[0]
 				tournament.players.remove(players[0])
+			else:
+				tournament.data[tournament.round][self.match.group_name]["winner"] = players[0]
+				tournament.data[tournament.round][self.match.group_name]["loser"] = players[1]
+				tournament.players.remove(players[1])
 			
 			#delete this match from tournmanet matches
 			tournament.matches.remove(self.match)

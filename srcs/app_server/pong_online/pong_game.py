@@ -235,9 +235,11 @@ class Pong:
 				},
 		}
 
-	async def	update_entities(self, dt, game_data):
-		player1_data, player2_data = list(game_data.values())
-		player1_id, player2_id = list(game_data.keys())
+	async def	update_entities(self, dt, game_data, players):
+		player1_id = players[0]
+		player2_id = players[1]
+		player1_data = game_data[player1_id]
+		player2_data = game_data[player2_id]
 		player1_direction = player1_data["direction"]
 		player2_direction = player2_data["direction"]
 		player1_score = player1_data["score"]
@@ -251,11 +253,11 @@ class Pong:
 		#so we use this information here to end the game and set the scores
 		if (player1_score == WINNING_SCORE):
 			if self.gameDataCollector != None:
-				self.gameDataCollector.makeUserWin(left=True)
+				self.gameDataCollector.makeUserWin(left=False)
 			self.leftPaddle.score = WINNING_SCORE
 		if (player2_score == WINNING_SCORE):
 			if self.gameDataCollector != None:
-				self.gameDataCollector.makeUserWin(left=False)
+				self.gameDataCollector.makeUserWin(left=True)
 			self.rightPaddle.score = WINNING_SCORE
 
 		if (self.rightPaddle.score == WINNING_SCORE or self.leftPaddle.score == WINNING_SCORE):
