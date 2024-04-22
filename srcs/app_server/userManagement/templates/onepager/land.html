@@ -3,33 +3,51 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Pong{% endblock %}</title>
     <!-- Add your CSS and JavaScript links here -->
     {% block styles %}
         <link rel="stylesheet" href="{% static 'pong/styles.css' %}">
         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-
+        <link rel="stylesheet" type="text/css" href="{% static 'userManagement/styles.css' %}">
         {% endblock %}
-    <!-- Add your JavaScript imports and scripts here -->
+        <!-- Add your JavaScript imports and scripts here -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        {% block extra_scripts %}
+        {% endblock extra_scripts %}
 </head>
 <body>
 
 
   {% if user.is_authenticated %}
-  {% include 'onepager/logged_in.html' %}
+  <div id="navbar">
+    {% include 'includes/navbar.html' %}
+    </div>
+    <div id="content">
+      <h1>welcome {{user.username }}</h1>
+      <section class="hero is-small is-success mb-4">
+        <div class="hero-body">
+
+        </div>
+    </section>
+    {% block content %}
+    {% endblock content %}
+  </div>
+
   {% else %}
   {% include 'onepager/stranger.html' %}
   {% endif %}
 
-    <!-- Content -->
-        <!-- Content will be dynamically loaded here -->
+     
+  
+      <!-- Footer -->
+      <!-- {% include 'includes/footer.html' %} -->
+      
+      <!-- Bootstrap JS and dependencies (jQuery and Popper.js) -->
 
-
-        <!-- Footer -->
-        {% include 'includes/footer.html' %}
-
-
-
-</body>
+    </body>
 </html>

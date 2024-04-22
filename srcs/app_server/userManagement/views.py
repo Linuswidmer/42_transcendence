@@ -24,7 +24,7 @@ def dashboard(request):
 
 def my_view(request):
     if request.user.is_authenticated:
-        return render(request, "onepager/logged_in.html")
+        return render(request, "onepager/land.html")
     else:
         return render(request, "onepager/stranger.html")
 
@@ -153,7 +153,6 @@ def profile(request):
 			current_user_profile.follows.remove(user.profile)
 		current_user_profile.save()
 	return render(request, "userManagement/profile.html", {"user": user, "stats": sb})
-
 
 
 def logged_in(request):

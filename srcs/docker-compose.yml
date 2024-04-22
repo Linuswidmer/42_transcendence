@@ -3,10 +3,11 @@ version: '3.8'
 services:
   django:
     container_name: django
+    networks:
+      - pong_network
     build:
       context: ./app_server
       dockerfile: Dockerfile
-    command: sh -c "gunicorn app_server.wsgi:application --bind 0.0.0.0:8000 & daphne -b 0.0.0.0 -p 8001 app_server.asgi:application -v 0"
     volumes:
       - ./app_server:/usr/src/app
       - static_volume:/usr/src/app/staticfiles
@@ -16,12 +17,16 @@ services:
     env_file:
       - env.prod
     environment:
-      - DJANGO_SETTINGS_MODULE=app_server.settings
+      - LOCAL_IP=${LOCAL_IP}
+      - LOCAL_IP_CSRF=${LOCAL_IP_CSRF}
     depends_on:
-      - db
+      - postgres
+    restart: always
     
   nginx:
     container_name: nginx
+    networks:
+      - pong_network
     build:
       context: ./nginx
       dockerfile: Dockerfile
@@ -32,24 +37,36 @@ services:
     volumes:
       - ./nginx/certs:/etc/nginx/ssl
       - static_volume:/usr/src/app/staticfiles
+    restart: always
 
   redis:
-    image: redis:latest
+    build:
+      context: ./redis
+      dockerfile: Dockerfile
+    networks:
+      - pong_network
     container_name: redis
     ports:
       - "6380:6379"
+    restart: always
  
-  db:
-    image: postgres:15
+  postgres:
     build:
       context: ./postgres
       dockerfile: Dockerfile
     container_name: postgres
+    networks:
+      - pong_network
     volumes:
       - postgres_data:/var/lib/postgresql/data
     env_file:
       - env.prod
+    restart: always
 
 volumes:
   postgres_data:
   static_volume:
+
+networks:
+  pong_network:
+    driver: bridge

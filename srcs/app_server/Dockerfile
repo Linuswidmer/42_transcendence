@@ -1,4 +1,3 @@
-#leon: i changed the image, in order to get pygame working (+pygame added to requirements.txt)
 FROM ubuntu:latest
 
 WORKDIR /usr/src/app

@@ -12,38 +12,38 @@ import fetch_html_replace_dynamicDIV_activate_js from "./landing_test.js";
 // Helper functions
 
 
-class Entity {
-	constructor(x, y, type) {
-		this.type = type
-		this.x = x;
-		this.y = y;
-		this.position_buffer = [];
-	}
+  class Entity {
+    constructor(x, y, type) {
+      this.type = type
+      this.x = x;
+      this.y = y;
+      this.position_buffer = [];
+    }
 
-	set_position(x, y) {
-		this.x = x;
-		this.y = y;
-	}
-}
+    set_position(x, y) {
+      this.x = x;
+      this.y = y;
+    }
+  }
 
-class Ball extends Entity {
-	constructor(x, y) {
-		super(x, y, 'ball');
-	}
+  class Ball extends Entity {
+    constructor(x, y) {
+      super(x, y, 'ball');
+    }
 
-	set_radius(radius) {
-		this.radius = radius
-	}
+    set_radius(radius) {
+      this.radius = radius
+    }
 
-	draw(context) {
-		// console.log("draw ball", this);
-		context.beginPath();
-		context.arc(this.x, this.y, this.radius, 0, Math.PI*2);
-		context.fillStyle = "#000";
-		context.fill();
-		context.closePath();
-	}
-}
+    draw(context) {
+      // console.log("draw ball", this);
+      context.beginPath();
+      context.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+      context.fillStyle = "#000";
+      context.fill();
+      context.closePath();
+    }
+  }
 
 class Paddle extends Entity {
     constructor(username, x, y, screen_pos) {
@@ -57,7 +57,14 @@ class Paddle extends Entity {
     set_score(score) {
       this.score_display.textContent = score;
     }
+    set_score(score) {
+      this.score_display.textContent = score;
+    }
 
+    set_dimensions(width, height) {
+      this.width = width;
+      this.height = height;
+    }
     set_dimensions(width, height) {
       this.width = width;
       this.height = height;
@@ -250,13 +257,13 @@ class Game extends js_wrapper {
 		console.log("modus:", this.modus);
 	}
 
-    setup_keys() {
-		let keys = {
-			'KeyA': false,
-			'KeyD': false,
-			'KeyJ': false,
-			'KeyL': false,
-		};
+      setup_keys() {
+      let keys = {
+        'KeyA': false,
+        'KeyD': false,
+        'KeyJ': false,
+        'KeyL': false,
+      };
 
 		window.addEventListener('keydown', (event) => {
 			let data = undefined;
@@ -370,49 +377,49 @@ export default Game;
 //     var render_timestamp = now - (1000.0 * iteration_time);
 
 
-// 	for (var id in entities) {
-//         var entity = entities[id];
+  // 	for (var id in entities) {
+  //         var entity = entities[id];
 
-//         // Find the two authoritative positions surrounding the rendering timestamp.
-//         var buffer = entity.position_buffer;
+  //         // Find the two authoritative positions surrounding the rendering timestamp.
+  //         var buffer = entity.position_buffer;
 
-//         // Drop older positions.
-//         while (buffer.length >= 2 && buffer[1][0] <= render_timestamp) {
-//             buffer.shift();
-//         }
-//         // Interpolate between the two surrounding authoritative positions.
-// 		// console.log("render_timestamp:", render_timestamp);
-// 		// console.log("now:", now);
-// 		// console.log("first buffer element time:", buffer[0][0]);
-// 		// console.log("second buffer element time:", buffer[1][0]);
-//         if (buffer.length >= 2 && buffer[0][0] <= render_timestamp && render_timestamp <= buffer[1][0]) {
-// 			// console.log("interpol")
-//             var x0 = buffer[0][1];
-//             var x1 = buffer[1][1];
-//             var y0 = buffer[0][2];
-//             var y1 = buffer[1][2];
-//             var t0 = buffer[0][0];
-//             var t1 = buffer[1][0];
+  //         // Drop older positions.
+  //         while (buffer.length >= 2 && buffer[1][0] <= render_timestamp) {
+  //             buffer.shift();
+  //         }
+  //         // Interpolate between the two surrounding authoritative positions.
+  // 		// console.log("render_timestamp:", render_timestamp);
+  // 		// console.log("now:", now);
+  // 		// console.log("first buffer element time:", buffer[0][0]);
+  // 		// console.log("second buffer element time:", buffer[1][0]);
+  //         if (buffer.length >= 2 && buffer[0][0] <= render_timestamp && render_timestamp <= buffer[1][0]) {
+  // 			// console.log("interpol")
+  //             var x0 = buffer[0][1];
+  //             var x1 = buffer[1][1];
+  //             var y0 = buffer[0][2];
+  //             var y1 = buffer[1][2];
+  //             var t0 = buffer[0][0];
+  //             var t1 = buffer[1][0];
 
-//             var new_x = x0 + (x1 - x0) * (render_timestamp - t0) / (t1 - t0);
-//             var new_y = y0 + (y1 - y0) * (render_timestamp - t0) / (t1 - t0);
-//             entity.set_position(new_x, new_y);
-//         }
-//     }
-// }
+  //             var new_x = x0 + (x1 - x0) * (render_timestamp - t0) / (t1 - t0);
+  //             var new_y = y0 + (y1 - y0) * (render_timestamp - t0) / (t1 - t0);
+  //             entity.set_position(new_x, new_y);
+  //         }
+  //     }
+  // }
 
-// const INTERPOLATION_RATE = 60;
+  // const INTERPOLATION_RATE = 60;
 
 
-// 			//clear interval
-// 			// clearInterval(update_interval);
+  // 			//clear interval
+  // 			// clearInterval(update_interval);
 
-// 			// // Set a new update interval
-// 			// //this interval is interpolating between game updates and drawing the entities
-// 			// update_interval = setInterval(function() {
-// 			// 	interpolateEntities(entities, iteration_time);
-// 			// 	draw_entities(entities, ctx);
-// 			// }, 1000 / INTERPOLATION_RATE);
+  // 			// // Set a new update interval
+  // 			// //this interval is interpolating between game updates and drawing the entities
+  // 			// update_interval = setInterval(function() {
+  // 			// 	interpolateEntities(entities, iteration_time);
+  // 			// 	draw_entities(entities, ctx);
+  // 			// }, 1000 / INTERPOLATION_RATE);
 
 // const startGameButton = document.getElementById('startGameButton');
 // if (startGameButton) {

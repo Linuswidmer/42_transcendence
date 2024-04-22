@@ -19,6 +19,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('tournament_id', models.CharField(default='NONE', max_length=100, primary_key=True, serialize=False)),
                 ('data', models.JSONField(default={})),
+                ('data', models.JSONField(default={})),
             ],
         ),
         migrations.CreateModel(
@@ -42,6 +43,8 @@ class Migration(migrations.Migration):
                 ('ballMisses', models.IntegerField(default=0)),
                 ('highestStreak', models.IntegerField(default=0)),
                 ('longestBallRallyHits', models.IntegerField(default=0)),
+                ('game', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='pong_online.games')),
+                ('user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
                 ('game', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='pong_online.games')),
                 ('user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
             ],

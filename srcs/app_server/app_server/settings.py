@@ -6,10 +6,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 DEBUG = os.environ.get("DJANGO_DEBUG")
-ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '').split()
-# ALLOWED_HOSTS = ["127.0.0.1", "localhost", "10.15.9.8"]
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '').split() + os.environ.get('LOCAL_IP', '').split()
 
-CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split()
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split() + os.environ.get('LOCAL_IP_CSRF', '').split()
 
 # Application definition
 

@@ -1,6 +1,5 @@
 <!-- dwitter/templates/dwitter/profile_list.html -->
 
-{% extends 'base.html' %}
 
 {% block content %}
 
@@ -16,11 +15,12 @@
                         <table class="table table-hover">
                             <tbody>
                                 {% for user in registered_users %}
-                                <tr>
+                                <tr class="profileOtherBtn">
                                     <td class="text-center">
                                         <img src="{{ user.profile.avatar.url }}" alt="avatar" class="rounded-circle" style="width: 50px; height: 50px;">
                                     </td>
                                     <td class="text-center">
+                                        <button type="button"  class="btn buttonblue profileBtn" data-username="{{ user.username }}"> {{ user.username }}</button>
                                         <a href="{% url 'userManagement:profile' user.username %}">
                                             {{ user.username }}
                                         </a>
@@ -42,5 +42,29 @@
         </div>
     </div>
 </div>
+<div id="modalContainer"></div>
 
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    document.querySelectorAll(".profileBtn").forEach(button => {
+        button.addEventListener("click", function() {
+            console.log("profileOtherBtn clicked");
+            // Fetch the profile page for the specific user associated with the clicked button
+            const username = this.dataset.username; // Retrieve username from data attribute
+            console.log(username);
+            const url = `/profile/${username}/`; // Construct the URL with the username
+            fetch(url)
+         .then(response => response.text())
+         .then(html => {
+             document.getElementById("content").innerHTML = '';
+             document.getElementById("content").innerHTML = html;
+             executeJavaScriptInContent(html);
+             })
+             .catch(error => console.error('Error loading profiles page:', error));
+     });
+});
+</script>
 {% endblock %}
