@@ -24,7 +24,7 @@ def dashboard(request):
 
 def my_view(request):
     if request.user.is_authenticated:
-        return render(request, "onepager/land.html")
+        return render(request, "onepager/land.html", {"username": request.user.username})
     else:
         return render(request, "onepager/stranger.html")
 
@@ -139,8 +139,8 @@ def profile_list(request):
 	all_users = User.objects.all()
 	return render(request, "userManagement/profile_list.html", {"registered_users": all_users})
 
-def profile(request):
-	user = get_object_or_404(User, username=request.user)
+def profile(request, username):
+	user = get_object_or_404(User, username=username)
 	sb = StatsBuilder(user)
 	sb.build()
 	if request.method == "POST":

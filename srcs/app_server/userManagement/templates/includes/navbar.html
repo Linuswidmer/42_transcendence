@@ -14,7 +14,11 @@
         </div>
     </div>
 
-    <script>
+	
+
+    <script type="module">
+		import fetch_html_replace_dynamicDIV_activate_js from "../../static/pong_online/landing_test.js";
+
         document.getElementById('logoBtn').addEventListener('click', function(event) {
         event.preventDefault();
         console.log('Logo button clicked');
@@ -35,26 +39,19 @@
             console.log(target.textContent + ' button clicked');
             switch (target.id) {
                 case 'gameBtn':
-                    document.getElementById("content").innerHTML = '';
-                    fetch("/lobby")
-                        .then(response => response.text())
-                        .then(html => {
-                            document.getElementById("content").innerHTML = html;
-                            executeJavaScriptInContent(html);
-                          })
-                        .catch(error => console.error('Error loading game page:', error));
+					fetch_html_replace_dynamicDIV_activate_js('/lobby', true);
                     break;
                 case 'profileBtn':
-                const username =  this.dataset.username; // Retrieve username from data attribute
-            console.log(username);
-            const url = `/profile/{{ user.username }}/`; // Construct the URL with the username
-            fetch(url)
-                        .then(response => response.text())
-                        .then(html => {
-                            document.getElementById("content").innerHTML = html;
-                            executeJavaScriptInContent(html);
-                          })
-                        .catch(error => console.error('Error loading profile page:', error));
+                // const username =  this.dataset.username; // Retrieve username from data attribute
+            		console.log(username);
+            		const profile_url = `/profile/{{ user.username }}/`; // Construct the URL with the username
+					fetch(profile_url)
+								.then(response => response.text())
+								.then(html => {
+									document.getElementById("content").innerHTML = html;
+									executeJavaScriptInContent(html);
+								})
+								.catch(error => console.error('Error loading profile page:', error));
                     break;
                 case 'logoutBtn':
                     fetch("{% url 'userManagement:logout' %}", {

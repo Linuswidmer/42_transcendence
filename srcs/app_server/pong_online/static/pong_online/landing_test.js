@@ -41,7 +41,7 @@ function activate_js(component_name) {
 function fetch_html_replace_dynamicDIV_activate_js(url, fetchJS=false, callback=null) {
 	console.log("url:", url);
 	//get DIV element where we want to display the new HTML
-	let dynamicDIV = document.getElementById('dynamicDIV');
+	let dynamicDIV = document.getElementById('content');
 
 	if (active_script) {
 		console.log("there is a script to deactivate");
@@ -69,10 +69,10 @@ function fetch_html_replace_dynamicDIV_activate_js(url, fetchJS=false, callback=
 	});
 }
 
-let lobby_button = document.getElementById('lobbyBtn');
-lobby_button.addEventListener('click', () => {
-	fetch_html_replace_dynamicDIV_activate_js('/lobby', true);
-});
+// let lobby_button = document.getElementById('lobbyBtn');
+// lobby_button.addEventListener('click', () => {
+// 	fetch_html_replace_dynamicDIV_activate_js('/lobby', true);
+// });
 
 export default fetch_html_replace_dynamicDIV_activate_js;
 // console.log("test");

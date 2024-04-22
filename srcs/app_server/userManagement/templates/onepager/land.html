@@ -17,6 +17,8 @@
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+		<script type="module" src="{% static 'pong_online/landing_test.js' %}" ></script>
+		<script>username = "{{ username }}"</script>
         {% block extra_scripts %}
         {% endblock extra_scripts %}
 </head>
@@ -27,6 +29,7 @@
   <div id="navbar">
     {% include 'includes/navbar.html' %}
     </div>
+
     <div id="content">
       <h1>welcome {{user.username }}</h1>
       <section class="hero is-small is-success mb-4">
