@@ -19,7 +19,6 @@ class Lobby extends js_wrapper {
 		Lobby.counter++;
 		console.log("lobby instances: ", Lobby.counter);
         this.ws = ws;
-		this.ws.username = username;  //maybe change later
 		this.username = username;
 		console.log("username:", username);
 		
