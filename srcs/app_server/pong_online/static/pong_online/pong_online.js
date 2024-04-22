@@ -210,6 +210,8 @@ class Game {
 		var prompt = document.getElementById('userPrompt');
 		prompt.textContent = "Good Luck - Play SAUBER!"
 
+		leaveButton.style.display = 'none';
+
 		for (var id in data.initial_entity_data.entities) {
 			var entity = data.initial_entity_data.entities[id];
 			
