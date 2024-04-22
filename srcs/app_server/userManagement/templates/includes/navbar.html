@@ -17,7 +17,7 @@
 	
 
     <script type="module">
-		import fetch_html_replace_dynamicDIV_activate_js from "../../static/pong_online/landing_test.js";
+		import {fetch_html_replace_dynamicDIV_activate_js, fetch_marie} from "../../static/pong_online/landing_test.js";
 
         document.getElementById('logoBtn').addEventListener('click', function(event) {
         event.preventDefault();
@@ -45,13 +45,7 @@
                 // const username =  this.dataset.username; // Retrieve username from data attribute
             		console.log(username);
             		const profile_url = `/profile/{{ user.username }}/`; // Construct the URL with the username
-					fetch(profile_url)
-								.then(response => response.text())
-								.then(html => {
-									document.getElementById("content").innerHTML = html;
-									executeJavaScriptInContent(html);
-								})
-								.catch(error => console.error('Error loading profile page:', error));
+					fetch_marie(profile_url);
                     break;
                 case 'logoutBtn':
                     fetch("{% url 'userManagement:logout' %}", {
@@ -80,17 +74,7 @@
             }
         }
     });
-    function executeJavaScriptInContent(html) {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const scriptElements = doc.querySelectorAll('script');
-        //console.log(scriptElements[0].textContent);
-        //console.log(scriptElements[1].textContent);
-        //eval(scriptElements[1].textContent)
-        scriptElements.forEach(script => {
-             eval(script.textContent);
-        });
-    }
+
           // Function to retrieve CSRF token from cookies
           function getCookie(name) {
               let cookieValue = null;

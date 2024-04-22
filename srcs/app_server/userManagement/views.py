@@ -24,7 +24,7 @@ def dashboard(request):
 
 def my_view(request):
     if request.user.is_authenticated:
-        return render(request, "onepager/land.html", {"username": request.user.username})
+        return render(request, "onepager/land.html")
     else:
         return render(request, "onepager/stranger.html")
 
@@ -195,7 +195,7 @@ def tournament_stats(request, tournament_name):
 	return render(request, "userManagement/tournament_stats.html", {"tm_name": tournament.tournament_id, "tm_data": json.dumps(tournament.data)})
 		
 def logged_in(request):
-	return render(request, 'landing/logged_in.html')
+	return render(request, 'onepager/logged_in.html')
 
 def stranger(request):
-	return render(request, 'landing/stranger.html')
+	return render(request, 'onepager/stranger.html')

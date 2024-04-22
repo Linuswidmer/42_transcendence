@@ -1,5 +1,4 @@
-import fetch_html_replace_dynamicDIV_activate_js from "./landing_test.js";
-
+import { fetch_html_replace_dynamicDIV_activate_js, fetch_marie} from "./landing_test.js";
 // const leaveButton = document.getElementById('leaveGame');
 // if (leaveButton) {
 // 	leaveButton.addEventListener('click', function() {
@@ -10,8 +9,6 @@ import fetch_html_replace_dynamicDIV_activate_js from "./landing_test.js";
 // }
 //////////////////////////////
 // Helper functions
-
-
   class Entity {
     constructor(x, y, type) {
       this.type = type
@@ -334,7 +331,9 @@ class Game extends js_wrapper {
 		// 		console.error('Error:', error);
 		// 	});
 		const statsURL = '/singleGameStats/?matchName=' + data.matchName + '&username=' + data.user;
-		fetch_html_replace_dynamicDIV_activate_js(statsURL, false);
+		// fetch_html_replace_dynamicDIV_activate_js(statsURL, false);
+
+		fetch_marie(statsURL);
 	}
 
 	handle_game_view_population(data)

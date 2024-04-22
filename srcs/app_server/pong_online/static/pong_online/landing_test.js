@@ -69,12 +69,34 @@ function fetch_html_replace_dynamicDIV_activate_js(url, fetchJS=false, callback=
 	});
 }
 
+function fetch_marie(url) {
+	fetch(url)
+		.then(response => response.text())
+		.then(html => {
+			document.getElementById("content").innerHTML = html;
+			executeJavaScriptInContent(html);
+		})
+		.catch(error => console.error('Error loading page:', error));
+}
+
+function executeJavaScriptInContent(html) {
+	const parser = new DOMParser();
+	const doc = parser.parseFromString(html, 'text/html');
+	const scriptElements = doc.querySelectorAll('script');
+	//console.log(scriptElements[0].textContent);
+	//console.log(scriptElements[1].textContent);
+	//eval(scriptElements[1].textContent)
+	scriptElements.forEach(script => {
+		 eval(script.textContent);
+	});
+}
+
 // let lobby_button = document.getElementById('lobbyBtn');
 // lobby_button.addEventListener('click', () => {
 // 	fetch_html_replace_dynamicDIV_activate_js('/lobby', true);
 // });
 
-export default fetch_html_replace_dynamicDIV_activate_js;
+export {fetch_html_replace_dynamicDIV_activate_js, fetch_marie};
 // console.log("test");
 
 // showSection('/dashboard');
