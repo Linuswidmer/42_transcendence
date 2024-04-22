@@ -1,51 +1,16 @@
-var pongModule = (function() {
-//////////////////////////////
-// Establish ws connection manually for now
-// remove later again
+import fetch_html_replace_dynamicDIV_activate_js from "./landing_test.js";
 
-// const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
-
-// console.log(protocol + '://' + window.location.host + '/ws/pong_online/game/')
-// window.ws = new WebSocket(
-// 	protocol + '://' + window.location.host + '/ws/pong_online/game/'
-// );
-
-// console.log("username", username);
-
-
-// window.ws.onopen = function(e) {
-// 	// telling the server that the client is ready
-// 	console.log('WebSocket connection established');
-// 	// let data = {'playerId': 'SESSION ID HERE?????'};
-// 	// ws.send(JSON.stringify(data));
-// 	ws.username = username
-// 	ws.send(JSON.stringify({type: 'username', 'username': username}));
-// 	// ws.send(JSON.stringify({type: 'lobby_update', 'action': 'display'}));
-// };
-
-////////////////////////////////
-
-
-	///////////////////////////////
-	// General Setup
-const canvas = document.getElementById('pongCanvas');
-const ctx = canvas.getContext('2d');
-
-const ws = window.ws;
-
-let loggedInMsg = document.getElementById('loggedInMessage');
-loggedInMsg.textContent += ws.username;
-
-
+// const leaveButton = document.getElementById('leaveGame');
+// if (leaveButton) {
+// 	leaveButton.addEventListener('click', function() {
+// 		console.log("modus", ws.modus);
+// 		ws.send(JSON.stringify({type: 'leave', 'action': 'leave', 'username': username, 'modus': ws.modus}));
+// 		console.log('leaveButtonclicked');
+// 	});
+// }
 //////////////////////////////
 // Helper functions
-function norm2height(relativeY) {
-	return (relativeY * canvas.height)
-}
 
-	function norm2width(relativeX) {
-		return (relativeX * canvas.width)
-	}
 
 class Entity {
 	constructor(x, y, type) {
@@ -105,18 +70,72 @@ class Paddle extends Entity {
     }
 }
 
+class js_wrapper {
+	activate() {
+		throw new Error("Subclasses must override this method.");
+	}
+
+	deactivate () {
+		throw new Error("Subclasses must override this method.");
+	}
+}
+
+
 // In the Game class
-class Game {
-	constructor(ws, canvas, ctx) {
+class Game extends js_wrapper {
+	constructor(ws, username) {
+		super();
         this.ws = ws;
-		this.canvas = canvas;
-		this.ctx = ctx;
+		this.username = username;
 
         this.entities = [];
         this.iterationTime = null;
 		this.modus = null;
-        this.ws.onmessage = (e) => this.handle_message(e);
+
     }
+
+	norm2height(relativeY) {
+		return (relativeY * this.canvas.height)
+	}
+	
+	norm2width(relativeX) {
+		return (relativeX * this.canvas.width)
+	}
+
+	activate() {
+		this.ws.onmessage = (e) => this.handle_message(e);
+
+		this.loggedInMsg = document.getElementById('loggedInMessage');
+		this.loggedInMsg.textContent += this.username;
+
+		this.canvas = document.getElementById('pongCanvas');
+		this.ctx = this.canvas.getContext('2d');
+
+		this.start_game_button = document.getElementById('startGameButton');
+		this.start_game_button.addEventListener('click', 
+			this.handle_start_game_button_click);
+		
+		this.leave_game_button = document.getElementById('leaveGame');
+		this.leave_game_button.addEventListener('click',
+		this.handle_leave_game_button_click);
+	}
+
+	deactivate() {
+		this.ws.onmessage = null;
+		this.start_game_button.removeEventListener('click', this.handle_start_game_button_click);
+        this.leave_game_button.removeEventListener('click', this.handle_leave_game_button_click);
+	}
+
+	handle_start_game_button_click = () => {
+		this.start_game_button.style.display = 'none';
+		this.ws.send(JSON.stringify({'type': 'start', 'modus': 'remote'}));
+		console.log('Start button remote clicked');
+	}
+	
+	handle_leave_game_button_click = () => {
+		this.ws.send(JSON.stringify({type: 'leave', 'action': 'leave', 'username': this.username}));
+		console.log('leaveButtonclicked');
+	}
 
     handle_message(e) {
         try {
@@ -125,6 +144,7 @@ class Game {
 			if (data.type === 'send_to_group') {
 				switch (data.identifier) {
 					case 'deliver_init_game_data':
+						console.log("received, deliver_init:", data);
 						this.handle_game_view_population(data);
 						break;
 					case 'game_end':
@@ -199,7 +219,7 @@ class Game {
 
 	draw_entities() {
 		// Clear the canvas
-		ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 		for (var id in this.entities) {
 			var entity = this.entities[id];
 			entity.draw(this.ctx);
@@ -210,18 +230,18 @@ class Game {
 		var prompt = document.getElementById('userPrompt');
 		prompt.textContent = "Good Luck - Play SAUBER!"
 
-		leaveButton.style.display = 'none';
+		this.leave_game_button.style.display = 'none';
 
 		for (var id in data.initial_entity_data.entities) {
 			var entity = data.initial_entity_data.entities[id];
-			
+			console.log("handle_entity:", entity);
 			if (entity.entity_type === 'ball') {
-				this.entities[id] = new Ball(norm2width(entity.relX), norm2height(entity.relY));
-				this.entities[id].set_radius(norm2height(entity.relBallRadius));
+				this.entities[id] = new Ball(this.norm2width(entity.relX), this.norm2height(entity.relY));
+				this.entities[id].set_radius(this.norm2height(entity.relBallRadius));
 			} else if (entity.entity_type === 'paddle') {
-				this.entities[id] = new Paddle(id, norm2width(entity.relX), norm2height(entity.relY), entity.screen_pos);
-				this.entities[id].set_dimensions(norm2width(entity.relPaddleWidth),
-					norm2height(entity.relPaddleHeight));
+				this.entities[id] = new Paddle(id, this.norm2width(entity.relX), this.norm2height(entity.relY), entity.screen_pos);
+				this.entities[id].set_dimensions(this.norm2width(entity.relPaddleWidth),
+					this.norm2height(entity.relPaddleHeight));
 			} else {
 				console.log("Warning: an unknown entity was send by the server");
 			}
@@ -242,10 +262,10 @@ class Game {
 			let data = undefined;
 			if (event.code === 'KeyA' && !keys[event.code]) {
 				keys[event.code] = true;
-				data = {'playerId': ws.username, 'type': 'keypress', 'action': 'moveUp'};
+				data = {'playerId': this.username, 'type': 'keypress', 'action': 'moveUp'};
 			} else if (event.code === 'KeyD'  && !keys[event.code]) {
 				keys[event.code] = true;
-				data = {'playerId': ws.username, 'type': 'keypress', 'action': 'moveDown'};
+				data = {'playerId': this.username, 'type': 'keypress', 'action': 'moveDown'};
 			} else if (this.modus === 'local' && event.code === 'KeyJ' && !keys[event.code]) {
 				keys[event.code] = true;
 				data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'moveUp'};
@@ -254,7 +274,7 @@ class Game {
 				data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'moveDown'};
 			}
 		
-			if (typeof data !== 'undefined' && ws.readyState === WebSocket.OPEN) {
+			if (typeof data !== 'undefined' && this.ws.readyState === WebSocket.OPEN) {
 				this.ws.send(JSON.stringify(data));
 			}
 		});
@@ -263,10 +283,10 @@ class Game {
 			let data = undefined;
 			if (event.code === 'KeyA') {
 				keys[event.code] = false;
-				data = {'playerId': ws.username, 'type': 'keypress', 'action': 'stopMoveUp'};
+				data = {'playerId': this.username, 'type': 'keypress', 'action': 'stopMoveUp'};
 			} else if (event.code === 'KeyD') {
 				keys[event.code] = false;
-				data = {'playerId': ws.username, 'type': 'keypress', 'action': 'stopMoveDown'};
+				data = {'playerId': this.username, 'type': 'keypress', 'action': 'stopMoveDown'};
 			} else if (this.modus === 'local' && event.code === 'KeyJ') {
 				keys[event.code] = false;
 				data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'stopMoveUp'};
@@ -275,7 +295,7 @@ class Game {
 				data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'stopMoveDown'};
 			}
 		
-			if (typeof data !== 'undefined' && ws.readyState === WebSocket.OPEN) {
+			if (typeof data !== 'undefined' && this.ws.readyState === WebSocket.OPEN) {
 				this.ws.send(JSON.stringify(data));
 			}
 		});
@@ -283,14 +303,15 @@ class Game {
 
 	handle_game_update(data) {
 		let server_entities = data.entity_data.entities;
-
+		console.log("server entities", server_entities);
+		console.log("local entities:", this.entities);
 		for (var id in server_entities) {
 			var entity = this.entities[id];
 	
 			// entity.position_buffer.push([server_entity_data.timestamp,
 			// 	norm2width(server_entities[id].relX),
 			// 	norm2height(server_entities[id].relY)]);
-			entity.set_position(norm2width(server_entities[id].relX), norm2height(server_entities[id].relY));
+			entity.set_position(this.norm2width(server_entities[id].relX), this.norm2height(server_entities[id].relY));
 			if (entity.type === "paddle") {
 				entity.set_score(server_entities[id].score)
 			}
@@ -298,13 +319,15 @@ class Game {
 	}
 
 	handle_game_over(data) {
-		fetch('/singleGameStats/?matchName=' + data.matchName + '&username=' + data.user)
-			.then(response => response.text())
-			.then(data => {
-				document.body.innerHTML = data;
-			}).catch((error) => {
-				console.error('Error:', error);
-			});
+		// fetch('/singleGameStats/?matchName=' + data.matchName + '&username=' + data.user)
+		// 	.then(response => response.text())
+		// 	.then(data => {
+		// 		document.body.innerHTML = data;
+		// 	}).catch((error) => {
+		// 		console.error('Error:', error);
+		// 	});
+		const statsURL = '/singleGameStats/?matchName=' + data.matchName + '&username=' + data.user;
+		fetch_html_replace_dynamicDIV_activate_js(statsURL, false);
 	}
 
 	handle_game_view_population(data)
@@ -314,9 +337,9 @@ class Game {
 		var prompt = document.getElementById('userPrompt');
 
 		if (data.hasOwnProperty("player1")){
-			if (data["player1"] == ws.username) {
+			if (data["player1"] == this.username) {
 				right_name_display.textContent = "Right Player: You";
-				startGameButton.style.display = 'none';
+				this.start_game_button.style.display = 'none';
 			}else{
 				right_name_display.textContent = "Right Player: " + data["player1"];
 			}
@@ -326,7 +349,7 @@ class Game {
 			prompt.textContent = "Waiting for another Player . . .";
 		}
 		if (data.hasOwnProperty("player2")){
-			if (ws.username == data["player2"]) {
+			if (this.username == data["player2"]) {
 				left_name_display.textContent = "Left Player: You";
 				prompt.textContent = data["player1"] + " is waiting. Press start to play " + data.match_name + " !";
 			}
@@ -339,9 +362,9 @@ class Game {
 }
 
 // After establishing the WebSocket connection
-const game = new Game(ws, canvas, ctx);
+// const game = new Game(ws, canvas, ctx);
 
-
+export default Game;
 // function interpolateEntities(entities, iteration_time) {
 // 	var now = +new Date();
 //     var render_timestamp = now - (1000.0 * iteration_time);
@@ -391,28 +414,21 @@ const game = new Game(ws, canvas, ctx);
 // 			// 	draw_entities(entities, ctx);
 // 			// }, 1000 / INTERPOLATION_RATE);
 
-const startGameButton = document.getElementById('startGameButton');
-if (startGameButton) {
-	startGameButton.addEventListener('click', function() {
-		ws.send(JSON.stringify({'type': 'start'}));
-		console.log('Start button remote clicked');
-		startGameButton.style.display = 'none';
-	});
-}
+// const startGameButton = document.getElementById('startGameButton');
+// if (startGameButton) {
+// 	startGameButton.addEventListener('click', function() {
+// 		ws.send(JSON.stringify({'type': 'start'}));
+// 		console.log('Start button remote clicked');
+// 		startGameButton.style.display = 'none';
+// 	});
+// }
 
-const leaveButton = document.getElementById('leaveGame');
-if (leaveButton) {
-	leaveButton.addEventListener('click', function() {
-		console.log("modus", ws.modus);
-		ws.send(JSON.stringify({type: 'leave', 'action': 'leave', 'username': username, 'modus': ws.modus}));
-		console.log('leaveButtonclicked');
-	});
-}
 
-window.addEventListener('beforeunload', function(event) {
-	//only send when tehre is a game running
-	ws.send(JSON.stringify({'type': 'player_left', 'player': ws.username}));
-});
+
+// window.addEventListener('beforeunload', function(event) {
+// 	//only send when tehre is a game running
+// 	ws.send(JSON.stringify({'type': 'player_left', 'player': ws.username}));
+// });
 // 		fetch('/lobby')
 // 				.then(response => response.text())
 // 				.then(data => {
@@ -440,5 +456,3 @@ window.addEventListener('beforeunload', function(event) {
 // 				.catch((error) => {
 // 					console.error('Error:', error);
 // 				});
-
-})();

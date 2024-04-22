@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{% static 'pong/styles.css' %}">
+    <title>Pong Game</title>
+</head>
+<body>
+    {% csrf_token %}
+
+    <!-- CONTENT -->
+    <div id="dynamicDIV">This is the dynamic div</div>
+
+
+	
+	<button id="lobbyBtn">Lobby</button>
+
+    <script type="module" src="{% static 'pong_online/landing_test.js' %}" ></script>
+	<script>username = "{{ username }}"</script>
+</body>
+</html>

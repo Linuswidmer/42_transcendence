@@ -16,6 +16,9 @@ from pong_online.models import UserGameStats, Tournaments
 import json
 
 
+def index(request):
+	return render(request, "landing/index.html")
+
 def dashboard(request):
 	return render(request, "userManagement/dashboard.html")
 
@@ -40,7 +43,7 @@ def register_user(request):
 			user.groups.add(registered_users)
 			user.save()
 			login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-			return redirect(reverse('userManagement:profile', args=[user.username]))
+			return redirect(reverse('userManagement:profile'))
 		else:
 			return render(
 			request, "userManagement/register.html",
@@ -82,7 +85,7 @@ def update_user(request):
 		form = CustomUserChangeForm(request.POST, instance=request.user)
 		if form.is_valid():
 			user = form.save()
-			return redirect(reverse('userManagement:profile', args=[request.user.username]))
+			return redirect(reverse('userManagement:profile'))
 		else:
 			return render(
 			request, "userManagement/register.html",
@@ -107,7 +110,7 @@ def update_profile(request):
 		form = CustomProfileChangeForm(request.POST, request.FILES, instance=request.user.profile)
 		if form.is_valid():
 			form.save()
-			return redirect(reverse('userManagement:profile', args=[request.user.username]))
+			return redirect(reverse('userManagement:profile'))
 		else:
 			return render(
 			request, "userManagement/update_profile.html",
@@ -136,21 +139,20 @@ def profile_list(request):
 	all_users = User.objects.all()
 	return render(request, "userManagement/profile_list.html", {"registered_users": all_users})
 
-@login_required
-def profile(request, username):
-    user = get_object_or_404(User, username=username)
-    sb = StatsBuilder(user)
-    sb.build()
-    if request.method == "POST":
-        current_user_profile = request.user.profile
-        data = request.POST
-        action = data.get("follow")
-        if action == "follow":
-            current_user_profile.follows.add(user.profile)
-        elif action == "unfollow":
-            current_user_profile.follows.remove(user.profile)
-        current_user_profile.save()
-    return render(request, "userManagement/profile.html", {"user": user, "stats": sb})
+def profile(request):
+	user = get_object_or_404(User, username=request.user)
+	sb = StatsBuilder(user)
+	sb.build()
+	if request.method == "POST":
+		current_user_profile = request.user.profile
+		data = request.POST
+		action = data.get("follow")
+		if action == "follow":
+			current_user_profile.follows.add(user.profile)
+		elif action == "unfollow":
+			current_user_profile.follows.remove(user.profile)
+		current_user_profile.save()
+	return render(request, "userManagement/profile.html", {"user": user, "stats": sb})
 
 
 
@@ -192,3 +194,9 @@ def single_game_stats(request):
 def tournament_stats(request, tournament_name):
 	tournament = Tournaments.objects.get(tournament_id=tournament_name)
 	return render(request, "userManagement/tournament_stats.html", {"tm_name": tournament.tournament_id, "tm_data": json.dumps(tournament.data)})
+		
+def logged_in(request):
+	return render(request, 'landing/logged_in.html')
+
+def stranger(request):
+	return render(request, 'landing/stranger.html')

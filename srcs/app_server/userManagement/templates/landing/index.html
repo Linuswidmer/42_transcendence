@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Pong{% endblock %}</title>
+    <!-- Add your CSS and JavaScript links here -->
+    
+        <link rel="stylesheet" href="{% static 'userManagement/styles.css' %}">
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Additional head content -->
+    {% block extra_head %}{% endblock %}
+            
+</head>
+<body>
+<!-- Main content -->
+
+{% block navbar %}
+<!-- This div will contain the navbar or stranger content -->
+{% if user.is_authenticated %}
+	<!-- If the user is authenticated, include the navbar from logged_in.html -->
+	<div id="navbarDIV"> {% include 'landing/navbar.html' %} </div>
+{% endif %}
+{% endblock %}
+
+  <!-- This div will be used to fetch and display dynamic content -->
+  <div id="dynamicDIV">
+	{% block stranger %}
+		{% if not user.is_authenticated %}
+			{% include 'landing/stranger.html' %}
+		{% endif %}
+	{% endblock %}
+  </div>
+   <!-- Footer -->
+{% include 'landing/footer.html' %}
+
+<script type="module" src="{% static 'userManagement/main.js' %}"></script>
+<!-- Additional scripts -->
+{% block extra_scripts %}{% endblock %}
+
+</body>
+</html>

@@ -231,6 +231,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				data["match_name"] = match.group_name
 				data["player1"] = match.registered_players[0]
 				data["player2"] = match.registered_players[1]
+			# await asyncio.sleep(2)
 			await self.channel_layer.group_send(
 				self.game_group_name,
 				data,
@@ -551,6 +552,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#here we could import the game from another file to keep things separated
 	async def game_loop(self, modus):
 		players = self.match.registered_players
+		print(players)
 		self.gdc = await sync_to_async(self.create_data_collector)(modus, players[1], players[0], self.match.group_name, self.match.tournament_id)
 		logger.debug("new game loop started")
 		pong_instance = Pong(self.gdc)

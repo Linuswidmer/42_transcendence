@@ -130,6 +130,7 @@ class Lobby:
 
 	# rename to create_match
 	def add_match(self, modus) -> bool:
+		print('CREATE: ', modus)
 		match_name = self.generate_name()
 		self.matches[match_name] = Match(match_name, modus)
 		return match_name
