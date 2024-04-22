@@ -1,10 +1,12 @@
 {% load static %}
 
 <div class="navbar navbar-light" style="background-color: #6a0dad;">
-    <img src="{% static 'pong/pong_logo.png' %}" alt="Logo" class="logo">
+    <button class="navbar-button" id="logoBtn"> 
+        <img src="{% static 'pong/pong_logo.png' %}" alt="Logo" class="logo">
+    </button>
       <div>
           <button class="navbar-button" id="gameBtn">Play</button>
-          <button class="navbar-button" id="profileBtn">Dashboard</button>
+          <button class="navbar-button" id="profileBtn" data-username="{{ user.username }}">Dashboard</button>
         </div>
 
         <div>
@@ -13,6 +15,19 @@
     </div>
 
     <script>
+        document.getElementById('logoBtn').addEventListener('click', function(event) {
+        event.preventDefault();
+        console.log('Logo button clicked');
+        document.getElementById("content").innerHTML = '';
+        fetch("/logged_in")
+                        .then(response => response.text())
+                        .then(html => {
+                            document.getElementById("content").innerHTML = html;
+                            executeJavaScriptInContent(html);
+                          })
+                        .catch(error => console.error('Error loading landing page:', error));
+                    
+            });
       document.querySelector('.navbar').addEventListener('click', function(event) {
         const target = event.target;
         if (target.matches('.navbar-button')) {
@@ -30,7 +45,10 @@
                         .catch(error => console.error('Error loading game page:', error));
                     break;
                 case 'profileBtn':
-                    fetch("{% url 'userManagement:profile' %}")
+                const username =  this.dataset.username; // Retrieve username from data attribute
+            console.log(username);
+            const url = `/profile/{{ user.username }}/`; // Construct the URL with the username
+            fetch(url)
                         .then(response => response.text())
                         .then(html => {
                             document.getElementById("content").innerHTML = html;
@@ -47,6 +65,7 @@
                         })
                         .then(response => {
                             if (response.ok) {
+                                document.getElementById("navbar").innerHTML = '';
                                 document.getElementById("content").innerHTML = '';
                                 fetch("/stranger")
                                     .then(response => response.text())

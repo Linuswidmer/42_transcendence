@@ -24,17 +24,20 @@
 
 
   {% if user.is_authenticated %}
-  <div id="content">
+  <div id="navbar">
     {% include 'includes/navbar.html' %}
-        <h1>welcome {{user.username }}</h1>
-        <section class="hero is-small is-success mb-4">
-          <div class="hero-body">
+    </div>
+    <div id="content">
+      <h1>welcome {{user.username }}</h1>
+      <section class="hero is-small is-success mb-4">
+        <div class="hero-body">
 
-          </div>
-      </section>
-      {% block content %}
-      {% endblock content %}
+        </div>
+    </section>
+    {% block content %}
+    {% endblock content %}
   </div>
+
   {% else %}
   {% include 'onepager/stranger.html' %}
   {% endif %}

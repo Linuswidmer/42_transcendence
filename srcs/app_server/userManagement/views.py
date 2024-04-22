@@ -137,8 +137,8 @@ def profile_list(request):
 	return render(request, "userManagement/profile_list.html", {"registered_users": all_users})
 
 @login_required
-def profile(request):
-    user = get_object_or_404(User, username=request.user)
+def profile(request, username):
+    user = get_object_or_404(User, username=username)
     sb = StatsBuilder(user)
     sb.build()
     if request.method == "POST":

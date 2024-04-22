@@ -3,9 +3,9 @@
 {% load socialaccount %}
 <link rel="stylesheet" href="{% static 'pong/styles.css' %}">
 <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-<div id="wrapper">
 <div id="content">
-  <div class="cwelcome-container">
+<div id="wrapper">
+  <div class="welcome-container">
     <h1>Welcome Stranger</h1>
   </div>
   <div class="image-container">
@@ -19,7 +19,6 @@
       <button type="button" class="button" id="42Btn">Sign In with 42</button>
     </div>
     <div id="modalContainer"></div>
-  </div>
 </div>
   {% include 'includes/footer.html' %}
 </div>
@@ -168,7 +167,7 @@ const csrftoken = getCookie('csrftoken');
  // Function to load logged-in content after successful login
  function loadLoggedInContent() {
   console.log("loading")
-        document.getElementById("content").innerHTML = '';
+        document.getElementById("wrapper").innerHTML = '';
         fetch("/logged_in")
             .then(response => response.text())
             .then(html => {
