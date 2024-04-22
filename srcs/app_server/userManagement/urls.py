@@ -15,10 +15,9 @@ urlpatterns = [
 	path("update_profile/", update_profile, name="update_profile"),
 
     path("profile_list/", profile_list, name="profile_list"),
-    path('profile/', profile, name='profile'),
 
     path('profile/<str:username>/', profile, name='profile'),
-    path("land/", my_view, name='my_view'),
+    path("", my_view, name='my_view'),
     path("change_password/", change_password, name="change_password"),
     path('stranger/', stranger, name='stranger'),
     path('logged_in/', logged_in, name='logged_in'),

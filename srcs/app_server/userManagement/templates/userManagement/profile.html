@@ -1,5 +1,5 @@
 <!-- dwitter/templates/dwitter/profile.html -->
-{% extends 'onepager/land.html' %}    
+ 
 {% load static %}
 {% block content %}
 
@@ -14,10 +14,10 @@
 
         <!-- Column for name and logged in status -->
         <div class="col">
-            <h2 class="text-center text-dark my-4 stylish-font"> 
+            <h2 class="text-center my-4 stylish-font"> 
                 {{user.username}}'s Profile 
                 {% if user.profile.logged_in is True  %}
-                <span style="color: green; margin-left: 5px; font-size: 0.5em;">Online</span>
+                <span style="color: rgb(4, 177, 4); margin-left: 5px; font-size: 0.5em;">Online</span>
                 {% else %}
                 <span style="color: red; margin-left: 5px; font-size: 0.5em;">Offline</span>    
                 {% endif %}
@@ -27,16 +27,16 @@
         <!-- Column for logout and all profiles buttons -->
         <div class="col">
             <div style="width: 200px; margin: 20px;">
-                {% if user == request.user %}
+                <!-- {% if user == request.user %}
                 <form method="post" action="{% url 'userManagement:logout' %}">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger btn-block">logout</button>
                 </form>
-                {% endif %} 
-                <a href="{% url 'userManagement:profile_list' %}" class="btn btn-success btn-block">
+                {% endif %}  -->
+                <!-- <a href="{% url 'userManagement:profile_list' %}" class="btn btn-success btn-block">
                     All Profiles
-                </a>
-                <button type="button" class="button" id="allProfilesBtn">AllProfiles</button>
+                </a> -->
+                <button type="button" class="btn buttonblue" id="allProfilesBtn">All Profiles</button>
             </div>
             {% if user != request.user %}
             <div style="width: 200px; margin: 20px;">
@@ -150,13 +150,13 @@
         <div class="card-header text-center text-white bg-purple">
             <h4>Game Stats</h4>
             <div class="d-inline-block float-end">
-                <button class="btn btn-secondary" type="button" id="localGamesButton">
+                <button class="btn buttonblue" type="button" id="localGamesButton">
                     Local Games
                 </button>
-                <button class="btn btn-secondary" type="button" id="remoteGamesButton">
+                <button class="btn buttonblue" type="button" id="remoteGamesButton">
                     Remote Games
                 </button>
-                <button class="btn btn-secondary" type="button" id="aiGamesButton">
+                <button class="btn buttonblue" type="button" id="aiGamesButton">
                     AI Games
                 </button>
             </div>
@@ -312,18 +312,18 @@
 
 {% if user == request.user %}
 <div class="d-flex justify-content-center">
-    <a href="{% url 'userManagement:update_profile' %}" class="btn btn-secondary" role="button" style="margin-right: 15px;">
+    <!-- <a href="{% url 'userManagement:update_profile' %}" class="btn btn-secondary" role="button" style="margin-right: 15px;">
         Change Profile Picture
-    </a>
-    <button type="button" class="button" id="profilePictureBtn">Change Profile Picture</button>
-    <a href="{% url 'userManagement:update_user' %}" class="btn btn-secondary" role="button" style="margin-right: 15px;">
+    </a> -->
+    <button type="button" class="btn buttonblue" id="profilePictureBtn">Change Profile Picture</button>
+    <!-- <a href="{% url 'userManagement:update_user' %}" class="btn btn-secondary" role="button" style="margin-right: 15px;">
         Update Profile Info
-    </a>
-    <button type="button" class="button" id="updateProfileBtn">Update Profile Info</button>
-    <a href="{% url 'userManagement:change_password' %}" class="btn btn-secondary" role="button">
+    </a> -->
+    <button type="button" class="btn buttonblue" id="updateProfileBtn">Update Profile Info</button>
+    <!-- <a href="{% url 'userManagement:change_password' %}" class="btn btn-secondary" role="button">
         Change Password
-    </a>
-    <button type="button" class="button" id="passwordBtn">Change Password</button>
+    </a> -->
+    <button type="button" class="btn buttonblue" id="passwordBtn">Change Password</button>
     {% endif %}
     <div id="modalContainer"></div>
   </div>
