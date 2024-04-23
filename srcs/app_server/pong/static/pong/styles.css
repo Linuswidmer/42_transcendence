@@ -226,3 +226,51 @@ canvas {
     transform: translateX(-50%);
     top: 30px;
 }
+
+/* Style for the tournament */
+body {
+  font-family: Arial, sans-serif;
+}
+.tournament-container {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+.tournament-name {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+.tournament-players {
+  margin-bottom: 20px;
+}
+.tournament-players ul {
+  list-style-type: none;
+  padding: 0;
+}
+.tournament-players li {
+  display: inline-block;
+  margin: 0 5px;
+  padding: 5px 10px;
+  background-color: #f2f2f2;
+  border-radius: 5px;
+}
+.round {
+  margin-bottom: 30px;
+}
+.round-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+.matches-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+.match {
+  margin-right: 20px;
+}
+.match-info {
+  font-size: 16px;
+}

@@ -25,7 +25,6 @@ class Lobby:
 			self.used_generated_names.add(game.matchName)
 		for tm in tournaments:
 			self.used_generated_names.add(tm.tournament_id)
-		print('loaded used names: ', self.used_generated_names)
 
 	#return correct match instance to consumer
 	def get_match_by_player_id(self, player_id):
@@ -127,14 +126,13 @@ class Lobby:
 			print('Name already in use: ', name)
 			name = str(generate())
 		self.used_generated_names.add(name)
-		print('Generate name func() --> ', name)
-		print(self.used_generated_names)
 		return name
 
 	# rename to create_match
-	def add_match(self) -> bool:
+	def add_match(self, modus) -> bool:
+		print('CREATE: ', modus)
 		match_name = self.generate_name()
-		self.matches[match_name] = Match(match_name)
+		self.matches[match_name] = Match(match_name, modus)
 		return match_name
 
 	def create_django_tournament(self, tournament_id):
@@ -143,7 +141,7 @@ class Lobby:
 	async def add_tournament(self, username) -> bool:
 		tournament_id = self.generate_name()
 		print('Create Tournamnet, generated name: ', tournament_id)
-		self.tournaments[tournament_id] = Tournament(tournament_id, 4)
+		self.tournaments[tournament_id] = Tournament(tournament_id, 4, self)
 		self.tournaments[tournament_id].django_tournament = await sync_to_async(self.create_django_tournament)(tournament_id)
 		self.tournaments[tournament_id].players.append(username)
 		# self.registered_players_total.append(username) # Are you sure you need this?
@@ -151,19 +149,16 @@ class Lobby:
 		return tournament_id
 
 	def load_generated_names_db(self):
-		print('Hallo')
 		games = Games.objects.all()
 		tournaments = Tournaments.objects.all()
 		for game in games:
 			self.used_generated_names.add(game.matchName)
 		for tm in tournaments:
 			self.used_generated_names.add(tm.tournament_id)
-
-		print('used names: ', self.used_generated_names)
 	
-	def	create_local_match(self) -> bool:
+	def	create_local_match(self, modus) -> bool:
 		match_id = self.generate_name()
-		return Match(match_id)
+		return Match(match_id, modus)
 
 	def get_match(self, match_id):
 		return self.matches.get(match_id)
@@ -190,10 +185,10 @@ class Lobby:
 	# 	return self.games
 	
 class Match:
-	def __init__(self, match_id, tournament_id=None) -> None:
+	def __init__(self, match_id, modus, tournament_id=None) -> None:
 		#generate unique identifier for group communication
 		self.group_name = match_id
-		self.modus = ""
+		self.modus = modus
 		self.n_registered_players = 0
 		self.registered_players = []
 		self.tournament_id = tournament_id
@@ -206,11 +201,11 @@ class Match:
 			"moveDown": False,
 			"direction": 0,
 		}
-	
+
 	def	change_score(self, username, score):
 		if username in self.registered_players:
 			self.game_data[username]["score"] = score
-		
+
 	def move_paddle(self, username, direction):
 		if username in self.registered_players:
 			if direction == 1:
@@ -248,7 +243,7 @@ class Match:
 	# 		self.registered_players.discard(user_id)
 
 class Tournament:
-	def __init__(self, name, number_players) -> None:
+	def __init__(self, name, number_players, lobby) -> None:
 		self.tournament_name = name
 		self.players = []
 		self.matches = []
@@ -257,6 +252,7 @@ class Tournament:
 		self.django_tournament = None
 		self.visible_in_lobby = True
 		self.number_players = number_players
+		self.lobby = lobby
 		self.generate_matches(number_players)
 
 	def get_registered_players(self):
@@ -268,6 +264,12 @@ class Tournament:
 		self.players.append(user_id)
 		return True
 
+	def get_match_for_player_id(self, player):
+		for match in self.matches:
+			if player in match.registered_players:
+				return match
+		return None
+
 	def generate_matches(self, num_participants):
 		games_per_round = int(num_participants / 2) #start, gets divided by two every time
 		games_added = 0
@@ -277,9 +279,7 @@ class Tournament:
 				games_added = 0
 				games_per_round /= 2
 				current_round += 1
-			match_id = str(generate())
-			while match_id in self.matches and match_id in self.gam:
-				match_id = str(generate())
+			match_id = self.lobby.generate_name()
 			if current_round in self.data:
 				# If the round already exists, add the match to it
 				self.data[current_round][match_id] = {
@@ -295,7 +295,7 @@ class Tournament:
 					}
 				}
 			games_added += 1
-			self.matches.append(Match(match_id, self.tournament_name))
+			self.matches.append(Match(match_id, "remote", self.tournament_name))
 		print(json.dumps(self.data, indent=4))
 
 	def get_match(self, match_id):

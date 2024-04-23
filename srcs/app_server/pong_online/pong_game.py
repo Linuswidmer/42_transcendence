@@ -206,6 +206,7 @@ class Pong:
 	
 	def get_initial_entity_data(self, game_data):
 		player1_id, player2_id = list(game_data.keys())
+		print("Player IDs: ", player1_id, player2_id)
 		return {'entities': {
 					  'ball': {
 						  'entity_type': 'ball',
@@ -213,7 +214,7 @@ class Pong:
 						  'relY': self.ball.y / SCREEN_HEIGHT,
 						  'relBallRadius': BALL_RADIUS / SCREEN_HEIGHT,
 					  },
-					  player1_id: {
+					  player2_id: {
 						  'entity_type': 'paddle',
 						  'screen_pos': 'left',
 						  'relX': self.leftPaddle.x / SCREEN_WIDTH,
@@ -222,7 +223,7 @@ class Pong:
 						  'relPaddleWidth': PADDLE_WIDTH / SCREEN_WIDTH,
 						  "score": self.leftPaddle.score,
 					  },
-					  player2_id: {
+					  player1_id: {
 						  'entity_type': 'paddle',
 						  'screen_pos': 'right',
 						  'relX': self.rightPaddle.x / SCREEN_WIDTH,
@@ -234,28 +235,29 @@ class Pong:
 				},
 		}
 
-
-	async def	update_entities(self, dt, game_data):
-		player1_data, player2_data = list(game_data.values())
-		player1_id, player2_id = list(game_data.keys())
+	async def	update_entities(self, dt, game_data, players):
+		player1_id = players[0]
+		player2_id = players[1]
+		player1_data = game_data[player1_id]
+		player2_data = game_data[player2_id]
 		player1_direction = player1_data["direction"]
 		player2_direction = player2_data["direction"]
 		player1_score = player1_data["score"]
 		player2_score = player2_data["score"]
 
-		self.leftPaddle.move(dt, player1_direction)
-		self.rightPaddle.move(dt, player2_direction)
+		self.leftPaddle.move(dt, player2_direction)
+		self.rightPaddle.move(dt, player1_direction)
 		self.ball.move(dt, self.leftPaddle, self.rightPaddle)
 
 		#the score is set to 3 in the consumer if one user closed the windwo during the game
 		#so we use this information here to end the game and set the scores
 		if (player1_score == WINNING_SCORE):
 			if self.gameDataCollector != None:
-				self.gameDataCollector.makeUserWin(left=True)
+				self.gameDataCollector.makeUserWin(left=False)
 			self.leftPaddle.score = WINNING_SCORE
 		if (player2_score == WINNING_SCORE):
 			if self.gameDataCollector != None:
-				self.gameDataCollector.makeUserWin(left=False)
+				self.gameDataCollector.makeUserWin(left=True)
 			self.rightPaddle.score = WINNING_SCORE
 
 		if (self.rightPaddle.score == WINNING_SCORE or self.leftPaddle.score == WINNING_SCORE):
@@ -268,12 +270,12 @@ class Pong:
 						  'relX': self.ball.x / SCREEN_WIDTH,
 						  'relY': self.ball.y / SCREEN_HEIGHT,
 					  },
-					  player1_id: {
+					  player2_id: {
 						  'relX': self.leftPaddle.x / SCREEN_WIDTH,
 						  'relY': self.leftPaddle.y / SCREEN_HEIGHT,
 						  "score": self.leftPaddle.score,
 					  },
-					  player2_id: {
+					  player1_id: {
 						  'relX': self.rightPaddle.x / SCREEN_WIDTH,
 						  'relY': self.rightPaddle.y / SCREEN_HEIGHT,
 						  "score": self.rightPaddle.score,

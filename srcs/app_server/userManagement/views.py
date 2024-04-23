@@ -21,7 +21,7 @@ def dashboard(request):
 
 def my_view(request):
     if request.user.is_authenticated:
-        return render(request, "onepager/land.html")
+        return render(request, "onepager/land.html", {"username": request.user.username})
     else:
         return render(request, "onepager/stranger.html")
 

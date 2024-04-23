@@ -127,13 +127,10 @@ class apiConsumer(AsyncWebsocketConsumer):
 		else:
 			response = extracted_data
 
-
-
 		# await asyncio.sleep(3)
 		await self.send(
 			text_data=json.dumps(response)
 		)
-
 
 
 class MultiplayerConsumer(AsyncWebsocketConsumer):
@@ -153,6 +150,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		# self.player_id = str(uuid.uuid4())
 		self.username = ""
 		self.game_group_name = ""
+		self.tournament_group_name = ""
 
 		#Load all the game and tournaments from the db, to proof the 
 		# generated later on, to avoid duplicates
@@ -197,13 +195,48 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 		message_type = json_from_client.get("type", "")
 
+		# if a client cloeses the window or leaves the page, this is
 		if message_type == "player_left":
-			print('Player left in receive')
 			if (self.in_game):
 				await self.channel_layer.group_send(
 					self.game_group_name,
 					{"type": "end_game_player_left", "player": json_from_client.get("player", "")},
 				)
+
+		# if the pong_online js was loaded from the client it needs some data
+		# to fill the view
+		if message_type == "get_game_data":
+			#for remote get the match from the lobby. Fix that the key is sent in this request
+			data = {}
+			data["type"] = "send_to_group"
+			data["identifier"] = "deliver_init_game_data"
+
+			#check if the player is in a remote game registered
+			match = self.lobby.get_match_by_player_id(self.username)
+			if not match:
+				print('Found no lobby match')
+				#its not a lobby match but maybe a match in a torunament
+				# since they are not stored in the lobby
+				for tm in self.lobby.tournaments.values():
+					match = tm.get_match_for_player_id(self.username)
+					#then it must be a local match which is hosted by the user
+				if not match:
+					print('Found no tm match')
+					match = self.match
+
+
+			if len(match.registered_players) == 1:
+				data["match_name"] = match.group_name
+				data["player1"] = match.registered_players[0]
+			elif len(match.registered_players) == 2:
+				data["match_name"] = match.group_name
+				data["player1"] = match.registered_players[0]
+				data["player2"] = match.registered_players[1]
+			# await asyncio.sleep(2)
+			await self.channel_layer.group_send(
+				self.game_group_name,
+				data,
+			)
 
 		if message_type == "username":
 			self.username = json_from_client.get("username", "")
@@ -214,13 +247,12 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		# 	await self.join_local_game(json_from_client["modus"])
 
 		if message_type == "start" and self.hosts_game:
-			logger.debug("start game with modus:%s", json_from_client["modus"])
+			logger.debug("start game with modus:%s", self.match.modus)
 			await self.channel_layer.group_send(
 				self.game_group_name,
 				{"type": "send_to_group", "identifier": "start_game"},
 			)
-
-			asyncio.create_task(self.game_loop(json_from_client["modus"]))
+			asyncio.create_task(self.game_loop(self.match.modus))
 
 		if (not self.in_game and message_type == "tournament_lobby_update"):
 			print('JSON from client: ', json_from_client)
@@ -301,7 +333,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 
 		if action == "create":
-			self.lobby.add_match()
+			self.lobby.add_match(modus)
 
 		if action == "leave" and modus == "remote":
 			success, message = self.lobby.leave(self.username, self.match)
@@ -309,7 +341,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				self.in_game = False
 				self.hosts_game = False
 			else:
-				json_from_client["error"] = message			
+				json_from_client["error"] = message
 
 		if action == "create_tournament":
 			tournament_id = await self.lobby.add_tournament(self.username)
@@ -352,6 +384,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		
 
 		if action == "join" and (modus == "local" or modus == "ai"):
+			print('Joined local game')
 			await self.join_local_game(modus)
 			return None
 			
@@ -359,31 +392,33 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		return json_from_client
 
 	async def join_local_game(self, modus):
+		init_data = {}
+		init_data["type"] = "join"
+		init_data["modus"] = modus
+
 		if modus == "ai":
 			local_opponent_name = "AI_Ursula"
 		if modus == 'local':
 			local_opponent_name = 'DUMP_LOCAL'
-		if modus == 'local':
-			local_opponent_name = 'DUMP_LOCAL'
 		self.in_game = True
 		self.hosts_game = True
-		self.match = self.lobby.create_local_match()
-		self.match.add_player_to_gamedata(self.username)
+		self.match = self.lobby.create_local_match(modus)
 		self.match.add_player_to_gamedata(local_opponent_name)
-		self.match.registered_players.append(self.username)
+		self.match.add_player_to_gamedata(self.username)
 		self.match.registered_players.append(local_opponent_name)
+		self.match.registered_players.append(self.username)
 		self.game_group_name = self.match.group_name
+		init_data["match_name"] = self.match.group_name
 		
 		await self.channel_layer.group_add(
 			self.game_group_name, self.channel_name
 		)
-		await self.send(text_data=json.dumps({"type": "join", "modus": modus}))
+		await self.send(text_data=json.dumps(init_data))
 
 	async def join_remote_game(self):
 		self.in_game = True
 		if self.lobby.should_host_game(self.username, self.match):
 			self.hosts_game = True
-		
 		await self.send(text_data=json.dumps({"type": "join", "modus": "remote"}))
 
 
@@ -444,15 +479,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		await self.send(
 			text_data=json.dumps(basic_update)
 		)
-	
-	async def end_game_player_left(self,event):
-		if self.hosts_game:
-			losing_player = event["player"]
-			if self.match.registered_players[0] == losing_player:
-				winning_player = self.match.registered_players[1]
-			else:
-				winning_player = self.match.registered_players[0]
-			self.match.game_data[winning_player]["score"] = 3
 
 	async def send_to_group(self, event):
 		#check again
@@ -518,7 +544,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			# Handle the case where one or both users don't exist
 			raise ValueError("One or both users do not exist.")
 
-		return GameDataCollector(user1=user1, user2=user2, matchName=matchName, type=modus, tournament=tournament)
+		return GameDataCollector(left_player=user1, right_player=user2, matchName=matchName, type=modus, tournament=tournament)
 
 	
 	#i dont think we need a lock here, as we work with the instances own game_data
@@ -526,8 +552,9 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#when an update happens, all game_datas are updated
 	#here we could import the game from another file to keep things separated
 	async def game_loop(self, modus):
-		players = list(self.match.game_data.keys())
-		self.gdc = await sync_to_async(self.create_data_collector)(modus, players[0], players[1], self.match.group_name, self.match.tournament_id)
+		players = self.match.registered_players
+		print(players)
+		self.gdc = await sync_to_async(self.create_data_collector)(modus, players[1], players[0], self.match.group_name, self.match.tournament_id)
 		logger.debug("new game loop started")
 		pong_instance = Pong(self.gdc)
 		FPS = 60
@@ -543,7 +570,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				{"type": "send_to_group", "identifier": "initial_game_data", 
 	 			"initial_entity_data": initial_entity_data,
 				"iteration_time": iteration_time, "modus": modus},
-			)
+		)
 		while should_run:
 			if modus == "ai":
 				if (time.time() - ai_refresh_timer >= AI_REFRESH_THRESHOLD):
@@ -552,7 +579,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				ai_decision = ai.getAIDecision()
 				self.match.game_data["AI_Ursula"]["direction"] = ai_decision
 			#update entities with the iteration_time and keypresses
-			entity_data = await pong_instance.update_entities(iteration_time, self.match.game_data)
+			entity_data = await pong_instance.update_entities(iteration_time, self.match.game_data, self.match.registered_players)
 			should_run = not entity_data["game_over"]
 			#send all entity data to clients, so they can render the game
 			await self.channel_layer.group_send(
@@ -563,8 +590,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 		#Prevent the 'beforeunload' to trigger the end game logic in the end_game_player_left()
 		#and the game is over so it actually makes sense :D
-		print('GAME ENDED')
-
 		self.hosts_game = False
 
 		await self.channel_layer.group_send(
@@ -594,14 +619,15 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		else:
 			tournament = self.lobby.get_tournament(self.match.tournament_id)
 			#delete loser from tournamnt players
+			#userstats1 belongs to he left (so the hosting player), which is the player[1]
 			if self.gdc.django_userstats_1.score == 3:
-				tournament.data[tournament.round][self.match.group_name]["winner"] = players[0]
-				tournament.data[tournament.round][self.match.group_name]["loser"] = players[1]
-				tournament.players.remove(players[1])
-			else:
 				tournament.data[tournament.round][self.match.group_name]["winner"] = players[1]
 				tournament.data[tournament.round][self.match.group_name]["loser"] = players[0]
 				tournament.players.remove(players[0])
+			else:
+				tournament.data[tournament.round][self.match.group_name]["winner"] = players[0]
+				tournament.data[tournament.round][self.match.group_name]["loser"] = players[1]
+				tournament.players.remove(players[1])
 			
 			#delete this match from tournmanet matches
 			tournament.matches.remove(self.match)

@@ -12,8 +12,9 @@
     {% csrf_token %}
     <!-- HEADER -->
     <h1>PONG GAME</h1>
+    <div id="loggedInMessage">Logged in as: </div>
 
-    <div id="loggedInMessage">Logged in as: {{ username }}</div>
+    <div id="userPrompt">Waiting for BLAH to start the game: </div>
 
     <div id="centeredContent">
 
@@ -27,12 +28,9 @@
             </div>
             <canvas id="pongCanvas" width="600" height="400"></canvas>
         </div>
-        <button class="btn buttonblue" id="startButtonRemote">Remote</button>
-		<button class="btn buttonblue" id="startButtonLocal">Local</button>
-		<button class="btn buttonblue" id="startButtonAi">Ai</button>
-		<button class="btn buttonblue" id="leaveGame">leaveGame_backToLobby</button>
+        <button id="startGameButton">Start</button>
+		<button id="leaveGame">leaveGame_backToLobby</button>
     </div>
-
-<script src="{% static 'pong_online/pong_online.js' %}"></script>
+    
 </body>
 </html>

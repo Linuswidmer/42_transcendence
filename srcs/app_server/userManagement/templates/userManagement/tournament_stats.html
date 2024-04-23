@@ -1,13 +1,5 @@
 {% load static %}
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tournament Visualization</title>
-<link rel="stylesheet" type="text/css" href="{% static 'pong_online/styles.css' %}">
-</head>
+{% block content %}
 <body>
 <h1>{{ tm.tournament_id }}</h1>
 <div class="tournament-container">
@@ -21,7 +13,12 @@
         <!-- Rounds will be dynamically added here -->
     </div>
 </div>
+</body>
+</html>
+{% endblock %}
 
+
+{% block extra_scripts %}
 <script>
 	var tournament_data = JSON.parse('{{ tm_data | escapejs }}');
 
@@ -61,12 +58,19 @@
             // Add match info
             const matchLink = document.createElement('a');
             matchLink.classList.add('match-info');
-            if (match.winner != "None"){
-                matchLink.href = '/singleGameStats/?matchName=' + matchKey + '&username=' + match.winner;
+
+            if (match.winner !== "None") {
                 matchLink.innerHTML = `<strong>${matchKey}</strong>: <br>Winner: ${match.winner} <br>Loser: ${match.loser}`;
-            }else{
+            } else {
                 matchLink.innerHTML = `<strong>${matchKey}</strong>: <br>Not played yet!`;
             }
+
+            // Add a click event listener
+            matchLink.addEventListener('click', function(event) {
+                const statsURL = '/singleGameStats/?matchName=' + matchKey + '&username=' + match.winner;
+		        fetch_marie(statsURL);
+            });
+
             matchElement.appendChild(matchLink);
 
             // Append match to matches container
@@ -80,6 +84,4 @@
         roundsContainer.appendChild(roundElement);
     }
 </script>
-
-</body>
-</html>
+{% endblock %}
