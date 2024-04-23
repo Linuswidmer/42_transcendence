@@ -1,10 +1,8 @@
-
+{% extends 'onepager/land.html' %}
 {% load static %}
 {% load socialaccount %}
-<link rel="stylesheet" href="{% static 'pong/styles.css' %}">
-<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-<div id="content">
-<div id="wrapper">
+
+{% block content %}
   <div class="welcome-container">
     <h1>Welcome Stranger</h1>
   </div>
@@ -19,9 +17,9 @@
       <button type="button" class="button" id="42Btn">Sign In with 42</button>
     </div>
     <div id="modalContainer"></div>
-</div>
-  {% include 'includes/footer.html' %}
-</div>
+
+{% endblock %}
+{% block extra_scripts %}
   <script>
     // Event listeners for each button
     document.getElementById("loginBtn").addEventListener("click", function() {
@@ -167,12 +165,12 @@ const csrftoken = getCookie('csrftoken');
  // Function to load logged-in content after successful login
  function loadLoggedInContent() {
   console.log("loading")
-        document.getElementById("wrapper").innerHTML = '';
+        document.getElementById("all").innerHTML = '';
         fetch("/logged_in")
             .then(response => response.text())
             .then(html => {
                 // Replace the content of the main container with the logged-in content
-                document.getElementById("content").innerHTML = html;
+                document.getElementById("all").innerHTML = html;
                 executeJavaScriptInContent(html);
             })
             .catch(error => console.error('Error loading logged-in content:', error));
@@ -198,3 +196,4 @@ function extractErrorMessage(errorMessage) {
     }
 }
 </script>
+{% endblock %}

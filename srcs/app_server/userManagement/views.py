@@ -15,6 +15,8 @@ from .StatsBuilder import StatsBuilder, GameListData
 from pong_online.models import UserGameStats, Tournaments
 import json
 
+def land(request):
+   	return render(request, "onepager/land.html")
 
 def dashboard(request):
 	return render(request, "userManagement/dashboard.html")

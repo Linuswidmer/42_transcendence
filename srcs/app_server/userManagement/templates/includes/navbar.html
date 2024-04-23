@@ -16,18 +16,9 @@
 
     <script>
         document.getElementById('logoBtn').addEventListener('click', function(event) {
-        event.preventDefault();
+            event.preventDefault();
         console.log('Logo button clicked');
-        document.getElementById("content").innerHTML = '';
-        fetch("/logged_in")
-                        .then(response => response.text())
-                        .then(html => {
-                            document.getElementById("content").innerHTML = html;
-                            executeJavaScriptInContent(html);
-                          })
-                        .catch(error => console.error('Error loading landing page:', error));
-                    
-            });
+        });
       document.querySelector('.navbar').addEventListener('click', function(event) {
         const target = event.target;
         if (target.matches('.navbar-button')) {
@@ -35,7 +26,7 @@
             console.log(target.textContent + ' button clicked');
             switch (target.id) {
                 case 'gameBtn':
-                    document.getElementById("content").innerHTML = '';
+                    //document.getElementById("content").innerHTML = '';
                     fetch("/lobby")
                         .then(response => response.text())
                         .then(html => {
