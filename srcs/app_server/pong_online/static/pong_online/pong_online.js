@@ -99,6 +99,12 @@ class Game extends js_wrapper {
         this.iterationTime = null;
 		this.modus = null;
 
+		this.keys = {
+			'KeyA': false,
+			'KeyD': false,
+			'KeyJ': false,
+			'KeyL': false,
+		}
     }
 
 	norm2height(relativeY) {
@@ -131,6 +137,11 @@ class Game extends js_wrapper {
 		this.ws.onmessage = null;
 		this.start_game_button.removeEventListener('click', this.handle_start_game_button_click);
         this.leave_game_button.removeEventListener('click', this.handle_leave_game_button_click);
+
+	}
+
+	handle_beforeunload = () => {
+		this.ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
 	}
 
 	handle_start_game_button_click = () => {
@@ -144,6 +155,18 @@ class Game extends js_wrapper {
 		console.log('leaveButtonclicked');
 	}
 
+	add_event_listener() {
+		window.addEventListener('keydown', this.handle_keydown);
+		window.addEventListener('keyup', this.handle_keyup);
+		window.addEventListener('beforeunload', this.handle_beforeunload);	
+	}
+
+	remove_event_listener() {
+		window.removeEventListener('keydown', this.handle_keydown);
+		window.removeEventListener('keyup', this.handle_keyup);
+		window.removeEventListener('beforeunload', this.handle_beforeunload);
+	}
+
     handle_message(e) {
         try {
             const data = JSON.parse(e.data);
@@ -151,7 +174,6 @@ class Game extends js_wrapper {
 			if (data.type === 'send_to_group') {
 				switch (data.identifier) {
 					case 'deliver_init_game_data':
-						console.log("received, deliver_init:", data);
 						this.handle_game_view_population(data);
 						break;
 					case 'game_end':
@@ -166,21 +188,16 @@ class Game extends js_wrapper {
 						break;
 					case 'initial_game_data':
 						this.handle_initial_game_data(data);
-						this.setup_keys();
-						window.addEventListener('beforeunload', () => {
-							//only send when tehre is a game running
-							this.ws.send(JSON.stringify({'type': 'player_left', 'player': ws.username}));
-						});
+						this.add_event_listener();
 						break;
 					default:
 						console.log('Unknown message', data);
 				}
 			} else if (data.type == 'redirect_to_tournament_stats') {
-				console.log(window.location.origin + '/tournament_stats/' + data.tournament_id)
+				this.remove_event_listener();
 				fetch_with_internal_js('/tournament_stats/' + data.tournament_id);
-				//window.location.href = window.location.origin + '/tournament_stats/' + data.tournament_id;
 			} else if (data.type == 'redirect_to_tournament_lobby') {
-				console.log('/tournament/' + data.tournament_id)
+				this.remove_event_listener();
 				fetch_html_replace_dynamicDIV_activate_js('/tournament/' + data.tournament_id, true, () => {
 					this.ws.send(JSON.stringify({type: 'tournament_lobby_update', 'tournament_id': data.tournament_id}));
 				});
@@ -224,56 +241,47 @@ class Game extends js_wrapper {
 		console.log("modus:", this.modus);
 	}
 
-      setup_keys() {
-      let keys = {
-        'KeyA': false,
-        'KeyD': false,
-        'KeyJ': false,
-        'KeyL': false,
-      };
-
-		window.addEventListener('keydown', (event) => {
-			let data = undefined;
-			if (event.code === 'KeyA' && !keys[event.code]) {
-				keys[event.code] = true;
-				data = {'playerId': this.username, 'type': 'keypress', 'action': 'moveUp'};
-			} else if (event.code === 'KeyD'  && !keys[event.code]) {
-				keys[event.code] = true;
-				data = {'playerId': this.username, 'type': 'keypress', 'action': 'moveDown'};
-			} else if (this.modus === 'local' && event.code === 'KeyJ' && !keys[event.code]) {
-				keys[event.code] = true;
-				data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'moveUp'};
-			} else if (this.modus === 'local' && event.code === 'KeyL'  && !keys[event.code]) {
-				keys[event.code] = true;
-				data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'moveDown'};
-			}
-		
-			if (typeof data !== 'undefined' && this.ws.readyState === WebSocket.OPEN) {
-				this.ws.send(JSON.stringify(data));
-			}
-		});
+	handle_keydown = (event) => {
+		let data = undefined;
+		if (event.code === 'KeyA' && !this.keys[event.code]) {
+			this.keys[event.code] = true;
+			data = {'playerId': this.username, 'type': 'keypress', 'action': 'moveUp'};
+		} else if (event.code === 'KeyD'  && !this.keys[event.code]) {
+			this.keys[event.code] = true;
+			data = {'playerId': this.username, 'type': 'keypress', 'action': 'moveDown'};
+		} else if (this.modus === 'local' && event.code === 'KeyJ' && !this.keys[event.code]) {
+			this.keys[event.code] = true;
+			data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'moveUp'};
+		} else if (this.modus === 'local' && event.code === 'KeyL'  && !this.keys[event.code]) {
+			this.keys[event.code] = true;
+			data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'moveDown'};
+		}
+	
+		if (typeof data !== 'undefined' && this.ws.readyState === WebSocket.OPEN) {
+			this.ws.send(JSON.stringify(data));
+		}
+	}
 				
-		window.addEventListener('keyup', (event) => {
-			let data = undefined;
-			if (event.code === 'KeyA') {
-				keys[event.code] = false;
-				data = {'playerId': this.username, 'type': 'keypress', 'action': 'stopMoveUp'};
-			} else if (event.code === 'KeyD') {
-				keys[event.code] = false;
-				data = {'playerId': this.username, 'type': 'keypress', 'action': 'stopMoveDown'};
-			} else if (this.modus === 'local' && event.code === 'KeyJ') {
-				keys[event.code] = false;
-				data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'stopMoveUp'};
-			} else if (this.modus === 'local' && event.code === 'KeyL') {
-				keys[event.code] = false;
-				data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'stopMoveDown'};
-			}
-		
-			if (typeof data !== 'undefined' && this.ws.readyState === WebSocket.OPEN) {
-				this.ws.send(JSON.stringify(data));
-			}
-		});
-    }
+	handle_keyup= (event) => {
+		let data = undefined;
+		if (event.code === 'KeyA') {
+			this.keys[event.code] = false;
+			data = {'playerId': this.username, 'type': 'keypress', 'action': 'stopMoveUp'};
+		} else if (event.code === 'KeyD') {
+			this.keys[event.code] = false;
+			data = {'playerId': this.username, 'type': 'keypress', 'action': 'stopMoveDown'};
+		} else if (this.modus === 'local' && event.code === 'KeyJ') {
+			this.keys[event.code] = false;
+			data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'stopMoveUp'};
+		} else if (this.modus === 'local' && event.code === 'KeyL') {
+			this.keys[event.code] = false;
+			data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'stopMoveDown'};
+		}
+	
+		if (typeof data !== 'undefined' && this.ws.readyState === WebSocket.OPEN) {
+			this.ws.send(JSON.stringify(data));
+		}
+	}
 
 	handle_game_update(data) {
 		let server_entities = data.entity_data.entities;
@@ -294,6 +302,7 @@ class Game extends js_wrapper {
 
 	handle_game_over(data) {
 		//clear the local entities, they get loaded again for a new game
+		this.remove_event_listener();
 		const statsURL = '/singleGameStats/?matchName=' + data.matchName + '&username=' + data.user;
 		fetch_with_internal_js(statsURL);
 	}
