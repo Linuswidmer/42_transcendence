@@ -1,5 +1,5 @@
 <!-- dwitter/templates/dwitter/profile.html -->
- 
+
 {% load static %}
 {% block content %}
 
@@ -14,12 +14,12 @@
 
         <!-- Column for name and logged in status -->
         <div class="col">
-            <h2 class="text-center my-4 stylish-font"> 
-                {{user.username}}'s Profile 
+            <h2 class="text-center my-4 stylish-font">
+                {{user.username}}'s Profile
                 {% if user.profile.logged_in is True  %}
                 <span style="color: rgb(4, 177, 4); margin-left: 5px; font-size: 0.5em;">Online</span>
                 {% else %}
-                <span style="color: red; margin-left: 5px; font-size: 0.5em;">Offline</span>    
+                <span style="color: red; margin-left: 5px; font-size: 0.5em;">Offline</span>
                 {% endif %}
             </h2>
         </div>
@@ -211,10 +211,15 @@
                             <tbody>
                                 {% for gld in stats.gameListData %}
                                 <tr>
-                                    <td class="text-center"><a href="/singleGameStats?matchName={{ gld.game.matchName }}&username={{ gld.userGameStats.user.username }}">{{ gld.game.matchName }}</a></td>
+                                    <td class="text-center">
+                                      <button type="button"  class="btn buttonblue statsGameBtn" data-matchName="{{ gld.game.matchName }}" data-username="{{ gld.userGameStats.user.username }}">{{ gld.game.matchName }}</button>
+                                    </td>
+
                                     <td class="text-center">{{ gld.game.matchDate }} {{ gld.game.matchTime }} </td>
                                     {% if gld.opponentGameStats.user != None %}
-                                    <td class="text-center"><a href="/profile/{{ gld.opponentGameStats.user }}">{{ gld.opponentGameStats.user }}</a></td>
+                                    <td class="text-center">
+                                      <button type="button"  class="btn buttonblue profileBtn" data-opponent="{{ gld.opponentGameStats.user }}">{{ gld.opponentGameStats.user }}</button>
+                                    </td>
                                     {% endif %}
                                     {% if gld.opponentGameStats.user == None %}
                                     <td class="text-center">Guest</td>
@@ -332,6 +337,23 @@
 {% block extra_scripts %}
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
+  document.querySelectorAll(".profileBtn").forEach(button => {
+        button.addEventListener("click", function() {
+            console.log("profileOtherBtn clicked");
+            // Fetch the profile page for the specific user associated with the clicked button
+            const opponent = this.dataset.opponent; // Retrieve username from data attribute
+            console.log(opponent);
+            const url = `/profile/${opponent}/`; // Construct the URL with the username
+            fetch(url)
+         .then(response => response.text())
+         .then(html => {
+             document.getElementById("content").innerHTML = '';
+             document.getElementById("content").innerHTML = html;
+             executeJavaScriptInContent(html);
+             })
+             .catch(error => console.error('Error loading profiles page:', error));
+     });
+});
     document.getElementById("allProfilesBtn").addEventListener("click", function() {
         console.log("allProfilesBtn");
         fetch("{% url 'userManagement:profile_list' %}")
@@ -343,6 +365,26 @@
             })
             .catch(error => console.error('Error loading profiles page:', error));
     });
+    document.querySelectorAll(".statsGameBtn").forEach(button => {
+        button.addEventListener("click", function() {
+            console.log("statsGameBtn clicked");
+            // Fetch the profile page for the specific user associated with the clicked button
+            const username = this.dataset.username;
+            console.log(username);
+            const matchName = this.dataset.matchname;
+            console.log(matchName);
+            const url = `/singleGameStats?matchName=${matchName}&username=${username}/`;
+            renderForm(url, "StatsGame", "Game stats");
+        //     fetch(url)
+        //  .then(response => response.text())
+        //  .then(html => {
+        //      document.getElementById("content").innerHTML = '';
+        //      document.getElementById("content").innerHTML = html;
+        //      executeJavaScriptInContent(html);
+        //      })
+        //      .catch(error => console.error('Error loading profiles page:', error));
+          });
+      });
     document.getElementById("profilePictureBtn").addEventListener("click", function() {
         console.log("profilePictureBtn");
         renderForm("{% url 'userManagement:update_profile' %}", "profilePicture", "Change Profile Picture");
@@ -368,7 +410,7 @@
       // Create a modal using the fetched HTML content
       const modalHtml = `
             <div class="modal fade" id="${containerId}Modal" tabindex="-1" role="dialog" aria-labelledby="${containerId}ModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
+                <div class="modal-dialog modal-dialog-scrollable" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="${containerId}ModalLabel">${title}</h5>

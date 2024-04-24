@@ -183,13 +183,16 @@ def navigation(request):
 def single_game_stats(request):
 	matchName = request.GET.get('matchName')
 	username = request.GET.get('username')
+	username = username.rstrip('/')
+	print("Username received in view:", username)
+	print("Matchname received in view:", matchName)
 	user = User.objects.get(username=username)
 	sb = StatsBuilder(user)
 	sb.build()
 	for gld in sb.gameListData:
 		if gld.game.matchName == matchName:
 			return render(request, "userManagement/single_game_stats.html", {"gld": gld})
-		
+
 def tournament_stats(request, tournament_name):
 	tournament = Tournaments.objects.get(tournament_id=tournament_name)
 	return render(request, "userManagement/tournament_stats.html", {"tm_name": tournament.tournament_id, "tm_data": json.dumps(tournament.data)})
