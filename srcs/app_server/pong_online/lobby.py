@@ -112,13 +112,12 @@ class Lobby:
 			return False, "match does not exist"
 		elif username not in match.get_registered_players():
 			return False, "player not registered for this match"
-		print("before remove player:", match.get_registered_players())
-		self.remove_registered_player(username)
 		match.leave_match(username)
-		print("after remove player:", match.get_registered_players())
-		if len(match.get_registered_players()) == 0:
-			print("DELETING MATCH")
-			self.delete_match(match)
+		del match.game_data[username]
+		if (match.modus == "remote"):
+			self.remove_registered_player(username)
+			if len(match.get_registered_players()) == 0:
+				self.delete_match(match)
 		return True, ""
 	
 	#player in second position in registered players hosts the game

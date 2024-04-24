@@ -205,6 +205,7 @@ class Pong:
 		self.screen_height = SCREEN_HEIGHT
 	
 	def get_initial_entity_data(self, game_data):
+		print(game_data)
 		player1_id, player2_id = list(game_data.keys())
 		print("Player IDs: ", player1_id, player2_id)
 		return {'entities': {

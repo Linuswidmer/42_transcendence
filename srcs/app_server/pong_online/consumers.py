@@ -206,37 +206,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		# if the pong_online js was loaded from the client it needs some data
 		# to fill the view
 		if message_type == "get_game_data":
-			#for remote get the match from the lobby. Fix that the key is sent in this request
-			data = {}
-			data["type"] = "send_to_group"
-			data["identifier"] = "deliver_init_game_data"
-
-			#check if the player is in a remote game registered
-			match = self.lobby.get_match_by_player_id(self.username)
-			if not match:
-				print('Found no lobby match')
-				#its not a lobby match but maybe a match in a torunament
-				# since they are not stored in the lobby
-				for tm in self.lobby.tournaments.values():
-					match = tm.get_match_for_player_id(self.username)
-					#then it must be a local match which is hosted by the user
-				if not match:
-					print('Found no tm match')
-					match = self.match
-
-
-			if len(match.registered_players) == 1:
-				data["match_name"] = match.group_name
-				data["player1"] = match.registered_players[0]
-			elif len(match.registered_players) == 2:
-				data["match_name"] = match.group_name
-				data["player1"] = match.registered_players[0]
-				data["player2"] = match.registered_players[1]
-			# await asyncio.sleep(2)
-			await self.channel_layer.group_send(
-				self.game_group_name,
-				data,
-			)
+			await self.send_initial_game_view_data()
 
 		if message_type == "username":
 			self.username = json_from_client.get("username", "")
@@ -287,6 +257,34 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	 			"action": json_from_client.get("action", "")},
 			)
 
+	async def send_initial_game_view_data(self):
+		#for remote get the match from the lobby. Fix that the key is sent in this request
+		data = {}
+		data["type"] = "send_to_group"
+		data["identifier"] = "deliver_init_game_data"
+
+		#Find 
+		match = self.lobby.get_match_by_player_id(self.username)
+		if not match:
+			for tm in self.lobby.tournaments.values():
+				match = tm.get_match_for_player_id(self.username)
+			if not match:
+				match = self.match
+
+		data["modus"] = match.modus
+		if len(match.registered_players) == 1:
+			data["match_name"] = match.group_name
+			data["player1"] = match.registered_players[0]
+		elif len(match.registered_players) == 2:
+			data["match_name"] = match.group_name
+			data["player1"] = match.registered_players[0]
+			data["player2"] = match.registered_players[1]
+		# await asyncio.sleep(2)
+		await self.channel_layer.group_send(
+			self.game_group_name,
+			data,
+		)
+
 	#register: put consumer in group (match_id as group_name) -> thats were game updates will be published to
 	async def process_lobby_update_in_consumer(self, json_from_client):
 		action = json_from_client.get("action", "")
@@ -333,17 +331,20 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				else:
 					json_from_client["error"] = message
 
-
 		if action == "create":
 			if self.lobby.check_user_registered(self.username):
 				await self.send(text_data=json.dumps({"type": "error", "message": "player is alredy registered"}))
 				return None
 			self.lobby.add_match(modus)
 
-		if action == "leave" and modus == "remote":
+		if action == "leave":
 			success, message = self.lobby.leave(self.username, self.match)
 			if success:
+				await self.send_initial_game_view_data()
+				self.game_group_name = ""
+				self.tournament_group_name = ""
 				self.in_game = False
+				self.match = None
 				self.hosts_game = False
 			else:
 				json_from_client["error"] = message
