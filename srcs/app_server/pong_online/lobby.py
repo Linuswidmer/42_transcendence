@@ -47,10 +47,12 @@ class Lobby:
 	
 	def check_user_registered(self, username):
 		if username in self.registered_players_total:
+			print('check user: is in self.registered_players_total')
 			return True
 		for tournament_id in self.tournaments:
 			tournament = self.get_tournament(tournament_id)
 			if username in tournament.players:
+				print('check user: is in tournament.players')
 				return True
 		return False
 	
@@ -60,6 +62,7 @@ class Lobby:
 		if not match:
 			return False, "match does not exist"
 		elif username in self.registered_players_total:
+			print("Already registered in Match")
 			return False, "player already registered"
 		elif not (match.register_player(username)):
 			return False, "game full"
@@ -75,6 +78,7 @@ class Lobby:
 		if not tournament:
 			return False, "tournament does not exist"
 		elif username in self.registered_players_total:
+			print("Already registered in Match")
 			return False, "player already registered"
 		elif not (tournament.register_player(username)):
 			return False, "tournament full"
@@ -176,6 +180,9 @@ class Lobby:
 		
 	def delete_match(self, match):
 		del self.matches[match.group_name]
+	
+	def delete_tournament(self, tournament):
+		del self.tournaments[tournament.tournament_name]
 
 	# 	#generate unique identifier for match_id
 	# 	#will also be used for group communication

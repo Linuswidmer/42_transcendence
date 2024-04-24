@@ -295,10 +295,9 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 		#check if registered -> if not try to register then join
 		if action == "join" and modus == "remote":
-			
 			# if user already registered -> error
 			if self.lobby.check_user_registered(self.username) and not tournament_id:
-				await self.send(text_data=json.dumps({"type": "error", "message": "player is alredy registered"}))
+				await self.send(text_data=json.dumps({"type": "error", "message": "Cannot join match: player is already registered"}))
 				return None
 			
 			match = self.lobby.get_match_by_player_id(self.username)
@@ -333,7 +332,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 		if action == "create":
 			if self.lobby.check_user_registered(self.username):
-				await self.send(text_data=json.dumps({"type": "error", "message": "player is alredy registered"}))
+				await self.send(text_data=json.dumps({"type": "error", "message": "Cannot create match: player is already registered"}))
 				return None
 			self.lobby.add_match(modus)
 
@@ -351,7 +350,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 		if action == "create_tournament":
 			if self.lobby.check_user_registered(self.username):
-				await self.send(text_data=json.dumps({"type": "error", "message": "player is alredy registered"}))
+				await self.send(text_data=json.dumps({"type": "error", "message": "Cannot create tournament: player is already registered"}))
 				return None
 			tournament_id = await self.lobby.add_tournament(self.username)
 			await self.send(text_data=json.dumps({"type": "join_tournament", "tournament_id": tournament_id}))
@@ -361,7 +360,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 		if action == "join_tournament":
 			if self.lobby.check_user_registered(self.username):
-				await self.send(text_data=json.dumps({"type": "error", "message": "player is alredy registered"}))
+				await self.send(text_data=json.dumps({"type": "error", "message": "Cannot join tournament: player is already registered"}))
 				return None
 			success, message = self.lobby.register_player_tournament(self.username, tournament_id)
 			if success:
@@ -375,6 +374,11 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		if action == "leave_tournament":
 			success, message = self.lobby.unregister_player_tournament(self.username, tournament_id)
 			if success:
+				self.game_group_name = ""
+				self.tournament_group_name = ""
+				self.in_game = False
+				self.match = None
+				self.hosts_game = False
 				await self.send(text_data=json.dumps({"type": "leave_tournament", "tournament_id": tournament_id}))
 				await self.channel_layer.group_discard(
     				tournament_id, self.channel_name
@@ -397,7 +401,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 		if action == "join" and (modus == "local" or modus == "ai"):
 			if self.lobby.check_user_registered(self.username):
-				await self.send(text_data=json.dumps({"type": "error", "message": "player is alredy registered"}))
+				await self.send(text_data=json.dumps({"type": "error", "message": "Cannot join match: player is already registered"}))
 				return None
 			
 			await self.join_local_game(modus)
@@ -468,12 +472,12 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 		if "error" in event and self.username in event["username"]:
 			basic_update["error"] = event["error"]
-		
+
 		if "action" in event and "redirect_to_tournament_stats" in event["action"]:
 			await self.send(
 				text_data=json.dumps({"type": "redirect_to_tournament_stats", "tournament_id": event["tournament_id"]})
 			)
-			return None			
+			return None
 
 		tournament_id = event["tournament_id"]
 		tournament = self.lobby.tournaments[tournament_id]
@@ -658,6 +662,9 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 					self.match.tournament_id,
 					{"type": "group_tournament_update", "action": "redirect_to_tournament_stats", "tournament_id": self.match.tournament_id},
 				)
+				print('Before: ', self.lobby.tournaments)
+				self.lobby.delete_tournament(tournament)
+				print('After: ',self.lobby.tournaments)
 				del tournament
 				#here the group could be deleted
 				return
