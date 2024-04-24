@@ -1,6 +1,8 @@
-import Lobby from "./lobby.js";
-import Game from "./pong_online.js"
-import TournamentLobby from "./tournament.js"
+import Lobby from "../pong_online/lobby.js";
+import Game from "../pong_online/pong_online.js"
+import TournamentLobby from "../pong_online/tournament.js"
+import "./navbar.js"
+import "./stranger.js"
 
 const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
 	// const wsUrl = protocol + `://${window.location.host}/ws/pong/${roomName}/`; // this has to be modified to be a unique identifier
@@ -22,6 +24,8 @@ const game = new Game(ws, username);
 const tournament_lobby = new TournamentLobby(ws, username);
 
 let active_script = null;
+
+
 
 function extractUntilSecondSlash(inputString) {
 	var firstSlashIndex = inputString.indexOf('/');
@@ -109,4 +113,21 @@ function executeJavaScriptInContent(html) {
 	});
 }
 
-export {fetch_html_replace_dynamicDIV_activate_js, fetch_with_internal_js};
+function getCookie(name) {
+	let cookieValue = null;
+	if (document.cookie && document.cookie !== '') {
+		const cookies = document.cookie.split(';');
+		for (let i = 0; i < cookies.length; i++) {
+			const cookie = cookies[i].trim();
+			// Does this cookie string begin with the name we want?
+			if (cookie.substring(0, name.length + 1) === (name + '=')) {
+				cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+				break;
+			}
+		}
+	}
+	return cookieValue;
+}
+
+
+export {fetch_html_replace_dynamicDIV_activate_js, fetch_with_internal_js, getCookie, executeJavaScriptInContent};
