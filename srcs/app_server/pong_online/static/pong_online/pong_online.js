@@ -147,7 +147,7 @@ class Game extends js_wrapper {
     handle_message(e) {
         try {
             const data = JSON.parse(e.data);
-			console.log("pong message: ", data)
+			//console.log("pong message: ", data)
 			if (data.type === 'send_to_group') {
 				switch (data.identifier) {
 					case 'deliver_init_game_data':
@@ -200,6 +200,7 @@ class Game extends js_wrapper {
 	}
 
 	handle_initial_game_data(data) {
+		this.entities = [];
 		var prompt = document.getElementById('userPrompt');
 		prompt.textContent = "Good Luck - Play SAUBER!"
 
@@ -292,6 +293,7 @@ class Game extends js_wrapper {
 	}
 
 	handle_game_over(data) {
+		//clear the local entities, they get loaded again for a new game
 		const statsURL = '/singleGameStats/?matchName=' + data.matchName + '&username=' + data.user;
 		fetch_with_internal_js(statsURL);
 	}
