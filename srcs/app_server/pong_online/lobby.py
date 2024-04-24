@@ -45,6 +45,15 @@ class Lobby:
 				tournament_players[tournament_id] = players
 		return tournament_players
 	
+	def check_user_registered(self, username):
+		if username in self.registered_players_total:
+			return True
+		for tournament_id in self.tournaments:
+			tournament = self.get_tournament(tournament_id)
+			if username in tournament.players:
+				return True
+		return False
+	
 	# rename to join match
 	def register_player_match(self, username, match):
 		#match = self.get_match(match_id)

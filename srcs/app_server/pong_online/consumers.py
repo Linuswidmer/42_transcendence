@@ -296,12 +296,18 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		
 
 		#check if registered -> if not try to register then join
-		# if registered -> try to join immediately
 		if action == "join" and modus == "remote":
+			
+			# if user already registered -> error
+			if self.lobby.check_user_registered(self.username) and not tournament_id:
+				await self.send(text_data=json.dumps({"type": "error", "message": "player is alredy registered"}))
+				return None
+			
 			match = self.lobby.get_match_by_player_id(self.username)
-			#player is not registered at all -> register
+			
+			#register user and add to game group
 			if not match:
-				# if match has tournament id get the match from tournament and not lobby
+				# if match has tournament id get the match from tournament and not the lobby
 				if tournament_id != None:
 					tournament = self.lobby.get_tournament(tournament_id)
 					match = tournament.get_match(match_id)
@@ -319,20 +325,19 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				else:
 					json_from_client["error"] = message
 
-			#player is registered to this game -> join
+			#if user is registered to this game -> join
 			if match.group_name == match_id:
 				success, message = self.lobby.join(self.username, match)
 				if success:
 					await self.join_remote_game()
-					# return None
 				else:
 					json_from_client["error"] = message
-			#player is registered, but to a diffrent match -> cannot join
-			else:
-				json_from_client["error"] = "player cannot join, already registered to a different game"
 
 
 		if action == "create":
+			if self.lobby.check_user_registered(self.username):
+				await self.send(text_data=json.dumps({"type": "error", "message": "player is alredy registered"}))
+				return None
 			self.lobby.add_match(modus)
 
 		if action == "leave" and modus == "remote":
@@ -344,6 +349,9 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				json_from_client["error"] = message
 
 		if action == "create_tournament":
+			if self.lobby.check_user_registered(self.username):
+				await self.send(text_data=json.dumps({"type": "error", "message": "player is alredy registered"}))
+				return None
 			tournament_id = await self.lobby.add_tournament(self.username)
 			await self.send(text_data=json.dumps({"type": "join_tournament", "tournament_id": tournament_id}))
 			await self.channel_layer.group_add(
@@ -351,6 +359,9 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			)
 
 		if action == "join_tournament":
+			if self.lobby.check_user_registered(self.username):
+				await self.send(text_data=json.dumps({"type": "error", "message": "player is alredy registered"}))
+				return None
 			success, message = self.lobby.register_player_tournament(self.username, tournament_id)
 			if success:
 				await self.send(text_data=json.dumps({"type": "join_tournament", "tournament_id": tournament_id}))
@@ -384,7 +395,10 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		
 
 		if action == "join" and (modus == "local" or modus == "ai"):
-			print('Joined local game')
+			if self.lobby.check_user_registered(self.username):
+				await self.send(text_data=json.dumps({"type": "error", "message": "player is alredy registered"}))
+				return None
+			
 			await self.join_local_game(modus)
 			return None
 			

@@ -75,19 +75,22 @@ class Lobby extends js_wrapper {
 				case 'lobby_update':
 					this.update_lobby(data);
 					break;
-					case 'join':
+				case 'join':
 					this.join_game(data.modus);
 					break;
-					case 'join_tournament':
-						this.join_tournament(data);
-						break;
-						default:
-							console.log('Unknown message', data);
-						}
-					} catch (error) {
-						console.log('Error parsing JSON:', error);
-					}
+				case 'join_tournament':
+					this.join_tournament(data);
+					break;
+				case 'error':
+					alert(data.message);
+					break;
+				default:
+					console.log('Unknown message', data);
+			}
+		} catch (error) {
+				console.log('Error parsing JSON:', error);
 		}
+	}
 				
 		handle_create_game_button_click = () => {
 			console.log("Create game button clicked");
