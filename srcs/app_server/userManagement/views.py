@@ -43,7 +43,7 @@ def register_user(request):
 			user.groups.add(registered_users)
 			user.save()
 			login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-			return redirect(reverse('userManagement:profile'))
+			return redirect(reverse('userManagement:profile', args=[user.username]))
 		else:
 			return render(
 			request, "userManagement/register.html",
@@ -85,7 +85,7 @@ def update_user(request):
 		form = CustomUserChangeForm(request.POST, instance=request.user)
 		if form.is_valid():
 			user = form.save()
-			return redirect(reverse('userManagement:profile'))
+			return redirect(reverse('userManagement:profile', args=[user.username]))
 		else:
 			return render(
 			request, "userManagement/register.html",

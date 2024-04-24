@@ -107,12 +107,6 @@
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
       const scriptElements = doc.querySelectorAll('script');
-
-
-    //   scriptElements.forEach(script => {
-
-    //        eval(script.textContent);
-    //   });
       scriptElements.forEach(script => {
         const scriptContent = script.textContent.trim();
         if (scriptContent) {

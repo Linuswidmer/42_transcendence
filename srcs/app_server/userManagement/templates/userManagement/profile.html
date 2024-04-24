@@ -427,7 +427,14 @@ console.log("triggered")
                         modal.classList.remove('show');
                         modal.style.display = 'none';
                         if (containerId == 'profilePicture' || containerId == 'updateProfile'){
-                            reloadProfilePage();
+                            fetch(response.url)
+                            .then(response => response.text())
+                            .then(html => {
+                                // Replace the content of the main container with the logged-in content
+                                document.getElementById("content").innerHTML = html;
+                                executeJavaScriptInContent(html);
+                            })
+                            .catch(error => console.error('Error loading logged-in content:', error));
                         }
                     } else {
                         // Login failed
@@ -463,12 +470,12 @@ console.log("triggered")
             const url = `/profile/${opponent}/`; // Construct the URL with the username
             fetch(url)
             .then(response => response.text())
-         .then(html => {
-             document.getElementById("content").innerHTML = '';
-             document.getElementById("content").innerHTML = html;
-             executeJavaScriptInContent(html);
-             })
-             .catch(error => console.error('Error loading profiles page:', error));
+            .then(html => {
+                document.getElementById("content").innerHTML = '';
+                document.getElementById("content").innerHTML = html;
+                executeJavaScriptInContent(html);
+                })
+                .catch(error => console.error('Error loading profiles page:', error));
      });
 });
     document.getElementById("allProfilesBtn").addEventListener("click", function() {
@@ -494,23 +501,6 @@ console.log("triggered")
             renderForm(url, "StatsGame", "Game stats");
            });
       });
-
-
-function reloadProfilePage() {
-  console.log("loading")
-        document.getElementById("content").innerHTML = '';
-        fetch("/profile")
-            .then(response => response.text())
-            .then(html => {
-                // Replace the content of the main container with the logged-in content
-                document.getElementById("content").innerHTML = html;
-                executeJavaScriptInContent(html);
-            })
-            .catch(error => console.error('Error loading logged-in content:', error));
-    }
-
-
-
 
 // Function to extract the error message from the provided HTML
 function extractErrorMessage(errorMessage) {
