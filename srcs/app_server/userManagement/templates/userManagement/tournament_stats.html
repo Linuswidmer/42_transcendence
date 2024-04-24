@@ -19,7 +19,7 @@
 
 
 {% block extra_scripts %}
-<script>
+<script type="module">
 	var tournament_data = JSON.parse('{{ tm_data | escapejs }}');
 
     const tournamentNameElement = document.getElementById('tournamentName');
