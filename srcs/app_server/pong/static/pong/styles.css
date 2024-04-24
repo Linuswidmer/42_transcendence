@@ -63,8 +63,8 @@
 /* ---------------------------- MAIN -------------------------------*/
 
 body, html {
-  background-color: #6a0dad; /* Light gray background */
-  color: #fff;
+  background-color: #fff; /* Light gray background */
+  color: #6a0dad;
   margin: 0;
   padding: 0;
   height: 100%;
@@ -83,9 +83,9 @@ body, html {
   align-items: center;
   height: 100vh;
   flex: 1; /* Make content area take up remaining space */
-  background-color: #6a0dad;
+  background-color: #fff;
   padding-bottom: 100;
-  min-height: calc(100vh - 100px); 
+  min-height: calc(100vh - 100px);
 }
 
 .welcome-container {
@@ -146,7 +146,7 @@ label {
   display: inline-block;
   margin: 10px;
   padding: 15px 30px;
-  color: #6a0dad !important; 
+  color: #6a0dad !important;
   text-decoration: none;
   border-radius: 5px;
   transition: background-color 0.3s, background-color 0.3s;
@@ -161,7 +161,7 @@ label {
 /* ---------------------------- MODALS -------------------------------*/
 
 .modalContainer, .modal-header {
-  background-color: #6a0dad; /* Light gray background */
+  background-color: #fff; /* Light gray background */
   font-family: Arial, sans-serif;
   color: #03EEF5;
 }
@@ -171,12 +171,15 @@ label {
 }
 
 .card{
+  background-color: #6a0dad;
   border: 2px solid rgba(3, 238, 245, 1) !important;
 }
 .card-header{
   border-bottom: 2px solid rgba(3,238,245,1) !important;
 }
-
+.card-body {
+  background-color: rgba(106, 13, 173, 0.5) !important;
+}
 .close {
   color: #03EEF5 !important;
   text-shadow: none !important;
