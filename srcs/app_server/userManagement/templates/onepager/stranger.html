@@ -122,11 +122,18 @@
                             response.text().then(errorMessage => {
                             var extractedMessage = extractErrorMessage(errorMessage);
                             const modal = document.getElementById(`${containerId}Modal`);
-                            const errorContainer = document.createElement("div");
-                            errorContainer.classList.add("alert", "alert-danger");
-                            errorContainer.textContent = extractedMessage;
-                            modal.querySelector(".modal-body").appendChild(errorContainer);
-                        });
+                            const errorContainer = modal.querySelector(".modal-body .alert.alert-danger");
+                            if (errorContainer) {
+                                // If error container exists, replace its content
+                                errorContainer.textContent = extractedMessage;
+                            } else {
+
+                            const newErrorContainer = document.createElement("div");
+                            newErrorContainer.classList.add("alert", "alert-danger");
+                            newErrorContainer.textContent = extractedMessage;
+                            modal.querySelector(".modal-body").appendChild(newErrorContainer);
+                            }
+                          });
                     }})
                     .catch(error => console.error('Error:', error));
                     });
