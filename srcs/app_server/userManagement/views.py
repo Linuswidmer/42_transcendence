@@ -22,10 +22,11 @@ def dashboard(request):
 	return render(request, "userManagement/dashboard.html")
 
 def my_view(request):
-    if request.user.is_authenticated:
-        return render(request, "onepager/land.html")
-    else:
-        return render(request, "onepager/stranger.html")
+	if request.user.is_authenticated:
+		return render(request, "onepager/land.html")
+	else:
+		return render(request, "onepager/stranger.html")
+
 
 #view for registering a new user
 def register_user(request):
@@ -140,19 +141,20 @@ def profile_list(request):
 
 @login_required
 def profile(request, username):
-    user = get_object_or_404(User, username=username)
-    sb = StatsBuilder(user)
-    sb.build()
-    if request.method == "POST":
-        current_user_profile = request.user.profile
-        data = request.POST
-        action = data.get("follow")
-        if action == "follow":
-            current_user_profile.follows.add(user.profile)
-        elif action == "unfollow":
-            current_user_profile.follows.remove(user.profile)
-        current_user_profile.save()
-    return render(request, "userManagement/profile.html", {"user": user, "stats": sb})
+	user = get_object_or_404(User, username=username)
+	sb = StatsBuilder(user)
+	sb.build()
+	if request.method == "POST":
+		print("post")
+		current_user_profile = request.user.profile
+		data = request.POST
+		action = data.get("follow")
+		if action == "follow":
+			current_user_profile.follows.add(user.profile)
+		elif action == "unfollow":
+			current_user_profile.follows.remove(user.profile)
+		current_user_profile.save()
+	return render(request, "userManagement/profile.html", {"user": user, "stats": sb})
 
 
 def logged_in(request):

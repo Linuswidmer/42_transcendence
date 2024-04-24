@@ -19,17 +19,17 @@
   {% if user.is_authenticated %}
     <div id="navbar">
       <div class="navbar navbar-light" style="background-color: #6a0dad;">
-        <button class="navbar-button" id="logoBtn"> 
+        <button class="navbar-button" id="logoBtn">
             <img src="{% static 'pong/pong_logo.png' %}" alt="Logo" class="logo">
         </button>
           <div>
               <button class="navbar-button" id="gameBtn">Play</button>
-              <button class="navbar-button" id="profileBtn" data-username="{{ user.username }}">Dashboard</button>
+              <button class="navbar-button" id="profileBtn">Dashboard</button>
             </div>
             <div>
                 <button class="navbar-button" id="logoutBtn">Logout</button>
             </div>
-        </div>    
+        </div>
     </div>
     {% endif %}
     <div id="content">
@@ -67,10 +67,8 @@
                       .catch(error => console.error('Error loading game page:', error));
                   break;
               case 'profileBtn':
-              const username =  this.dataset.username; // Retrieve username from data attribute
-          console.log(username);
-          const url = `/profile/{{ user.username }}/`; // Construct the URL with the username
-          fetch(url)
+                const url = `/profile/{{ user.username }}/`; // Construct the URL with the username
+                fetch(url)
                       .then(response => response.text())
                       .then(html => {
                           document.getElementById("content").innerHTML = html;
@@ -109,12 +107,22 @@
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
       const scriptElements = doc.querySelectorAll('script');
-      //console.log(scriptElements[0].textContent);
-      //console.log(scriptElements[1].textContent);
-      //eval(scriptElements[1].textContent)
+
+
+    //   scriptElements.forEach(script => {
+
+    //        eval(script.textContent);
+    //   });
       scriptElements.forEach(script => {
-           eval(script.textContent);
-      });
+        const scriptContent = script.textContent.trim();
+        if (scriptContent) {
+            // Create a new script element and set its content to execute
+            const newScript = document.createElement('script');
+            newScript.textContent = scriptContent;
+            // Append the script to the document head to execute it
+            document.head.appendChild(newScript);
+        }
+    });
   }
         // Function to retrieve CSRF token from cookies
         function getCookie(name) {
@@ -136,7 +144,7 @@
     </script>
 {% endif %}
 {% include 'includes/footer.html' %}
-      
+
       <!-- Bootstrap JS and dependencies (jQuery and Popper.js) -->
         <!-- Add your JavaScript imports and scripts here -->
         <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
