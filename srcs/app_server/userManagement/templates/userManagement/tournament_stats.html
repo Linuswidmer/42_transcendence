@@ -68,7 +68,7 @@
             // Add a click event listener
             matchLink.addEventListener('click', function(event) {
                 const statsURL = '/singleGameStats/?matchName=' + matchKey + '&username=' + match.winner;
-		        fetch_marie(statsURL);
+		        fetch_with_internal_js(statsURL);
             });
 
             matchElement.appendChild(matchLink);

@@ -1,4 +1,4 @@
-import {fetch_html_replace_dynamicDIV_activate_js, fetch_marie} from "./landing_test.js";
+import {fetch_html_replace_dynamicDIV_activate_js, fetch_with_internal_js} from "./landing_test.js";
 
 // const leaveButton = document.getElementById('leaveGame');
 // if (leaveButton) {
@@ -177,7 +177,7 @@ class Game extends js_wrapper {
 				}
 			} else if (data.type == 'redirect_to_tournament_stats') {
 				console.log(window.location.origin + '/tournament_stats/' + data.tournament_id)
-				fetch_marie('/tournament_stats/' + data.tournament_id);
+				fetch_with_internal_js('/tournament_stats/' + data.tournament_id);
 				//window.location.href = window.location.origin + '/tournament_stats/' + data.tournament_id;
 			} else if (data.type == 'redirect_to_tournament_lobby') {
 				console.log('/tournament/' + data.tournament_id)
@@ -293,7 +293,7 @@ class Game extends js_wrapper {
 
 	handle_game_over(data) {
 		const statsURL = '/singleGameStats/?matchName=' + data.matchName + '&username=' + data.user;
-		fetch_marie(statsURL);
+		fetch_with_internal_js(statsURL);
 	}
 
 	handle_game_view_population(data)

@@ -87,7 +87,7 @@ function fetch_html_replace_dynamicDIV_activate_js(url, fetchJS=false, callback=
 	});
 }
 
-function fetch_marie(url) {
+function fetch_with_internal_js(url) {
 	fetch(url)
 		.then(response => response.text())
 		.then(html => {
@@ -109,4 +109,4 @@ function executeJavaScriptInContent(html) {
 	});
 }
 
-export {fetch_html_replace_dynamicDIV_activate_js, fetch_marie};
+export {fetch_html_replace_dynamicDIV_activate_js, fetch_with_internal_js};

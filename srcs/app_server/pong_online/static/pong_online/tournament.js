@@ -1,4 +1,4 @@
-import {fetch_html_replace_dynamicDIV_activate_js, fetch_marie} from "./landing_test.js";
+import {fetch_html_replace_dynamicDIV_activate_js, fetch_with_internal_js} from "./landing_test.js";
 
 class js_wrapper {
 	activate() {
@@ -122,7 +122,7 @@ class TournamentLobby extends js_wrapper
 			}
 			if (data.type === "redirect_to_tournament_stats") {
 				console.log(window.location.origin + '/tournament_stats/' + data.tournament_id)
-				fetch_marie('/tournament_stats/' + data.tournament_id);
+				fetch_with_internal_js('/tournament_stats/' + data.tournament_id);
 				//window.location.href = window.location.origin + '/tournament_stats/' + data.tournament_id;
 			}
 			if (data.type === "leave_tournament"){

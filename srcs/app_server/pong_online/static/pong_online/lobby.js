@@ -1,4 +1,4 @@
-import {fetch_html_replace_dynamicDIV_activate_js, fetch_marie} from "./landing_test.js";
+import {fetch_html_replace_dynamicDIV_activate_js, fetch_with_internal_js} from "./landing_test.js";
 
 class js_wrapper {
 	activate() {
