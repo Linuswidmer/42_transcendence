@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<h2 id="vs" class="text-center text-dark my-4 stylish-font"> {{ gld.userGameStats.user }} vs. {{ gld.opponentGameStats.user }} </h2>
+<h2 id="vs" class="text-center text-dark my-4 stylish-font"> <a href="/profile/{{ gld.userGameStats.user }}"> {{ gld.userGameStats.user }} </a> vs. <a href="/profile/{{ gld.opponentGameStats.user }}">{{ gld.opponentGameStats.user }}</a></h2>
 
 <div class="container my-4">
     <div class="card">

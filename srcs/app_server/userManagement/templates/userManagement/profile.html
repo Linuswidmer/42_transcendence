@@ -36,6 +36,7 @@
                 <!-- <a href="{% url 'userManagement:profile_list' %}" class="btn btn-success btn-block">
                     All Profiles
                 </a> -->
+                <!-- CHANGE FROM MERGE -->
                 <button type="button" class="btn buttonblue" id="allProfilesBtn">All Profiles</button>
             </div>
             {% if user != request.user %}
@@ -44,11 +45,9 @@
                     {% csrf_token %}
                     <div class="buttons has-addons">
                         {% if user.profile in request.user.profile.follows.all %}
-                        <button class="button is-success is-static btn btn-success btn-block">Follow</button>
                         <button class="button is-danger btn btn-danger btn-block" name="follow" value="unfollow">Unfollow</button>
                         {% else %}
                         <button class="button is-success btn btn-success btn-block" name="follow" value="follow">Follow</button>
-                        <button class="button is-danger is-static btn btn-danger btn-block">Unfollow</button>
                         {% endif %}
                     </div>
                 </form>
