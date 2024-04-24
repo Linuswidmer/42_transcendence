@@ -127,7 +127,7 @@ class TournamentLobby extends js_wrapper
 			}
 			if (data.type === "leave_tournament"){
 				console.log(window.location.origin + '/lobby/');
-				window.location.href = window.location.origin + '/lobby/';
+				fetch_html_replace_dynamicDIV_activate_js('/lobby', true);
 			}
 			if (data.type === "join") {
 				fetch_html_replace_dynamicDIV_activate_js('/pong_online', true, () => {
