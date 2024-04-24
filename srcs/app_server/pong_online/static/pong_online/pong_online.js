@@ -140,7 +140,8 @@ class Game extends js_wrapper {
 	}
 	
 	handle_leave_game_button_click = () => {
-		this.ws.send(JSON.stringify({type: 'leave', 'action': 'leave', 'username': this.username}));
+		this.ws.send(JSON.stringify({type: 'leave', 'action': 'leave', 'username': this.username, 'modus': this.modus}));
+		fetch_html_replace_dynamicDIV_activate_js('/lobby', true);
 		console.log('leaveButtonclicked');
 	}
 
@@ -303,6 +304,8 @@ class Game extends js_wrapper {
 		var left_name_display = document.getElementById('leftPlayerName');
 		var right_name_display = document.getElementById('rightPlayerName');
 		var prompt = document.getElementById('userPrompt');
+
+		this.modus = data['modus'];
 
 		if (data.hasOwnProperty("player1")){
 			if (data["player1"] == this.username) {
