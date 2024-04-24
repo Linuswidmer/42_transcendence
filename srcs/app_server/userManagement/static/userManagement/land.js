@@ -1,6 +1,6 @@
-import Lobby from "./lobby.js";
-import Game from "./pong_online.js"
-import TournamentLobby from "./tournament.js"
+import Lobby from "../pong_online/lobby.js";
+import Game from "../pong_online/pong_online.js"
+import TournamentLobby from "../pong_online/tournament.js"
 
 const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
 	// const wsUrl = protocol + `://${window.location.host}/ws/pong/${roomName}/`; // this has to be modified to be a unique identifier
