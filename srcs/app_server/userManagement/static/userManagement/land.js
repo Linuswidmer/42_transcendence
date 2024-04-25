@@ -3,6 +3,7 @@ import Game from "../pong_online/pong_online.js"
 import TournamentLobby from "../pong_online/tournament.js"
 import "./navbar.js"
 import "./stranger.js"
+import "../pong_online/lobby2.js"
 
 const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
 	// const wsUrl = protocol + `://${window.location.host}/ws/pong/${roomName}/`; // this has to be modified to be a unique identifier
@@ -19,7 +20,7 @@ ws.onopen = function(event) {
 	ws.send(JSON.stringify({type: 'username', 'username': username}));
 }
 
-const lobby = new Lobby(ws, username);
+// const lobby = new Lobby(ws, username);
 const game = new Game(ws, username);
 const tournament_lobby = new TournamentLobby(ws, username);
 
@@ -129,5 +130,72 @@ function getCookie(name) {
 	return cookieValue;
 }
 
+function router() {
+    let view = location.pathname;
+	let content = document.getElementById('content');
 
-export {fetch_html_replace_dynamicDIV_activate_js, fetch_with_internal_js, getCookie, executeJavaScriptInContent, ws};
+    if (view) {
+		if (view === '/') {
+			view = 'home';
+		}
+		console.log("router view:", view);
+		fetch(view)
+		.then(response => response.text())
+		.then(html => {
+			// Replace the content of the main container with the logged-in content
+			content.innerHTML = html;
+		})
+		.catch(error => console.error('Error loading logged-in content:', error));
+		// document.title = view.title;
+    } else {
+		console.log("else");
+        history.replaceState("", "", "/");
+        router();
+    }
+};
+
+// Handle navigation
+window.addEventListener("click", e => {
+    if (e.target.matches("[data-link]")) {
+        e.preventDefault();
+        history.pushState("", "", e.target.href);
+        router();
+    } else if (e.target.matches("[data-logout]")) {
+		e.preventDefault();
+		history.pushState("", "", e.target.href);
+		console.log("logout pressed");
+		let logoutUrl = "/accounts/logout/"; //maybe dynamic url later from django template
+		fetch(logoutUrl, {
+			method: "POST",
+			headers: {
+				"X-CSRFToken": getCookie("csrftoken")
+			}
+		})
+		.then(response => {
+			if (response.ok) {
+				// document.getElementById("navbar").innerHTML = '';
+				// document.getElementById("content").innerHTML = '';
+				// fetch("/stranger")
+				// 	.then(response => response.text())
+				// 	.then(html => {
+				// 		document.getElementById("content").innerHTML = html;
+				// 	})
+				// 	.catch(error => console.error('Error loading content:', error));
+				console.log("logout successful");
+        		router();
+			} else {
+				console.error("Logout failed");
+			}
+		})
+		.catch(error => console.error('Error:', error));
+	}
+});
+
+// Update router
+window.addEventListener("popstate", router);
+
+// load page the first time here
+window.addEventListener("DOMContentLoaded", router);
+
+
+export {fetch_html_replace_dynamicDIV_activate_js, fetch_with_internal_js, getCookie, executeJavaScriptInContent, router, ws};

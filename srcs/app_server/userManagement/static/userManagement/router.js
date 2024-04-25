@@ -1,5 +1,6 @@
 import {fetch_html_replace_dynamicDIV_activate_js, fetch_with_internal_js, getCookie, executeJavaScriptInContent} from "./land.js"
 
+
 function router() {
     let view = location.pathname;
 	let content = document.getElementById('content');

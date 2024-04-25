@@ -18,7 +18,6 @@
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script type="module" src="{% static 'userManagement/land.js' %}" ></script>
-		<script type="module" src="{% static 'userManagement/router.js' %}"></script>
 		<script>username = "{{ username }}"</script>
 		<script>staticPath = "{% get_static_prefix %}";</script>
 		<script>logoutUrl = "{% url 'userManagement:logout' %}"</script>
