@@ -186,12 +186,16 @@ class Game extends HTMLElement {
 				}
 			} else if (data.type == 'redirect_to_tournament_stats') {
 				this.remove_event_listener();
+				let tournamentStatsUrl = '/tournament_stats/' + data.tournament_id;
+				history.pushState("", "", tournamentStatsUrl);
+				router();
 				// fetch_with_internal_js('/tournament_stats/' + data.tournament_id);
 			} else if (data.type == 'redirect_to_tournament_lobby') {
 				this.remove_event_listener();
-				// fetch_html_replace_dynamicDIV_activate_js('/tournament/' + data.tournament_id, true, () => {
-				// 	this.ws.send(JSON.stringify({type: 'tournament_lobby_update', 'tournament_id': data.tournament_id}));
-				// });
+				let tournamentLobbyUrl = '/tournament/' + data.tournament_id;
+				history.pushState("", "", tournamentLobbyUrl);
+				router();
+				ws.send(JSON.stringify({type: 'tournament_lobby_update', 'tournament_id': data.tournament_id}));
 			}
         } catch (error) {
             console.log('Error parsing JSON:', error);

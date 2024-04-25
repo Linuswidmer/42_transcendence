@@ -24,7 +24,7 @@ def display_tournaments(request, tournament_id):
 	lobby = Lobby()
 	print('display ', tournament_id)
 	tournament = lobby.get_tournament(tournament_id)
-	return render(request, "pong_online/tournament.html", {"tournament": tournament})
+	return render(request, "pong_online/tournament.html", {"tournament": tournament}, {"username": request.user.username})
 
 @csrf_exempt
 def register_player(request):
