@@ -11,7 +11,7 @@ def landing_test(request):
 # Create your views here.
 def pong_online(request):
 	print("pong online view")
-	return render(request, "pong_online/pong_game.html")
+	return render(request, "pong_online/pong_game.html", {"username": request.user.username})
 
 @login_required(login_url='/home')
 def display_lobby(request):

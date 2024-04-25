@@ -1,9 +1,10 @@
-import Lobby from "../pong_online/lobby.js";
-import Game from "../pong_online/pong_online.js"
+// import Lobby from "../pong_online/lobby.js";
+// import Game from "../pong_online/pong_online.js"
 import TournamentLobby from "../pong_online/tournament.js"
 import "./navbar.js"
 import "./stranger.js"
 import "../pong_online/lobby2.js"
+import "../pong_online/pong_online2.js"
 
 const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
 	// const wsUrl = protocol + `://${window.location.host}/ws/pong/${roomName}/`; // this has to be modified to be a unique identifier
@@ -17,11 +18,11 @@ console.log("username from request", username);
 
 ws.onopen = function(event) {
 	console.log('WebSocket connection established');
-	ws.send(JSON.stringify({type: 'username', 'username': username}));
+	ws.send(JSON.stringify({type: 'username', 'username': 'admin'}));
 }
 
 // const lobby = new Lobby(ws, username);
-const game = new Game(ws, username);
+// const game = new Game(ws, username);
 const tournament_lobby = new TournamentLobby(ws, username);
 
 let active_script = null;
@@ -131,7 +132,7 @@ function getCookie(name) {
 }
 
 function router() {
-    let view = location.pathname;
+    let view = location.href.replace(location.origin, '');
 	let content = document.getElementById('content');
 
     if (view) {
