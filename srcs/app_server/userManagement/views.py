@@ -18,6 +18,7 @@ import json
 def land(request):
    	return render(request, "onepager/land.html")
 
+@login_required
 def dashboard(request):
 	return render(request, "userManagement/dashboard.html")
 
@@ -50,6 +51,7 @@ def register_user(request):
 			{"form": form}
 		)
 
+@login_required
 #view for registering a new guest
 def register_guest(request):
     if request.method == "GET":
@@ -73,6 +75,7 @@ def register_guest(request):
             {"form": form}
         )
 
+@login_required
 #view for updating existing user
 def update_user(request):
 	if request.method == "GET":
@@ -92,6 +95,7 @@ def update_user(request):
 			{"form": form}
 		)
 
+@login_required
 #view for changing profile picture
 def update_profile(request):
 	if request.method == "GET":
@@ -117,6 +121,7 @@ def update_profile(request):
 			{"form": form}
 		)
 
+@login_required
 def change_password(request):
     if request.method == "GET":
         form = PasswordChangeForm(instance=request.user)
@@ -156,13 +161,12 @@ def profile(request, username):
 		current_user_profile.save()
 	return render(request, "userManagement/profile.html", {"user": user, "stats": sb})
 
-
+@login_required
 def logged_in(request):
     return render(request, 'onepager/logged_in.html')
 
 def stranger(request):
     return render(request, 'onepager/stranger.html')
-
 
 def check_login_status(request):
     if request.user.is_authenticated:
@@ -175,13 +179,11 @@ def dynamic_content(request):
     data = {'message': 'This is dynamic content!'}
     return JsonResponse(data)
 
-
+@login_required
 def navbar(request):
     return render(request, 'includes/navbar.html')
 
-def navigation(request):
-    return render(request, 'includes/navigation.html')
-
+@login_required
 def single_game_stats(request):
 	matchName = request.GET.get('matchName')
 	username = request.GET.get('username')
@@ -195,6 +197,7 @@ def single_game_stats(request):
 		if gld.game.matchName == matchName:
 			return render(request, "userManagement/single_game_stats.html", {"gld": gld})
 
+@login_required
 def tournament_stats(request, tournament_name):
 	tournament = Tournaments.objects.get(tournament_id=tournament_name)
 	return render(request, "userManagement/tournament_stats.html", {"tm_name": tournament.tournament_id, "tm_data": json.dumps(tournament.data)})

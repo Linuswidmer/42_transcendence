@@ -62,7 +62,7 @@
 
 /* ---------------------------- MAIN -------------------------------*/
 
-body, html {
+body, html, h1 {
   background-color: #fff; /* Light gray background */
   color: #6a0dad;
   margin: 0;
@@ -102,12 +102,6 @@ body, html {
   max-width: 800px;
   margin: 0 auto;
   padding: 50px 20px;
-  text-align: center;
-}
-
-h1, h2, .modal-title, .modal-body {
-  color: #fff !important;
-  background-color: #6a0dad;
   text-align: center;
 }
 
@@ -160,14 +154,19 @@ label {
 
 /* ---------------------------- MODALS -------------------------------*/
 
-.modalContainer, .modal-header {
+.modalContainer {
   background-color: #fff; /* Light gray background */
   font-family: Arial, sans-serif;
   color: #03EEF5;
 }
 
+.modal-header {
+  background-color: #6a0dad;
+}
+
 .modal-title {
   font-size: 25px !important;
+  color: #03EEF5;
 }
 
 .card{
@@ -177,7 +176,7 @@ label {
 .card-header{
   border-bottom: 2px solid rgba(3,238,245,1) !important;
 }
-.card-body {
+.card-body, .modal-body {
   background-color: rgba(106, 13, 173, 0.5) !important;
 }
 .close {

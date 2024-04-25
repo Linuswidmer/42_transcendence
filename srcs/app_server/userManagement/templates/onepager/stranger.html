@@ -23,25 +23,24 @@
   <script>
     // Event listeners for each button
     document.getElementById("loginBtn").addEventListener("click", function() {
-        console.log("loginbtn");
+        //console.log("loginbtn");
         renderForm("{% url 'userManagement:login' %}", "loginModal", "Login");
     });
     document.getElementById("registerBtn").addEventListener("click", function() {
-        console.log("registerbtn");
+        //console.log("registerbtn");
         renderForm("{% url 'userManagement:register_user' %}", "registerModal", "Register");
     });
     document.getElementById("guestBtn").addEventListener("click", function() {
-        console.log("guestbtn");
+        //console.log("guestbtn");
         renderForm("{% url 'userManagement:register_guest' %}", "guestModal", "Continue as guest");
     });
     document.getElementById("42Btn").addEventListener("click", function() {
-        console.log("42btn");
+        //console.log("42btn");
         window.location.href="{% provider_login_url 'provider' %}";
     });
 
     // Function to fetch and render forms
     function renderForm(url, containerId, title) {
-    console.log("triggered")
         fetch(url, {
         // Include CSRF token in the headers if includeCSRF is true
         headers: {
@@ -100,7 +99,6 @@
                     // Create FormData object using the form element
                     const formData = new FormData(form);
                     // Send POST request to register user
-                    console.log(url)
                     fetch(url, {
                         method: "POST",
                         body: formData,
@@ -110,7 +108,6 @@
                         }
                     })
                     .then(response => {
-                        console.log(response);
                         if (!response.url.includes(url)) {
                             const modal = document.getElementById(`${containerId}Modal`);
                             modal.classList.remove('show');
@@ -171,7 +168,6 @@ function getCookie(name) {
 const csrftoken = getCookie('csrftoken');
  // Function to load logged-in content after successful login
  function loadLoggedInContent() {
-  console.log("loading")
         document.getElementById("all").innerHTML = '';
         fetch("/logged_in")
             .then(response => response.text())

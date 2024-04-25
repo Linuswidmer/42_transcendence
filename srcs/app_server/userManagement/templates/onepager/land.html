@@ -41,7 +41,7 @@
     <script>
       document.getElementById('logoBtn').addEventListener('click', function(event) {
           event.preventDefault();
-      console.log('Logo button clicked');
+      //console.log('Logo button clicked');
       fetch("/logged_in")
                       .then(response => response.text())
                       .then(html => {
@@ -54,7 +54,7 @@
       const target = event.target;
       if (target.matches('.navbar-button')) {
           event.preventDefault();
-          console.log(target.textContent + ' button clicked');
+          //console.log(target.textContent + ' button clicked');
           switch (target.id) {
               case 'gameBtn':
                   //document.getElementById("content").innerHTML = '';
