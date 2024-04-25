@@ -1,102 +1,79 @@
-import {fetch_html_replace_dynamicDIV_activate_js, fetch_with_internal_js} from "../userManagement/land.js";
+import {router, ws} from "../userManagement/land.js"
 
-// const leaveButton = document.getElementById('leaveGame');
-// if (leaveButton) {
-// 	leaveButton.addEventListener('click', function() {
-// 		console.log("modus", ws.modus);
-// 		ws.send(JSON.stringify({type: 'leave', 'action': 'leave', 'username': username, 'modus': ws.modus}));
-// 		console.log('leaveButtonclicked');
-// 	});
-// }
-//////////////////////////////
-// Helper functions
+class Entity {
+	constructor(x, y, type) {
+		this.type = type
+		this.x = x;
+		this.y = y;
+		this.position_buffer = [];
+	}
 
+	set_position(x, y) {
+		this.x = x;
+		this.y = y;
+	}
+}
 
-  class Entity {
-    constructor(x, y, type) {
-      this.type = type
-      this.x = x;
-      this.y = y;
-      this.position_buffer = [];
-    }
+class Ball extends Entity {
+	constructor(x, y) {
+		super(x, y, 'ball');
+	}
 
-    set_position(x, y) {
-      this.x = x;
-      this.y = y;
-    }
-  }
+	set_radius(radius) {
+		this.radius = radius
+	}
 
-  class Ball extends Entity {
-    constructor(x, y) {
-      super(x, y, 'ball');
-    }
-
-    set_radius(radius) {
-      this.radius = radius
-    }
-
-    draw(context) {
-      // console.log("draw ball", this);
-      context.beginPath();
-      context.arc(this.x, this.y, this.radius, 0, Math.PI*2);
-      context.fillStyle = "#000";
-      context.fill();
-      context.closePath();
-    }
-  }
+	draw(context) {
+		// console.log("draw ball", this);
+		context.beginPath();
+		context.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+		context.fillStyle = "#000";
+		context.fill();
+		context.closePath();
+	}
+}
 
 class Paddle extends Entity {
     constructor(username, x, y, screen_pos) {
-      super(x, y, 'paddle');
-      this.username = username;
-      // console.log("paddle username:", this.username);
-      this.screen_pos = screen_pos;
-      this.score_display = document.getElementById(this.screen_pos === 'left' ? 'leftScore' : 'rightScore');
+		super(x, y, 'paddle');
+		this.username = username;
+		// console.log("paddle username:", this.username);
+		this.screen_pos = screen_pos;
+		this.score_display = document.getElementById(this.screen_pos === 'left' ? 'leftScore' : 'rightScore');
     }
 
     set_score(score) {
-      this.score_display.textContent = score;
+		this.score_display.textContent = score;
     }
     set_score(score) {
-      this.score_display.textContent = score;
+		this.score_display.textContent = score;
     }
 
     set_dimensions(width, height) {
-      this.width = width;
-      this.height = height;
+		this.width = width;
+		this.height = height;
     }
     set_dimensions(width, height) {
-      this.width = width;
-      this.height = height;
+		this.width = width;
+		this.height = height;
     }
 
     draw(context) {
-      // console.log("draw paddle", this);
-      context.fillStyle = '#000';
-        context.fillRect(this.x, this.y, this.width, this.height);
+		// console.log("draw paddle", this);
+		context.fillStyle = '#000';
+		context.fillRect(this.x, this.y, this.width, this.height);
     }
 }
 
-class js_wrapper {
-	activate() {
-		throw new Error("Subclasses must override this method.");
-	}
+class Game extends HTMLElement {
+    constructor() {
+        super();
 
-	deactivate () {
-		throw new Error("Subclasses must override this method.");
-	}
-}
-
-
-// In the Game class
-class Game extends js_wrapper {
-	constructor(ws, username) {
-		super();
-        this.ws = ws;
-		this.username = username;
-
-        this.entities = [];
-        this.iterationTime = null;
+		this.username = this.getAttribute('data-username');
+		console.log("username pong_online:", this.username);
+		
+		this.entities = [];
+		this.iterationTime = null;
 		this.modus = null;
 
 		this.keys = {
@@ -105,6 +82,43 @@ class Game extends js_wrapper {
 			'KeyJ': false,
 			'KeyL': false,
 		}
+
+
+        this.innerHTML = /*html*/`
+			<div id="loggedInMessage">Logged in as: </div>
+
+			<div id="userPrompt">Waiting for BLAH to start the game: </div>
+		
+			<div id="centeredContent">
+				<div class="container" id="pongGamePage">
+					<div id="scoreBoard">
+						<div id="leftScore"></div>
+						<div id="leftPlayerName">Left player: </div>
+						<div id="rightScore"></div>
+						<div id="rightPlayerName">Right player: </div>
+					</div>
+					<canvas id="pongCanvas" width="600" height="400"></canvas>
+				</div>
+				<button id="startGameButton">Start</button>
+				<button id="leaveGame">leaveGame_backToLobby</button>
+			</div>
+        `;
+
+		ws.onmessage = (e) => this.handle_message(e);
+
+		this.loggedInMsg = document.querySelector('#loggedInMessage');
+		this.loggedInMsg.textContent += this.username;
+
+		this.canvas = document.querySelector('#pongCanvas');
+		this.ctx = this.canvas.getContext('2d');
+
+		this.start_game_button = document.querySelector('#startGameButton');
+		this.start_game_button.addEventListener('click', 
+			this.handle_start_game_button_click);
+		
+		this.leave_game_button = document.querySelector('#leaveGame');
+		this.leave_game_button.addEventListener('click',
+		this.handle_leave_game_button_click);
     }
 
 	norm2height(relativeY) {
@@ -115,44 +129,20 @@ class Game extends js_wrapper {
 		return (relativeX * this.canvas.width)
 	}
 
-	activate() {
-		this.ws.onmessage = (e) => this.handle_message(e);
-
-		this.loggedInMsg = document.getElementById('loggedInMessage');
-		this.loggedInMsg.textContent += this.username;
-
-		this.canvas = document.getElementById('pongCanvas');
-		this.ctx = this.canvas.getContext('2d');
-
-		this.start_game_button = document.getElementById('startGameButton');
-		this.start_game_button.addEventListener('click', 
-			this.handle_start_game_button_click);
-		
-		this.leave_game_button = document.getElementById('leaveGame');
-		this.leave_game_button.addEventListener('click',
-		this.handle_leave_game_button_click);
-	}
-
-	deactivate() {
-		this.ws.onmessage = null;
-		this.start_game_button.removeEventListener('click', this.handle_start_game_button_click);
-        this.leave_game_button.removeEventListener('click', this.handle_leave_game_button_click);
-
-	}
-
 	handle_beforeunload = () => {
-		this.ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
+		ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
 	}
 
 	handle_start_game_button_click = () => {
 		this.start_game_button.style.display = 'none';
-		this.ws.send(JSON.stringify({'type': 'start', 'modus': 'remote'}));
+		ws.send(JSON.stringify({'type': 'start', 'modus': 'remote'}));
 		console.log('Start button remote clicked');
 	}
 	
 	handle_leave_game_button_click = () => {
-		this.ws.send(JSON.stringify({type: 'leave', 'action': 'leave', 'username': this.username, 'modus': this.modus}));
-		fetch_html_replace_dynamicDIV_activate_js('/lobby', true);
+		ws.send(JSON.stringify({type: 'leave', 'action': 'leave', 'username': this.username, 'modus': this.modus}));
+		history.pushState("", "", "/lobby");
+		router();
 		console.log('leaveButtonclicked');
 	}
 
@@ -196,12 +186,16 @@ class Game extends js_wrapper {
 				}
 			} else if (data.type == 'redirect_to_tournament_stats') {
 				this.remove_event_listener();
-				fetch_with_internal_js('/tournament_stats/' + data.tournament_id);
+				let tournamentStatsUrl = '/tournament_stats/' + data.tournament_id;
+				history.pushState("", "", tournamentStatsUrl);
+				router();
+				// fetch_with_internal_js('/tournament_stats/' + data.tournament_id);
 			} else if (data.type == 'redirect_to_tournament_lobby') {
 				this.remove_event_listener();
-				fetch_html_replace_dynamicDIV_activate_js('/tournament/' + data.tournament_id, true, () => {
-					this.ws.send(JSON.stringify({type: 'tournament_lobby_update', 'tournament_id': data.tournament_id}));
-				});
+				let tournamentLobbyUrl = '/tournament/' + data.tournament_id;
+				history.pushState("", "", tournamentLobbyUrl);
+				router();
+				ws.send(JSON.stringify({type: 'tournament_lobby_update', 'tournament_id': data.tournament_id}));
 			}
         } catch (error) {
             console.log('Error parsing JSON:', error);
@@ -258,8 +252,8 @@ class Game extends js_wrapper {
 			data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'moveDown'};
 		}
 	
-		if (typeof data !== 'undefined' && this.ws.readyState === WebSocket.OPEN) {
-			this.ws.send(JSON.stringify(data));
+		if (typeof data !== 'undefined' && ws.readyState === WebSocket.OPEN) {
+			ws.send(JSON.stringify(data));
 		}
 	}
 				
@@ -279,8 +273,8 @@ class Game extends js_wrapper {
 			data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'stopMoveDown'};
 		}
 	
-		if (typeof data !== 'undefined' && this.ws.readyState === WebSocket.OPEN) {
-			this.ws.send(JSON.stringify(data));
+		if (typeof data !== 'undefined' && ws.readyState === WebSocket.OPEN) {
+			ws.send(JSON.stringify(data));
 		}
 	}
 
@@ -305,7 +299,8 @@ class Game extends js_wrapper {
 		//clear the local entities, they get loaded again for a new game
 		this.remove_event_listener();
 		const statsURL = '/singleGameStats/?matchName=' + data.matchName + '&username=' + data.user;
-		fetch_with_internal_js(statsURL);
+		history.pushState("", "", statsURL);
+		router();
 	}
 
 	handle_game_view_population(data)
@@ -341,64 +336,6 @@ class Game extends js_wrapper {
 	} 
 }
 
-// After establishing the WebSocket connection
-// const game = new Game(ws, canvas, ctx);
-
-export default Game;
-// function interpolateEntities(entities, iteration_time) {
-// 	var now = +new Date();
-//     var render_timestamp = now - (1000.0 * iteration_time);
 
 
-  // 	for (var id in entities) {
-  //         var entity = entities[id];
-
-  //         // Find the two authoritative positions surrounding the rendering timestamp.
-  //         var buffer = entity.position_buffer;
-
-  //         // Drop older positions.
-  //         while (buffer.length >= 2 && buffer[1][0] <= render_timestamp) {
-  //             buffer.shift();
-  //         }
-  //         // Interpolate between the two surrounding authoritative positions.
-  // 		// console.log("render_timestamp:", render_timestamp);
-  // 		// console.log("now:", now);
-  // 		// console.log("first buffer element time:", buffer[0][0]);
-  // 		// console.log("second buffer element time:", buffer[1][0]);
-  //         if (buffer.length >= 2 && buffer[0][0] <= render_timestamp && render_timestamp <= buffer[1][0]) {
-  // 			// console.log("interpol")
-  //             var x0 = buffer[0][1];
-  //             var x1 = buffer[1][1];
-  //             var y0 = buffer[0][2];
-  //             var y1 = buffer[1][2];
-  //             var t0 = buffer[0][0];
-  //             var t1 = buffer[1][0];
-
-  //             var new_x = x0 + (x1 - x0) * (render_timestamp - t0) / (t1 - t0);
-  //             var new_y = y0 + (y1 - y0) * (render_timestamp - t0) / (t1 - t0);
-  //             entity.set_position(new_x, new_y);
-  //         }
-  //     }
-  // }
-
-  // const INTERPOLATION_RATE = 60;
-
-
-  // 			//clear interval
-  // 			// clearInterval(update_interval);
-
-  // 			// // Set a new update interval
-  // 			// //this interval is interpolating between game updates and drawing the entities
-  // 			// update_interval = setInterval(function() {
-  // 			// 	interpolateEntities(entities, iteration_time);
-  // 			// 	draw_entities(entities, ctx);
-  // 			// }, 1000 / INTERPOLATION_RATE);
-
-// const startGameButton = document.getElementById('startGameButton');
-// if (startGameButton) {
-// 	startGameButton.addEventListener('click', function() {
-// 		ws.send(JSON.stringify({'type': 'start'}));
-// 		console.log('Start button remote clicked');
-// 		startGameButton.style.display = 'none';
-// 	});
-// }
+customElements.define("pong-game", Game);

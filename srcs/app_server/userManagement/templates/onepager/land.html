@@ -26,27 +26,7 @@
         {% endblock extra_scripts %}
 </head>
 <body>
-	{% if user.is_authenticated %}
-		<div id="navbar">
-			{% include 'includes/navbar.html' %}
-	  	</div>
-
-		<div id="content">
-			<h1>welcome {{user.username }}</h1>
-			<section class="hero is-small is-success mb-4">
-				<div class="hero-body"></div>
-    		</section>
-		</div>
-
-	{% else %}
-		<div id="navbar"></div>
-		<div id="content">
-			{% include 'onepager/stranger.html' %}
-		</div>
-	{% endif %}
-	
-     
-  
+	<div id="content"></div>
       <!-- Footer -->
       <!-- {% include 'includes/footer.html' %} -->
       

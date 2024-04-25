@@ -1,47 +1,13 @@
-import "./navbar.js"
-import "./stranger.js"
-import "../pong_online/lobby.js"
-import "../pong_online/pong_online.js"
-import "../pong_online/tournament.js"
+import {getCookie} from "./land.js"
 
-const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
-	// const wsUrl = protocol + `://${window.location.host}/ws/pong/${roomName}/`; // this has to be modified to be a unique identifier
-
-console.log(protocol + '://' + window.location.host + '/ws/pong_online/game/')
-let ws = new WebSocket(
-	protocol + '://' + window.location.host + '/ws/pong_online/game/'
-);
-
-console.log("username from request", username);
-
-ws.onopen = function(event) {
-	console.log('WebSocket connection established');
-	ws.send(JSON.stringify({type: 'firstContactfromClient'}));
-}
-
-function getCookie(name) {
-	let cookieValue = null;
-	if (document.cookie && document.cookie !== '') {
-		const cookies = document.cookie.split(';');
-		for (let i = 0; i < cookies.length; i++) {
-			const cookie = cookies[i].trim();
-			// Does this cookie string begin with the name we want?
-			if (cookie.substring(0, name.length + 1) === (name + '=')) {
-				cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-				break;
-			}
-		}
-	}
-	return cookieValue;
-}
 
 function router() {
-    let view = location.href.replace(location.origin, '');
+    let view = location.pathname;
 	let content = document.getElementById('content');
 
     if (view) {
 		if (view === '/') {
-			view = '/home';
+			view = 'home';
 		}
 		console.log("router view:", view);
 		fetch(view)
@@ -101,6 +67,3 @@ window.addEventListener("popstate", router);
 
 // load page the first time here
 window.addEventListener("DOMContentLoaded", router);
-
-
-export {getCookie, router, ws};

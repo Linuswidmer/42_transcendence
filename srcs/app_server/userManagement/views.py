@@ -20,10 +20,13 @@ def dashboard(request):
 	return render(request, "userManagement/dashboard.html")
 
 def my_view(request):
-    if request.user.is_authenticated:
-        return render(request, "onepager/land.html", {"username": request.user.username})
-    else:
-        return render(request, "onepager/land.html")
+    return render(request, "onepager/land.html")
+    
+def	home(request):
+	if request.user.is_authenticated:
+		return render(request, "pong_online/lobby.html", {"username": request.user.username})
+	else:
+		return render(request, "onepager/stranger.html")
 
 #view for registering a new user
 def register_user(request):
@@ -136,7 +139,7 @@ def profile_list(request):
 	all_users = User.objects.all()
 	return render(request, "userManagement/profile_list.html", {"registered_users": all_users})
 
-@login_required
+@login_required(login_url='/home')
 def profile(request, username):
     user = get_object_or_404(User, username=username)
     sb = StatsBuilder(user)
@@ -178,6 +181,7 @@ def navbar(request):
 def navigation(request):
     return render(request, 'includes/navigation.html')
 
+@login_required(login_url='/home')
 def single_game_stats(request):
 	matchName = request.GET.get('matchName')
 	username = request.GET.get('username')
@@ -187,7 +191,8 @@ def single_game_stats(request):
 	for gld in sb.gameListData:
 		if gld.game.matchName == matchName:
 			return render(request, "userManagement/single_game_stats.html", {"gld": gld})
-		
+
+@login_required(login_url='/home')	
 def tournament_stats(request, tournament_name):
 	tournament = Tournaments.objects.get(tournament_id=tournament_name)
 	return render(request, "userManagement/tournament_stats.html", {"tm_name": tournament.tournament_id, "tm_data": json.dumps(tournament.data)})
