@@ -159,7 +159,10 @@ def profile(request, username):
 		elif action == "unfollow":
 			current_user_profile.follows.remove(user.profile)
 		current_user_profile.save()
-	return render(request, "userManagement/profile.html", {"user": user, "stats": sb})
+		return JsonResponse({"message": "Success"})
+	else:
+		print("no post")
+		return render(request, "userManagement/profile.html", {"user": user, "stats": sb})
 
 @login_required
 def logged_in(request):

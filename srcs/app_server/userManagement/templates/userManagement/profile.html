@@ -30,21 +30,16 @@
                 <button type="button" class="btn buttonblue" id="allProfilesBtn">All Profiles</button>
             </div>
             {% if user != request.user %}
-            <button class="button is-success is-static btn btn-success btn-block" id="followBtn">Follow</button>
-
             <div style="width: 200px; margin: 20px;">
-                <form method="post">
-                    {% csrf_token %}
                     <div class="buttons has-addons">
                         {% if user.profile in request.user.profile.follows.all %}
-                        <button class="button is-success is-static btn btn-success btn-block">Follow</button>
-                        <button class="button is-danger btn btn-danger btn-block" name="follow" value="unfollow">Unfollow</button>
+                        <button id="followBtn" class="button is-success is-static btn btn-success btn-block disabled">Follow</button>
+                        <button id="unfollowBtn" class="button is-danger btn btn-danger btn-block" name="follow" value="unfollow">Unfollow</button>
                         {% else %}
-                        <button class="button is-success btn btn-success btn-block" name="follow" value="follow">Follow</button>
-                        <button class="button is-danger is-static btn btn-danger btn-block">Unfollow</button>
+                        <button id="followBtn" class="button is-success btn btn-success btn-block" name="follow" value="follow">Follow</button>
+                        <button id="unfollowBtn" class="button is-danger is-static btn btn-danger btn-block disabled">Unfollow</button>
                         {% endif %}
                     </div>
-                </form>
             </div>
             {% endif %}
         </div>
@@ -324,6 +319,8 @@
   </div>
 </div>
 {% endblock %}
+
+
 {% block extra_scripts %}
 {% if user == request.user %}
 <script>
@@ -416,7 +413,7 @@ function renderForm(url, containerId, title) {
                             fetch(response.url)
                             .then(response => response.text())
                             .then(html => {
-                                // Replace the content of the main container with the logged-in content
+                                // Replace the content of the main container with the profile content
                                 document.getElementById("content").innerHTML = html;
                                 executeJavaScriptInContent(html);
                             })
@@ -645,6 +642,44 @@ function extractErrorMessage(errorMessage) {
             })
             .catch(error => console.error('Error loading profiles page:', error));
     });
+</script>
+{% endif %}
+{% if user != request.user %}
+<script>
+    document.getElementById("followBtn").addEventListener("click", function() {
+        console.log("followBtn");
+        sendFollowRequest("follow");
+    });
+    document.getElementById("unfollowBtn").addEventListener("click", function() {
+        console.log("unfollowBtn");
+        sendFollowRequest("unfollow");
+    });
+    function sendFollowRequest(action) {
+    const csrftoken = getCookie("csrftoken");
+    const formData = new FormData();
+    formData.append("follow", action);
+    const url = `/profile/{{ user.username }}/`;
+    fetch(url, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": csrftoken,
+        },
+        body: formData,
+    })
+    .then(response => {
+         if (!response.ok) {
+             throw new Error("Network response was not ok");
+         }
+        return response.json();
+    })
+    .then(data => {
+        // Handle response data as needed
+        console.log(data);
+    })
+    .catch(error => {
+        console.error("Error:", error);
+    });
+}
 </script>
 {% endif %}
 {% endblock %}
