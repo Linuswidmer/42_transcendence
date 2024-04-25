@@ -8,6 +8,9 @@
     <link rel="stylesheet" type="text/css" href="{% static 'pong_online/styles.css' %}">
     <title>Pong Game</title>
 </head>
+
+{% include 'includes/navbar.html' %}
+
 <body>
     {% csrf_token %}
     <!-- HEADER -->

@@ -155,7 +155,7 @@ class Lobby extends HTMLElement {
 	join_game(modus) {
 		// this.ws.modus = modus;
 		// fetch_html_replace_dynamicDIV_activate_js('/pong_online', true, () => {
-		history.pushState("", "", "/pong_online");
+		history.pushState("", "", "/pong_online/");
 		router();
 		ws.send(JSON.stringify({type: 'get_game_data'}));
 		// });
