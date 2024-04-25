@@ -3,12 +3,10 @@ import json
 
 from django.contrib.auth.decorators import login_required
 
-from pong_online.lobby import Lobby, Match
-
-def landing_test(request):
-	return render(request, "pong_online/landing_test.html", {"username": request.user.username})
+from pong_online.lobby import Lobby
 
 # Create your views here.
+@login_required(login_url='/home')
 def pong_online(request):
 	print("pong online view")
 	return render(request, "pong_online/pong_game.html", {"username": request.user.username})
@@ -20,6 +18,7 @@ def display_lobby(request):
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
+@login_required(login_url='/home')
 def display_tournaments(request, tournament_id):
 	lobby = Lobby()
 	print('display ', tournament_id)

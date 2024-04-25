@@ -1,36 +1,39 @@
-import {fetch_html_replace_dynamicDIV_activate_js, fetch_with_internal_js} from "../userManagement/land.js";
+import {router, ws} from "../userManagement/land.js"
 
-class js_wrapper {
-	activate() {
-		throw new Error("Subclasses must override this method.");
-	}
+class Tournament extends HTMLElement {
+    constructor() {
+        super();
 
-	deactivate () {
-		throw new Error("Subclasses must override this method.");
-	}
-}
+		this.username = this.getAttribute('data-username');
+		this.tournament_name = this.getAttribute('data-tournament');
+		console.log("username tournament:", this.username);
+		console.log("tournament name:", this.tournament_name);
 
-class TournamentLobby extends js_wrapper
-{
-	constructor(ws, username)
-	{
-		super();
-		this.ws = ws;
-		this.username = username;
-	}
+        this.innerHTML = /*html*/`
+				<div class="tournament-container">
+					<!-- Tournament name -->
+					<div class="tournament-name" id="tournamentName">
+						Tournament Name
+					</div>
+				
+					<!-- Players in the tournament -->
+					<div class="tournament-players" id="tournamentPlayers">
+						<!-- Players will be dynamically added here -->
+					</div>
+				
+					<!-- Tournament rounds -->
+					<div class="rounds" id="rounds">
+						<!-- Rounds will be dynamically added here -->
+					</div>
+				</div>
+        `;
 
-	activate() {
-		this.ws.onmessage = (e) => this.handle_message(e);
+		ws.onmessage = (e) => this.handle_message(e);
 
 		this.leaveTournamentButton = document.createElement('button');
 		this.leaveTournamentButton.textContent = 'Leave Tournament';
 		this.leaveTournamentButton.addEventListener('click', this.handle_leave_tournament_button_click);
-	}
-
-	deactivate() {
-		this.leaveTournamentButton.removeEventListener('click', this.handle_leave_tournament_button_click);
-        this.ws.onmessage = null;
-	}
+    }
 
 	updateTournamentLobby(data) {
 		this.tournament_name = data.tournament_id;
@@ -38,12 +41,12 @@ class TournamentLobby extends js_wrapper
 		if ('error' in data) {
 			alert(data.error);
 		}
-		const tournamentNameElement = document.getElementById('tournamentName');
+		const tournamentNameElement = this.querySelector('#tournamentName');
 		tournamentNameElement.textContent = '';
 		tournamentNameElement.textContent = this.tournament_name;
 	
 		// Get players container
-		const playersContainer = document.getElementById('tournamentPlayers');
+		const playersContainer = this.querySelector('#tournamentPlayers');
 		playersContainer.textContent = '';
 		playersContainer.textContent = `Players in tournament: ${data.players.join(', ')}`;
 	
@@ -52,7 +55,7 @@ class TournamentLobby extends js_wrapper
 		playersContainer.appendChild(this.leaveTournamentButton)
 	
 		// Get rounds container
-		const roundsContainer = document.getElementById('rounds');
+		const roundsContainer = this.querySelector('#rounds');
 		roundsContainer.textContent = '';
 	
 		// Iterate through rounds
@@ -104,7 +107,7 @@ class TournamentLobby extends js_wrapper
 
 	handle_leave_tournament_button_click= () => {
 		console.log("Leave Tournament button clicked");
-		this.ws.send(JSON.stringify({type: 'lobby_update', 'action': 'leave_tournament', 'tournament_id': this.tournament_name}));
+		ws.send(JSON.stringify({type: 'lobby_update', 'action': 'leave_tournament', 'tournament_id': this.tournament_name}));
 	}
 
 	handle_message(e) {
@@ -114,31 +117,37 @@ class TournamentLobby extends js_wrapper
 			if (data.action === "start_tournament_round"){
 				console.log("starting round", data.match_id)
 				//window.location.href = window.location.origin + '/lobby/';
-				this.ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join', 'match_id': data.match_id, 'tournament_id': data.tournament_id, 'username': username, 'modus': 'remote'}));
+				ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join', 'match_id': data.match_id, 'tournament_id': data.tournament_id, 'username': username, 'modus': 'remote'}));
 			}
 			if (data.type === "tournament_lobby_update") {
 				console.log('Update tm lobby');
 				this.updateTournamentLobby(data);
 			}
 			if (data.type === "redirect_to_tournament_stats") {
-				console.log(window.location.origin + '/tournament_stats/' + data.tournament_id)
-				fetch_with_internal_js('/tournament_stats/' + data.tournament_id);
+				console.log(window.location.origin + '/tournament_stats/' + data.tournament_id);
+				let tournamentStatsUrl = '/tournament_stats/' + data.tournament_id;
+				history.pushState("", "", tournamentStatsUrl);
+				router();
+				// fetch_with_internal_js('/tournament_stats/' + data.tournament_id);
 				//window.location.href = window.location.origin + '/tournament_stats/' + data.tournament_id;
 			}
 			if (data.type === "leave_tournament"){
 				console.log(window.location.origin + '/lobby/');
-				fetch_html_replace_dynamicDIV_activate_js('/lobby', true);
+				history.pushState("", "", "/lobby");
+				router();
 			}
 			if (data.type === "join") {
-				fetch_html_replace_dynamicDIV_activate_js('/pong_online', true, () => {
-					this.ws.send(JSON.stringify({type: 'get_game_data'}));
-				});
+				history.pushState("", "", "/pong_online");
+				router();
+				ws.send(JSON.stringify({type: 'get_game_data'}));
 			}
 	
 		} catch (error) {
 			console.log('Error parsing JSON:', error);
 		}
-}
+	}
 }
 
-export default TournamentLobby;
+
+
+customElements.define("pong-tournament", Tournament);
