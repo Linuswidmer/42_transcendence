@@ -19,184 +19,32 @@
     <div id="modalContainer"></div>
 
 {% endblock %}
+<script src="{% static 'pong/history.js' %}"></script>
 {% block extra_scripts %}
-  <script>
-    // Event listeners for each button
-    document.getElementById("loginBtn").addEventListener("click", function() {
-        //console.log("loginbtn");
-        renderForm("{% url 'userManagement:login' %}", "loginModal", "Login");
-    });
-    document.getElementById("registerBtn").addEventListener("click", function() {
-        //console.log("registerbtn");
-        renderForm("{% url 'userManagement:register_user' %}", "registerModal", "Register");
-    });
-    document.getElementById("guestBtn").addEventListener("click", function() {
-        //console.log("guestbtn");
-        renderForm("{% url 'userManagement:register_guest' %}", "guestModal", "Continue as guest");
-    });
-    document.getElementById("42Btn").addEventListener("click", function() {
-        //console.log("42btn");
-        window.location.href="{% provider_login_url 'provider' %}";
-    });
+<script>
+document.getElementById("loginBtn").addEventListener("click", function() {
+    renderForm("{% url 'userManagement:login' %}", "loginModal", "Login");
+});
+document.getElementById("registerBtn").addEventListener("click", function() {
+    renderForm("{% url 'userManagement:register_user' %}", "registerModal", "Register");
+});
+document.getElementById("guestBtn").addEventListener("click", function() {
+    renderForm("{% url 'userManagement:register_guest' %}", "guestModal", "Continue as guest");
+});
+document.getElementById("42Btn").addEventListener("click", function() {
+    window.location.href="{% provider_login_url 'provider' %}";
+});
 
-    // Function to fetch and render forms
-    function renderForm(url, containerId, title) {
-        fetch(url, {
-        // Include CSRF token in the headers if includeCSRF is true
-        headers: {
-                "X-CSRFToken": getCookie("csrftoken")
-            },
-    })
+function loadLoggedInContent() {
+    document.getElementById("all").innerHTML = '';
+    fetch("/logged_in")
     .then(response => response.text())
     .then(html => {
-      // Create a modal using the fetched HTML content
-      const modalHtml = `
-            <div class="modal fade" id="${containerId}Modal" tabindex="-1" role="dialog" aria-labelledby="${containerId}ModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-scrollable" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="${containerId}ModalLabel">${title}</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body text-center">
-                            ${html} <!-- Render the fetched form here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-         // Add the modal HTML to the container
-         document.getElementById("modalContainer").innerHTML = modalHtml;
-          // Show the modal
-          const modal = document.getElementById(`${containerId}Modal`);
-          modal.classList.add('show');
-          modal.style.display = 'block';
-
-           // Add event listener to close modal when clicking on the cross (close button)
-        const closeButton = modal.querySelector('.close');
-        closeButton.addEventListener('click', function() {
-            modal.style.display = 'none';
-        });
-
-        // Close modal when clicking outside of it
-        window.addEventListener('click', function(event) {
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
-
-          // Find the form element within the modal
-          const form = modal.querySelector("form");
-            // Check if the form element was found
-            if (form) {
-                // Add the desired ID to the form element
-                form.id = `${containerId}Form`;
-                // Add event listener for form submission
-                form.addEventListener("submit", function(event) {
-                    event.preventDefault(); // Prevent default form submission
-                    // Create FormData object using the form element
-                    const formData = new FormData(form);
-                    // Send POST request to register user
-                    fetch(url, {
-                        method: "POST",
-                        body: formData,
-                        // Include CSRF token in the headers
-                        headers: {
-                            "X-CSRFToken": getCookie("csrftoken"),
-                        }
-                    })
-                    .then(response => {
-                        if (!response.url.includes(url)) {
-                            const modal = document.getElementById(`${containerId}Modal`);
-                            modal.classList.remove('show');
-                            modal.style.display = 'none';
-                            loadLoggedInContent();
-                        } else {
-                            // Login failed
-                            // Display error message
-                            response.text().then(errorMessage => {
-                            var extractedMessage = extractErrorMessage(errorMessage);
-                            const modal = document.getElementById(`${containerId}Modal`);
-                            const errorContainer = modal.querySelector(".modal-body .alert.alert-danger");
-                            if (errorContainer) {
-                                // If error container exists, replace its content
-                                errorContainer.textContent = extractedMessage;
-                            } else {
-
-                            const newErrorContainer = document.createElement("div");
-                            newErrorContainer.classList.add("alert", "alert-danger");
-                            newErrorContainer.textContent = extractedMessage;
-                            modal.querySelector(".modal-body").appendChild(newErrorContainer);
-                            }
-                          });
-                    }})
-                    .catch(error => console.error('Error:', error));
-                    });
-                            } else {
-                                console.error("Form element not found in fetched HTML content");
-                            }
-                        })
-                        .catch(error => console.error('Error fetching form:', error));
-                    }
-
-        function executeJavaScriptInContent(html) {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const scriptElements = doc.querySelectorAll('script');
-        scriptElements.forEach(script => {
-            eval(script.textContent);
-        });
-    }
-// Function to retrieve CSRF token from cookies
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
+        document.getElementById("all").innerHTML = html;
+        executeJavaScriptInContent(html);
+    })
+    .catch(error => console.error('Error loading logged-in content:', error));
 }
-const csrftoken = getCookie('csrftoken');
- // Function to load logged-in content after successful login
- function loadLoggedInContent() {
-        document.getElementById("all").innerHTML = '';
-        fetch("/logged_in")
-            .then(response => response.text())
-            .then(html => {
-                // Replace the content of the main container with the logged-in content
-                document.getElementById("all").innerHTML = html;
-                executeJavaScriptInContent(html);
-            })
-            .catch(error => console.error('Error loading logged-in content:', error));
-    }
 
-// Function to extract the error message from the provided HTML
-function extractErrorMessage(errorMessage) {
-    // Create a temporary div element to hold the HTML
-    var tempDiv = document.createElement('div');
-    // Set the inner HTML of the temporary div to the provided errorMessage
-    tempDiv.innerHTML = errorMessage;
-    // Find the error message element
-    var errorList = tempDiv.querySelector('.errorlist');
-    // Check if the error message element exists
-    if (errorList) {
-        // Find the error message within the error list
-        var errorMessageText = errorList.querySelector('li').textContent;
-        // Return the error message
-        return errorMessageText;
-    } else {
-        // Return null if no error message is found
-        return null;
-    }
-}
 </script>
 {% endblock %}

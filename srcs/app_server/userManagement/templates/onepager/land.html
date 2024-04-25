@@ -11,7 +11,7 @@
         <link rel="stylesheet" href="{% static 'pong/styles.css' %}">
         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" type="text/css" href="{% static 'userManagement/styles.css' %}">
-        {% endblock %}
+    {% endblock %}
 
 </head>
 <body>
@@ -37,116 +37,64 @@
     {% endblock content %}
   </div>
 </div>
+<script src="{% static 'pong/history.js' %}"></script>
 {% if user.is_authenticated %}
-    <script>
-      document.getElementById('logoBtn').addEventListener('click', function(event) {
-          event.preventDefault();
-      //console.log('Logo button clicked');
-      fetch("/logged_in")
-                      .then(response => response.text())
-                      .then(html => {
-                          document.getElementById("all").innerHTML = html;
-                          executeJavaScriptInContent(html);
-                        })
-                      .catch(error => console.error('Error loading game page:', error));
-      });
-    document.querySelector('.navbar').addEventListener('click', function(event) {
-      const target = event.target;
-      if (target.matches('.navbar-button')) {
-          event.preventDefault();
-          //console.log(target.textContent + ' button clicked');
-          switch (target.id) {
-              case 'gameBtn':
-                  //document.getElementById("content").innerHTML = '';
-                  fetch("/lobby")
-                      .then(response => response.text())
-                      .then(html => {
-                          document.getElementById("content").innerHTML = html;
-                          executeJavaScriptInContent(html);
-                        })
-                      .catch(error => console.error('Error loading game page:', error));
-                  break;
-              case 'profileBtn':
-                const url = `/profile/{{ user.username }}/`; // Construct the URL with the username
-                fetch(url)
-                      .then(response => response.text())
-                      .then(html => {
-                          document.getElementById("content").innerHTML = html;
-                          executeJavaScriptInContent(html);
-                        })
-                      .catch(error => console.error('Error loading profile page:', error));
-                  break;
-              case 'logoutBtn':
-                  fetch("{% url 'userManagement:logout' %}", {
-                          method: "POST",
-                          headers: {
-                              "X-CSRFToken": getCookie("csrftoken")
-                          }
-                      })
-                      .then(response => {
-                          if (response.ok) {
-                              document.getElementById("navbar").innerHTML = '';
-                              document.getElementById("content").innerHTML = '';
-                              fetch("/stranger")
-                                  .then(response => response.text())
-                                  .then(html => {
-                                      document.getElementById("content").innerHTML = html;
-                                      executeJavaScriptInContent(html);
-                                    })
-                                  .catch(error => console.error('Error loading content:', error));
-                          } else {
-                              console.error("Logout failed");
-                          }
-                      })
-                      .catch(error => console.error('Error:', error));
-                  break;
-          }
-      }
-  });
-  function executeJavaScriptInContent(html) {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-      const scriptElements = doc.querySelectorAll('script');
-      scriptElements.forEach(script => {
-        const scriptContent = script.textContent.trim();
-        if (scriptContent) {
-            // Create a new script element and set its content to execute
-            const newScript = document.createElement('script');
-            newScript.textContent = scriptContent;
-            // Append the script to the document head to execute it
-            document.head.appendChild(newScript);
-        }
-    });
-  }
-        // Function to retrieve CSRF token from cookies
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    // Does this cookie string begin with the name we want?
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
+<script>
+document.getElementById('logoBtn').addEventListener('click', function(event) {
+    event.preventDefault();
+    fetch("/logged_in")
+    .then(response => response.text())
+    .then(html => {
+        document.getElementById("all").innerHTML = html;
+        executeJavaScriptInContent(html);
+    })
+    .catch(error => console.error('Error loading game page:', error));
+    history.pushState(null, null, "/logged_in");
+});
 
-    </script>
+document.getElementById('navbar').addEventListener('click', function(event) {
+    const target = event.target;
+    if (target.matches('.navbar-button')) {
+        event.preventDefault();
+        console.log(target.id);
+        switch (target.id) {
+        case 'gameBtn':
+            loadContent("/lobby");
+            history.pushState(null, null, "/lobby");
+            break;
+        case 'profileBtn':
+            const url = `/profile/{{ user.username }}/`
+            loadContent(url);
+            history.pushState(null, null, url);
+            break;
+        case 'logoutBtn':
+            fetch("{% url 'userManagement:logout' %}", {
+                method: "POST",
+                headers: {
+                "X-CSRFToken": getCookie('csrftoken')
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById("navbar").innerHTML = '';
+                    document.getElementById("content").innerHTML = '';
+                    loadContent("/stranger")
+                    history.pushState(null, null, "/stranger");
+                } else {
+                    console.error("Logout failed");
+                }
+            })
+            .catch(error => console.error('Error:', error));
+            history.pushState(null, null, "/stranger");
+            break;
+        }
+    }
+});
+</script>
 {% endif %}
 {% include 'includes/footer.html' %}
 
-      <!-- Bootstrap JS and dependencies (jQuery and Popper.js) -->
-        <!-- Add your JavaScript imports and scripts here -->
-        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-        {% block extra_scripts %}
-        {% endblock extra_scripts %}
+    {% block extra_scripts %}
+    {% endblock extra_scripts %}
     </body>
 </html>
