@@ -130,4 +130,4 @@ function getCookie(name) {
 }
 
 
-export {fetch_html_replace_dynamicDIV_activate_js, fetch_with_internal_js, getCookie, executeJavaScriptInContent};
+export {fetch_html_replace_dynamicDIV_activate_js, fetch_with_internal_js, getCookie, executeJavaScriptInContent, ws};

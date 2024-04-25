@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 import json
 
+from django.contrib.auth.decorators import login_required
+
 from pong_online.lobby import Lobby, Match
 
 def landing_test(request):
@@ -11,6 +13,7 @@ def pong_online(request):
 	print("pong online view")
 	return render(request, "pong_online/pong_game.html")
 
+@login_required(login_url='/home')
 def display_lobby(request):
 	return render(request, "pong_online/lobby.html", {"username": request.user.username})
 

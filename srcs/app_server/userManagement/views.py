@@ -20,10 +20,13 @@ def dashboard(request):
 	return render(request, "userManagement/dashboard.html")
 
 def my_view(request):
-    if request.user.is_authenticated:
-        return render(request, "onepager/land.html", {"username": request.user.username})
-    else:
-        return render(request, "onepager/land.html")
+    return render(request, "onepager/land.html")
+    
+def	home(request):
+	if request.user.is_authenticated:
+		return render(request, "onepager/logged_in.html", {"username": request.user.username})
+	else:
+		return render(request, "onepager/stranger.html")
 
 #view for registering a new user
 def register_user(request):

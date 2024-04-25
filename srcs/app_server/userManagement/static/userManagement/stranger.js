@@ -155,14 +155,6 @@ function loadLoggedInContent() {
 			document.getElementById("content").innerHTML = html;
 		})
 		.catch(error => console.error('Error loading logged-in content:', error));
-
-	fetch('includes/navbar/')
-		.then(response => response.text())
-		.then(html => {
-			// Replace the content of the main container with the logged-in content
-			document.getElementById("navbar").innerHTML = html;
-		})
-		.catch(error => console.error('Error loading logged-in content:', error));
 }
 
 function extractErrorMessage(errorMessage) {
