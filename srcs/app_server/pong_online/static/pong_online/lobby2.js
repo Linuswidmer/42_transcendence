@@ -7,6 +7,9 @@ class Lobby extends HTMLElement {
 		this.username = this.getAttribute('data-username');
 		console.log("username lobby:", this.username);
 
+		ws.send(JSON.stringify({type: 'username', 'username': this.username}));
+
+
         this.innerHTML = /*html*/`
 			<div>
 				<button class="btn buttonblue" id="create_game">Create remote game</button>

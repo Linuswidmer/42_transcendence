@@ -19,7 +19,7 @@ console.log("username from request", username);
 
 ws.onopen = function(event) {
 	console.log('WebSocket connection established');
-	ws.send(JSON.stringify({type: 'username', 'username': 'admin'}));
+	ws.send(JSON.stringify({type: 'firstContactfromClient'}));
 }
 
 // const lobby = new Lobby(ws, username);
@@ -138,7 +138,7 @@ function router() {
 
     if (view) {
 		if (view === '/') {
-			view = 'home';
+			view = '/home';
 		}
 		console.log("router view:", view);
 		fetch(view)

@@ -24,7 +24,7 @@ def my_view(request):
     
 def	home(request):
 	if request.user.is_authenticated:
-		return render(request, "onepager/logged_in.html", {"username": request.user.username})
+		return render(request, "pong_online/lobby.html", {"username": request.user.username})
 	else:
 		return render(request, "onepager/stranger.html")
 

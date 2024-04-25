@@ -1,4 +1,4 @@
-import {fetch_html_replace_dynamicDIV_activate_js, fetch_with_internal_js, getCookie, executeJavaScriptInContent} from "./land.js"
+import {router, getCookie} from "./land.js"
 
 class Stranger extends HTMLElement {
     constructor() {
@@ -21,25 +21,30 @@ class Stranger extends HTMLElement {
 		let guestBtn = this.querySelector("#guestBtn");
 		let _42Btn = this.querySelector("#fortyTwoBtn");
 
+		this.loginUrl = this.getAttribute("data-loginUrl");
+		this.registerUrl = this.getAttribute("data-registerUrl");
+		this.guestUrl = this.getAttribute("data-guestUrl");
+		this.remoteAuthUrl = this.getAttribute("data-remoteAuthUrl");
+
 		// State
 		loginBtn.onclick = () => {
 			console.log("loginbtn");
-			renderForm("/accounts/login/", "loginModal", "Login");
+			renderForm(this.loginUrl, "loginModal", "Login");
 		};
 
 		registerBtn.onclick = () => {
 			console.log("registerbtn");
-			// renderForm("{% url 'userManagement:register_user' %}", "registerModal", "Register");
+			renderForm(this.registerUrl, "registerModal", "Register");
 		};
 
 		guestBtn.onclick = () => {
 			console.log("guestbtn");
-			// renderForm("{% url 'userManagement:register_guest' %}", "guestModal", "Continue as guest");
+			renderForm(this.guestUrl, "guestModal", "Continue as guest");
 		};
 
 		_42Btn.onclick = () => {
 			console.log("42btn");
-			// window.location.href="{% provider_login_url 'provider' %}";
+			window.location.href=this.remoteAuthUrl;
 		};
 
 
@@ -148,13 +153,8 @@ function renderForm(url, containerId, title) {
 const csrftoken = getCookie('csrftoken');
  // Function to load logged-in content after successful login
 function loadLoggedInContent() {
-	fetch("/logged_in")
-		.then(response => response.text())
-		.then(html => {
-			// Replace the content of the main container with the logged-in content
-			document.getElementById("content").innerHTML = html;
-		})
-		.catch(error => console.error('Error loading logged-in content:', error));
+	history.pushState("", "", "/home");
+	router();
 }
 
 function extractErrorMessage(errorMessage) {

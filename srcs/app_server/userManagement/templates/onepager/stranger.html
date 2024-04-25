@@ -9,6 +9,9 @@
 	<img src="{% static 'pong_online/michael.jpg' %}" alt="Image description">
 </div>
 
-<pong-stranger></pong-stranger>
+<pong-stranger data-loginUrl="{% url 'userManagement:login' %}"
+	data-registerUrl="{% url 'userManagement:register_user' %}"
+	data-guestUrl="{% url 'userManagement:register_guest' %}"
+	data-remoteAuthUrl="{% provider_login_url 'provider' %}"></pong-stranger>
 
  
