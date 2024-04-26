@@ -70,7 +70,8 @@ class Lobby:
 		return True, ""
 
 	def remove_registered_player(self, player):
-		self.registered_players_total.remove(player)
+		if (player in self.registered_players_total):
+			self.registered_players_total.remove(player)
 	
 	# rename to join tournament
 	def register_player_tournament(self, username, tournament_id):
@@ -194,6 +195,7 @@ class Lobby:
 		return self.tournaments.get(tournament_id)
 		
 	def delete_match(self, match):
+		#if (match in self.matches):
 		del self.matches[match.group_name]
 	
 	def delete_tournament(self, tournament):

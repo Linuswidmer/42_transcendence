@@ -187,9 +187,9 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		print("receive:", text_data)
 
 		print("consumer: ", self.username, " | in_game: ", self.in_game, " | is_playing: ", self.is_playing)
-		#print("matches: ", self.lobby.matches)
-		#print("tournaments: ", self.lobby.tournaments)
-		#print("regustered players", self.lobby.registered_players_total)
+		print("matches: ", self.lobby.matches)
+		print("tournaments: ", self.lobby.tournaments)
+		print("regustered players", self.lobby.registered_players_total)
 
 		json_from_client = json.loads(text_data)
 
@@ -200,8 +200,10 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		
 		# to indicate that the player is playing (not like in_game)
 		if message_type == "start":
-			self.is_playing = True
-			print("is_playing set !!!!!!!")
+			await self.channel_layer.group_send(
+					self.game_group_name,
+					{"type": "set_is_playing"}
+				)			
 
 		# if a client cloeses the window or leaves the page, this is
 		if message_type == "player_left":
@@ -212,16 +214,14 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				)
 
 		#if a client clicks on a link/button in the navbar 		
-		if message_type == "reset_consumer_after_unusual_game_leave":
+		if self.in_game and message_type == "reset_consumer_after_unusual_game_leave":
 			if self.is_playing:
 				await self.channel_layer.group_send(
 					self.game_group_name,
 					{"type": "end_game_player_left", "player": self.username},
 				)
 			else:
-			#self.game_group_name = ""
-				self.in_game = False
-
+				await self.process_lobby_update_in_consumer({"action": "leave"})
 
 		# if the pong_online js was loaded from the client it needs some data
 		# to fill the view
@@ -267,6 +267,11 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				"playerId": json_from_client.get("playerId", ""),
 	 			"action": json_from_client.get("action", "")},
 			)
+
+	async def set_is_playing(self, event):
+		self.is_playing = True
+		print("consumer: ", self.username, " | in_game: ", self.in_game, " | is_playing: ", self.is_playing)
+
 
 	async def send_initial_game_view_data(self):
 		#for remote get the match from the lobby. Fix that the key is sent in this request
@@ -354,6 +359,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				self.game_group_name = ""
 				self.tournament_group_name = ""
 				self.in_game = False
+				self.is_playing = False
 				self.match = None
 				self.hosts_game = False
 			else:
@@ -388,6 +394,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				self.game_group_name = ""
 				self.tournament_group_name = ""
 				self.in_game = False
+				self.is_playing = False
 				self.match = None
 				self.hosts_game = False
 				await self.send(text_data=json.dumps({"type": "leave_tournament", "tournament_id": tournament_id}))
@@ -469,7 +476,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 	async def end_game_player_left(self,event):
 		self.in_game = False
-		#self.is_playing = False
+		self.is_playing = False
 		if self.hosts_game:
 			losing_player = event["player"]
 			if self.match.registered_players[0] == losing_player:
@@ -513,6 +520,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		#check again
 		if ("game_over" in event and event["game_over"] == True):
 			self.in_game = False
+			self.is_playing = False
 			return
 		await self.send(
 			text_data=json.dumps(event)

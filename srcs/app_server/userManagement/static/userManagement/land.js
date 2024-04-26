@@ -72,6 +72,8 @@ window.addEventListener("click", e => {
         history.pushState("", "", e.target.href);
         router();
     } else if (e.target.matches("[data-logout]")) {
+		if (location.href.replace(location.origin, '') == '/pong_online/');
+			ws.send(JSON.stringify({type: 'reset_consumer_after_unusual_game_leave'}));
 		e.preventDefault();
 		history.pushState("", "", e.target.href);
 		console.log("logout pressed");
