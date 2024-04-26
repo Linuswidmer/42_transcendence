@@ -44,6 +44,7 @@ function loadLoggedInContent() {
         executeJavaScriptInContent(html);
     })
     .catch(error => console.error('Error loading logged-in content:', error));
+    history.pushState(null, null, "/logged_in");
 }
 
 </script>

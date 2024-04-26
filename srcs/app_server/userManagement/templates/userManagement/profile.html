@@ -1,5 +1,5 @@
 <!-- dwitter/templates/dwitter/profile.html -->
-
+{% extends 'onepager/land.html' %}
 {% load static %}
 {% block content %}
 <div class="container">
@@ -459,7 +459,7 @@ if (chartElement2 !== null)
             const matchName = this.dataset.matchname;
             const url = `/singleGameStats?matchName=${matchName}&username=${username}/`;
             renderForm(url, "StatsGame", "Game stats");
-            history.pushState(null, null, url);
+            //history.pushState(null, null, url);
            });
       });
 </script>
@@ -471,7 +471,7 @@ if (chartElement2 !== null)
             const tournament = this.dataset.tournament;
             const url = "/tournament_stats/tournament";
             renderForm(url, "Tournamentstats", "Stats Tournament");
-            history.pushState(null, null, url);
+            //history.pushState(null, null, url);
         });
     });
 </script>

@@ -1,6 +1,6 @@
 <!-- dwitter/templates/dwitter/profile_list.html -->
 
-
+{% extends 'onepager/land.html' %}
 {% block content %}
 
 <div class="container my-4">
@@ -61,7 +61,8 @@
              executeJavaScriptInContent(html);
              })
              .catch(error => console.error('Error loading profiles page:', error));
-     });
+             history.pushState(null, null, url);
+    });
 });
 </script>
 {% endblock %}

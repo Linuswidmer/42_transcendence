@@ -16,24 +16,24 @@
 </head>
 <body>
   <div id="all">
-  {% if user.is_authenticated %}
-    <div id="navbar">
-      <div class="navbar navbar-light" style="background-color: #6a0dad;">
-        <button class="navbar-button" id="logoBtn">
-            <img src="{% static 'pong/pong_logo.png' %}" alt="Logo" class="logo">
-        </button>
-          <div>
-              <button class="navbar-button" id="gameBtn">Play</button>
-              <button class="navbar-button" id="profileBtn">Dashboard</button>
-            </div>
-            <div>
-                <button class="navbar-button" id="logoutBtn">Logout</button>
+      <div id="content">
+          {% if user.is_authenticated %}
+          <div id="navbar">
+              <div class="navbar navbar-light" style="background-color: #6a0dad;">
+                <button class="navbar-button" id="logoBtn">
+                    <img src="{% static 'pong/pong_logo.png' %}" alt="Logo" class="logo">
+                </button>
+                <div>
+                    <button class="navbar-button" id="gameBtn">Play</button>
+                    <button class="navbar-button" id="profileBtn">Dashboard</button>
+                </div>
+                <div>
+                    <button class="navbar-button" id="logoutBtn">Logout</button>
+                </div>
             </div>
         </div>
-    </div>
-    {% endif %}
-    <div id="content">
-    {% block content %}
+        {% endif %}
+        {% block content %}
     {% endblock content %}
   </div>
 </div>
@@ -63,7 +63,7 @@ document.getElementById('navbar').addEventListener('click', function(event) {
             history.pushState(null, null, "/lobby");
             break;
         case 'profileBtn':
-            const url = `/profile/{{ user.username }}/`
+            const url = `/profile/{{ request.user }}/`
             loadContent(url);
             history.pushState(null, null, url);
             break;
