@@ -14,8 +14,8 @@ PADDLE_WIDTH = 15
 PADDLE_HEIGHT = 70
 PADDLE_DY = 400
 
-BALL_DX = 250
-BALL_DY = 250
+BALL_DX = 20
+BALL_DY = 20
 BALL_RADIUS = 10
 
 MAX_BOUNCE_ANGLE = math.radians(50) #75 degree in radian
@@ -78,8 +78,12 @@ class Ball(Entity):
 
 	def top_or_bottom_paddle_hit(self, paddle, ball_rect):
 		intersection_rect = ball_rect.clip(paddle.hitbox)
-		print("Intersecting collision rect: ", intersection_rect)
+		#print("Intersecting collision rect: ", intersection_rect)
 
+		#since we are in the colliderect we have a collsion. If the intersect_rect
+		# is higher, this means there is more vertical overlap, so we have a hit on
+		# on the side. If heigth and witdh are eqal we rather want a side hit to keep
+		# the game running
 		if (intersection_rect.height >= intersection_rect.width):
 			return "SIDE"
 		elif (intersection_rect.height < intersection_rect.width):
@@ -113,7 +117,7 @@ class Ball(Entity):
 			# In this case, we reverse the x-direction of the ball to simulate a bounce.
 			bounce = self.top_or_bottom_paddle_hit(paddle, new_ball_rect)
 			if bounce == "SIDE":
-				print("NORMALHIT")
+				#print("SIDE HIT")
 				initialYDirection = -1 if self.dy < 0 else 1
 				newXDirection = -1 if self.dx > 0 else 1
 				relativeIntersectToPaddleCenter = (paddle.y + (paddle.height / 2)) - self.y
@@ -126,11 +130,11 @@ class Ball(Entity):
 				self.dy = currentVel * math.sin(bouncAngle) * initialYDirection
 
 			elif bounce == "TOP_OR_BOTTOM" : # The ball hit the top or bottom of the paddle
-				print("TOP OR BOTTOM")
+				#print("TOP OR BOTTOM")
 				self.dy *= -1
 
 			else:
-				print("NONE")
+				print("NO HIT: Something went wrong")
 
 			# increase or decrease dy of the ball if the paddle is moving
 			# the same/ or opposite direction respectively
