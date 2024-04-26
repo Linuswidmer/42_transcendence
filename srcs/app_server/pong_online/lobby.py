@@ -131,18 +131,33 @@ class Lobby:
 		if len(registered_players) == 2 and username == registered_players[1]:
 			return True
 		return False
-	
+
+	def is_valid_group_name(self, name):
+		# Check if the name starts with a letter
+		if not name[0].isalpha():
+			return False
+		
+		# Check each character in the name
+		for char in name:
+			# Check if the character is alphanumeric or underscore
+			if not (char.isalnum() or char == '-'):
+				return False
+
+		if len(name) >= 100:
+			return False
+
+		return True
+
 	def generate_name(self):
-		name = str(generate())
-		while (name in self.used_generated_names):
-			print('Name already in use: ', name)
+		name = generate()
+		while ((name in self.used_generated_names) or (not self.is_valid_group_name(name))):
+			print('Name already in use or not valid: ', name)
 			name = str(generate())
 		self.used_generated_names.add(name)
 		return name
 
 	# rename to create_match
 	def add_match(self, modus) -> bool:
-		print('CREATE: ', modus)
 		match_name = self.generate_name()
 		self.matches[match_name] = Match(match_name, modus)
 		return match_name
