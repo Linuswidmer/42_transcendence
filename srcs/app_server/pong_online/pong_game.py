@@ -76,27 +76,22 @@ class Ball(Entity):
 			velocity = MAX_VELOCITY
 		return velocity
 
-	def top_or_bottom_paddle_hit(self, paddle, new_x, new_y, radius):
-		# Check if the ball is within the horizontal range of the paddle
-		if paddle.x < new_x < paddle.x + paddle.width:
-			# Check if the ball is touching the top or bottom of the paddle (considering the radius)
-			if paddle.y - radius <= new_y <= paddle.y + radius:
-				return "TOP"
-			elif paddle.y + paddle.height - radius <= new_y <= paddle.y + paddle.height + radius:
-				return "BOTTOM"
-		# Check if the ball is within the vertical range of the paddle
-		elif paddle.y < new_y < paddle.y + paddle.height:
-			# Check if the ball is touching the side of the paddle (considering the radius)
-			if (paddle.x - radius <= new_x <= paddle.x + radius) or (paddle.x + paddle.width - radius <= new_x <= paddle.x + paddle.width + radius):
-				return "SIDE"
-		return None
+	def top_or_bottom_paddle_hit(self, paddle, ball_rect):
+		intersection_rect = ball_rect.clip(paddle.hitbox)
+		print("Intersecting collision rect: ", intersection_rect)
+
+		if (intersection_rect.height >= intersection_rect.width):
+			return "SIDE"
+		elif (intersection_rect.height < intersection_rect.width):
+			return "TOP_OR_BOTTOM"
+		else:
+			return "NONE"
 
 	def check_ball_paddle_collision(self, new_x, new_y, leftPaddle, rightPaddle):
 
 		# if the ball is moving right (positive dx) the possible 
 		# collision will be with the right paddle
 		paddle = rightPaddle if self.dx > 0 else leftPaddle
-
 
 		# Create a new rect for the ball's new position
 		new_ball_rect = pygame.Rect(new_x - self.radius, new_y - self.radius, 2 * self.radius, 2 * self.radius)
@@ -116,7 +111,8 @@ class Ball(Entity):
 			# If the new x-position is within its radius of the left or right of the paddle,
 			# it means the ball has hit the left or right of the paddle.
 			# In this case, we reverse the x-direction of the ball to simulate a bounce.
-			if self.top_or_bottom_paddle_hit(paddle, new_x, new_y, self.radius) == "SIDE":
+			bounce = self.top_or_bottom_paddle_hit(paddle, new_ball_rect)
+			if bounce == "SIDE":
 				print("NORMALHIT")
 				initialYDirection = -1 if self.dy < 0 else 1
 				newXDirection = -1 if self.dx > 0 else 1
@@ -129,9 +125,12 @@ class Ball(Entity):
 				self.dx = currentVel * math.cos(bouncAngle) * newXDirection
 				self.dy = currentVel * math.sin(bouncAngle) * initialYDirection
 
-			else: # The ball hit the top or bottom of the paddle
-				print("TOPHIT")
+			elif bounce == "TOP_OR_BOTTOM" : # The ball hit the top or bottom of the paddle
+				print("TOP OR BOTTOM")
 				self.dy *= -1
+
+			else:
+				print("NONE")
 
 			# increase or decrease dy of the ball if the paddle is moving
 			# the same/ or opposite direction respectively
@@ -351,6 +350,7 @@ def main():
 	clock = pygame.time.Clock()  # Add a clock to control the frame rate
 	iteration_time = 1 / FPS
 	should_run = True
+	players = ["playerRight", "playerLeft"]
 	game_data = {
 		"playerLeft": {
 			"score": 0,
@@ -372,7 +372,7 @@ def main():
 		if not should_run:
 			break
 		visualize_game(canvas, pong_instance.leftPaddle, pong_instance.rightPaddle, pong_instance.ball)
-		entity_data = async_to_sync(pong_instance.update_entities)(dt, game_data)
+		entity_data = async_to_sync(pong_instance.update_entities)(dt, game_data, players)
 		# entity_data = asyncio.run(async_wrapper(pong_instance, dt, game_data))
 		should_run = not entity_data["game_over"]
 		#send all entity data to clients, so they can render the game
