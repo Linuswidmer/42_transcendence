@@ -65,6 +65,9 @@ function router(callback=null) {
 // Handle navigation
 window.addEventListener("click", e => {
     if (e.target.matches("[data-link]")) {
+		console.log(location.href.replace(location.origin, ''));
+		if (location.href.replace(location.origin, '') == '/pong_online/');
+			ws.send(JSON.stringify({type: 'reset_consumer_after_unusual_game_leave'}));
         e.preventDefault();
         history.pushState("", "", e.target.href);
         router();
