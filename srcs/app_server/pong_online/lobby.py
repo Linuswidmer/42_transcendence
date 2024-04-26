@@ -47,12 +47,10 @@ class Lobby:
 	
 	def check_user_registered(self, username):
 		if username in self.registered_players_total:
-			print('check user: is in self.registered_players_total')
 			return True
 		for tournament_id in self.tournaments:
 			tournament = self.get_tournament(tournament_id)
 			if username in tournament.players:
-				print('check user: is in tournament.players')
 				return True
 		return False
 	
@@ -62,7 +60,6 @@ class Lobby:
 		if not match:
 			return False, "match does not exist"
 		elif username in self.registered_players_total:
-			print("Already registered in Match")
 			return False, "player already registered"
 		elif not (match.register_player(username)):
 			return False, "game full"
@@ -70,7 +67,6 @@ class Lobby:
 		return True, ""
 
 	def remove_registered_player(self, player):
-		#if (player in self.registered_players_total):
 		self.registered_players_total.remove(player)
 	
 	# rename to join tournament
@@ -79,7 +75,6 @@ class Lobby:
 		if not tournament:
 			return False, "tournament does not exist"
 		elif username in self.registered_players_total:
-			print("Already registered in Match")
 			return False, "player already registered"
 		elif not (tournament.register_player(username)):
 			return False, "tournament full"
@@ -95,7 +90,6 @@ class Lobby:
 			return False, "player not in tournament"
 		tournament.players.remove(username)
 		#self.registered_players_total.remove(username)
-		#print(self.tournaments)
 		if (len(tournament.players) == 0):
 			del self.tournaments[tournament_id]
 		return True, ""
@@ -152,7 +146,6 @@ class Lobby:
 	def generate_name(self):
 		name = generate()
 		while ((name in self.used_generated_names) or (not self.is_valid_group_name(name))):
-			print('Name already in use or not valid: ', name)
 			name = str(generate())
 		self.used_generated_names.add(name)
 		return name
@@ -168,7 +161,6 @@ class Lobby:
 
 	async def add_tournament(self, username) -> bool:
 		tournament_id = self.generate_name()
-		print('Create Tournamnet, generated name: ', tournament_id)
 		self.tournaments[tournament_id] = Tournament(tournament_id, 4, self)
 		self.tournaments[tournament_id].django_tournament = await sync_to_async(self.create_django_tournament)(tournament_id)
 		self.tournaments[tournament_id].players.append(username)
@@ -328,7 +320,6 @@ class Tournament:
 				}
 			games_added += 1
 			self.matches.append(Match(match_id, "remote", self.tournament_name))
-		print(json.dumps(self.data, indent=4))
 
 	def get_match(self, match_id):
 		for match in self.matches:

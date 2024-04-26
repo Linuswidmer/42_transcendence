@@ -186,10 +186,11 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		logger.debug("data received in receive: %s", text_data)
 		print("receive:", text_data)
 
-		print("consumer: ", self.username, " | in_game: ", self.in_game, " | is_playing: ", self.is_playing)
-		print("matches: ", self.lobby.matches)
-		print("tournaments: ", self.lobby.tournaments)
-		print("regustered players", self.lobby.registered_players_total)
+		#print("consumer: ", self.username, " | in_game: ", self.in_game, " | is_playing: ", self.is_playing)
+		#print("game_group: ", self.game_group_name, " | tournament_group: ", self.tournament_group_name)
+		#print("matches: ", self.lobby.matches)
+		#print("tournaments: ", self.lobby.tournaments)
+		#print("regustered players", self.lobby.registered_players_total)
 
 		json_from_client = json.loads(text_data)
 
@@ -204,6 +205,10 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 					self.game_group_name,
 					{"type": "set_is_playing"}
 				)			
+
+
+		print("consumer: ", self.username, " | in_game: ", self.in_game, " | is_playing: ", self.is_playing)
+		print("game_group: ", self.game_group_name, " | tournament_group: ", self.tournament_group_name)
 
 		# if a client cloeses the window or leaves the page, this is
 		if message_type == "player_left":
@@ -393,12 +398,14 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				return None
 			success, message = self.lobby.register_player_tournament(self.username, tournament_id)
 			if success:
+				self.tournament_group_name = tournament_id
 				await self.send(text_data=json.dumps({"type": "join_tournament", "tournament_id": tournament_id}))
 				await self.channel_layer.group_add(
 					tournament_id, self.channel_name
 				)
 			else:
-				json_from_client["error"] = message
+				await self.send(text_data=json.dumps({"type": "error", "message": "Cannot join tournament: tournament is already full"}))
+				return
 		
 		if action == "leave_tournament":
 			success, message = self.lobby.unregister_player_tournament(self.username, tournament_id)
@@ -533,6 +540,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		if ("game_over" in event and event["game_over"] == True):
 			self.in_game = False
 			self.is_playing = False
+			#self.game_group_name = ""
 			return
 		await self.send(
 			text_data=json.dumps(event)

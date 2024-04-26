@@ -130,6 +130,7 @@ class Game extends HTMLElement {
 	}
 
 	handle_beforeunload = () => {
+		this.remove_event_listener();
 		ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
 	}
 
@@ -149,7 +150,6 @@ class Game extends HTMLElement {
 	add_event_listener() {
 		window.addEventListener('keydown', this.handle_keydown);
 		window.addEventListener('keyup', this.handle_keyup);
-		//window.addEventListener('beforeunload', this.handle_beforeunload);	
 	}
 
 	remove_event_listener() {
@@ -337,7 +337,5 @@ class Game extends HTMLElement {
 		}
 	} 
 }
-
-
 
 customElements.define("pong-game", Game);

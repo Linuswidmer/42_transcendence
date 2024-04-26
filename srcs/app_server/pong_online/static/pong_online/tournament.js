@@ -33,6 +33,7 @@ class Tournament extends HTMLElement {
 		this.leaveTournamentButton = document.createElement('button');
 		this.leaveTournamentButton.textContent = 'Leave Tournament';
 		this.leaveTournamentButton.addEventListener('click', this.handle_leave_tournament_button_click);
+		window.addEventListener('beforeunload', this.handle_beforeunload);	
     }
 
 	updateTournamentLobby(data) {
@@ -103,6 +104,10 @@ class Tournament extends HTMLElement {
 			// Append round to rounds container
 			roundsContainer.appendChild(roundElement);
 		}
+	}
+
+	handle_beforeunload = () => {
+		ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
 	}
 
 	handle_leave_tournament_button_click= () => {

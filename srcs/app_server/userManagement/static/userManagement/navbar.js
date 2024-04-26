@@ -1,7 +1,5 @@
 import {ws} from "./land.js"
 
-
-
 class Navbar extends HTMLElement {
     constructor() {
         super();
