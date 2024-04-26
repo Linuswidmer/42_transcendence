@@ -138,10 +138,10 @@ class Tournament extends HTMLElement {
 			}
 			if (data.type === "join") {
 				history.pushState("", "", "/pong_online");
-				router();
-				ws.send(JSON.stringify({type: 'get_game_data'}));
+				router(() => {
+					ws.send(JSON.stringify({type: 'get_game_data'}));
+				});
 			}
-	
 		} catch (error) {
 			console.log('Error parsing JSON:', error);
 		}

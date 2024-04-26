@@ -35,7 +35,7 @@ function getCookie(name) {
 	return cookieValue;
 }
 
-function router() {
+function router(callback=null) {
     let view = location.href.replace(location.origin, '');
 	let content = document.getElementById('content');
 
@@ -49,6 +49,9 @@ function router() {
 		.then(html => {
 			// Replace the content of the main container with the logged-in content
 			content.innerHTML = html;
+			if (callback && typeof callback === 'function') {
+				callback();
+			}
 		})
 		.catch(error => console.error('Error loading logged-in content:', error));
 		// document.title = view.title;
