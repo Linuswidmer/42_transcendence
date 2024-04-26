@@ -166,8 +166,9 @@ class Lobby extends HTMLElement {
 	join_tournament(server_data) {
 		let tournamentGameUrl = '/tournament/' + server_data.tournament_id + '/';
 		history.pushState("", "", tournamentGameUrl);
-		router();
-		ws.send(JSON.stringify({type: 'tournament_lobby_update', 'tournament_id': server_data.tournament_id}));
+		router(() => {
+			ws.send(JSON.stringify({type: 'tournament_lobby_update', 'tournament_id': server_data.tournament_id}));
+		});
 		// fetch_html_replace_dynamicDIV_activate_js('/tournament/' + server_data.tournament_id + '/', true, () => {
 		// 	this.ws.send(JSON.stringify({type: 'tournament_lobby_update', 'tournament_id': server_data.tournament_id}));
 		// });

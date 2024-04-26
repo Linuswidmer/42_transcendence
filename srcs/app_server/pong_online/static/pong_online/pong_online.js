@@ -194,8 +194,9 @@ class Game extends HTMLElement {
 				this.remove_event_listener();
 				let tournamentLobbyUrl = '/tournament/' + data.tournament_id;
 				history.pushState("", "", tournamentLobbyUrl);
-				router();
-				ws.send(JSON.stringify({type: 'tournament_lobby_update', 'tournament_id': data.tournament_id}));
+				router()(() => {
+					ws.send(JSON.stringify({type: 'tournament_lobby_update', 'tournament_id': data.tournament_id}));
+				});
 			}
         } catch (error) {
             console.log('Error parsing JSON:', error);
