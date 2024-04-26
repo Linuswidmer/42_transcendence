@@ -13,7 +13,7 @@ console.log("username from request", username);
 
 
 class Lobby {
-	constructor(ws, username) {
+	constructor() {
         this.ws = ws;
 		ws.username = username;  //maybe change later
 		this.username = username;
@@ -155,77 +155,81 @@ class Lobby {
 
 	join_game(modus) {
 		ws.modus = modus;
-			fetch('/pong_online')
-				.then(response => response.text())
-				.then(data => {
-					// Create a temporary DOM div element
-					var tempDiv = document.createElement('div');
+		loadContent("/pong_online");
+		history.pushState(null, null, "/pong_online");
+			// fetch('/pong_online')
+			// 	.then(response => response.text())
+			// 	.then(data => {
+			// 		// Create a temporary DOM div element
+			// 		var tempDiv = document.createElement('div');
 
-					// Set its innerHTML to the fetched HTML data
-					tempDiv.innerHTML = data;
+			// 		// Set its innerHTML to the fetched HTML data
+			// 		tempDiv.innerHTML = data;
 			
-					// Extract the src attribute from the script tag
-					var scriptSrc = tempDiv.querySelector('script').src;
+			// 		// Extract the src attribute from the script tag
+			// 		var scriptSrc = tempDiv.querySelector('script').src;
 			
-					// Use the fetched HTML data
-					document.body.innerHTML = data;
+			// 		// Use the fetched HTML data
+			// 		document.body.innerHTML = data;
 			
-					// Create a new script element
-					var script = document.createElement('script');
+			// 		// Create a new script element
+			// 		var script = document.createElement('script');
 			
-					// Set its src attribute to the extracted src
-					script.src = scriptSrc;
+			// 		// Set its src attribute to the extracted src
+			// 		script.src = scriptSrc;
 					
-					// Append the script element to the body of the document
-					document.body.appendChild(script);
-				})
-				.catch((error) => {
-					console.error('Error:', error);
-				});
+			// 		// Append the script element to the body of the document
+			// 		document.body.appendChild(script);
+			// 	})
+			// 	.catch((error) => {
+			// 		console.error('Error:', error);
+			// 	});
 	}
 
 	join_tournament(data1) {
 		console.log('LOAD THE TM LOBBY')
 		document.body.innerHTML = '';
-		fetch('/tournament/' + data.tournament_id + '/')
-			.then(response => response.text())
-			/* .then(data => {
-				document.body.innerHTML = data
-			}) */
-			.then(data => {
-				console.log('/tournament/' + data1.tournament_id)
-				// Create a temporary DOM div element
-				var tempDiv = document.createElement('div');
+		loadContent('/tournament/' + data.tournament_id + '/');
+		history.pushState(null, null, '/tournament/' + data.tournament_id + '/');
+		// fetch('/tournament/' + data.tournament_id + '/')
+		// 	.then(response => response.text())
+		// 	/* .then(data => {
+		// 		document.body.innerHTML = data
+		// 	}) */
+		// 	.then(data => {
+		// 		console.log('/tournament/' + data1.tournament_id)
+		// 		// Create a temporary DOM div element
+		// 		var tempDiv = document.createElement('div');
 
-				// Set its innerHTML to the fetched HTML data
-				tempDiv.innerHTML = data;
+		// 		// Set its innerHTML to the fetched HTML data
+		// 		tempDiv.innerHTML = data;
 		
-				// Extract the src attribute from the script tag
-				var scriptSrc = tempDiv.querySelector('script').src;
+		// 		// Extract the src attribute from the script tag
+		// 		var scriptSrc = tempDiv.querySelector('script').src;
 		
-				// Use the fetched HTML data
-				document.body.innerHTML = data;
+		// 		// Use the fetched HTML data
+		// 		document.body.innerHTML = data;
 		
-				//console.log(data);
-				// Create a new script element
-				var script = document.createElement('script');
+		// 		//console.log(data);
+		// 		// Create a new script element
+		// 		var script = document.createElement('script');
 		
-				// Set its src attribute to the extracted src
-				script.src = scriptSrc;
+		// 		// Set its src attribute to the extracted src
+		// 		script.src = scriptSrc;
 
-				script.onload = function() {
-					// This function will be called when the script is fully loaded and executed
-					console.log('Script loaded');
-					// Send WebSocket message here
-					ws.send(JSON.stringify({type: 'tournament_lobby_update', 'tournament_id': data1.tournament_id}));
-				};
+		// 		script.onload = function() {
+		// 			// This function will be called when the script is fully loaded and executed
+		// 			console.log('Script loaded');
+		// 			// Send WebSocket message here
+		// 			ws.send(JSON.stringify({type: 'tournament_lobby_update', 'tournament_id': data1.tournament_id}));
+		// 		};
 				
-				// Append the script element to the body of the document
-				document.body.appendChild(script);
-			})
-			.catch((error) => {
-				console.error('Error:', error);
-			});
+		// 		// Append the script element to the body of the document
+		// 		document.body.appendChild(script);
+		// 	})
+		// 	.catch((error) => {
+		// 		console.error('Error:', error);
+		// 	});
 	}
 }
 
