@@ -207,10 +207,16 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 		# if a client cloeses the window or leaves the page, this is
 		if message_type == "player_left":
-			if (self.in_game):
+			if (self.in_game and self.is_playing):
 				await self.channel_layer.group_send(
 					self.game_group_name,
 					{"type": "end_game_player_left", "player": json_from_client.get("player", "")},
+				)
+			elif(self.in_game and not self.is_playing):
+				await self.process_lobby_update_in_consumer({"action": "leave"})
+				await self.channel_layer.group_send(
+					"lobby",
+					{"type": "group_lobby_update"}
 				)
 
 		#if a client clicks on a link/button in the navbar 		
@@ -222,6 +228,10 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				)
 			else:
 				await self.process_lobby_update_in_consumer({"action": "leave"})
+				await self.channel_layer.group_send(
+					"lobby",
+					{"type": "group_lobby_update"}
+				)
 
 		# if the pong_online js was loaded from the client it needs some data
 		# to fill the view
@@ -311,6 +321,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 		#check if registered -> if not try to register then join
 		if action == "join" and modus == "remote":
+
 			# if user already registered -> error
 			if self.lobby.check_user_registered(self.username) and not tournament_id:
 				await self.send(text_data=json.dumps({"type": "error", "message": "Cannot join match: player is already registered"}))
@@ -325,7 +336,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 					tournament = self.lobby.get_tournament(tournament_id)
 					match = tournament.get_match(match_id)
 				else:
-					match = self.lobby.get_match(match_id) 
+					match = self.lobby.get_match(match_id)						
 				success, message = self.lobby.register_player_match(
 						self.username, match
 						)
@@ -336,7 +347,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 						self.game_group_name, self.channel_name
 					)
 				else:
-					json_from_client["error"] = message
+					await self.send(text_data=json.dumps({"type": "error", "message": "Cannot join match: match is already full"}))
+					return
 
 			#if user is registered to this game -> join
 			if match.group_name == match_id:

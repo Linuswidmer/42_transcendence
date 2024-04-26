@@ -149,7 +149,7 @@ class Game extends HTMLElement {
 	add_event_listener() {
 		window.addEventListener('keydown', this.handle_keydown);
 		window.addEventListener('keyup', this.handle_keyup);
-		window.addEventListener('beforeunload', this.handle_beforeunload);	
+		//window.addEventListener('beforeunload', this.handle_beforeunload);	
 	}
 
 	remove_event_listener() {
@@ -165,6 +165,7 @@ class Game extends HTMLElement {
 			if (data.type === 'send_to_group') {
 				switch (data.identifier) {
 					case 'deliver_init_game_data':
+						window.addEventListener('beforeunload', this.handle_beforeunload);	
 						this.handle_game_view_population(data);
 						break;
 					case 'game_end':
