@@ -34,13 +34,15 @@ function getCookie(name) {
 }
 
 const routes = {
-    "/": { fetch: "/home" },
+    "/": { fetch: "/home/" },
+	"/home/": { fetch: "/home/" },
     "/lobby/": { fetch: "/fetch_lobby" },
     "/pong_online/": { fetch: "fetch_pong_online" },
 };
 
 function router(callback=null) {
 	let urlWithoutOrigin = location.href.replace(location.origin, '');
+	console.log("router path:", urlWithoutOrigin);
 	let view = routes[urlWithoutOrigin];
 	console.log("router view:", view);
 
