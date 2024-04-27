@@ -1,4 +1,4 @@
-import {router, getCookie} from "./land.js"
+import {router, getCookie} from "./main.js"
 
 class Stranger extends HTMLElement {
     constructor() {

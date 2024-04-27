@@ -19,8 +19,8 @@ import json
 def dashboard(request):
 	return render(request, "userManagement/dashboard.html")
 
-def my_view(request):
-    return render(request, "onepager/land.html")
+def index(request):
+    return render(request, "onepager/index.html")
     
 def	home(request):
 	if request.user.is_authenticated:

@@ -12,8 +12,6 @@ let ws = new WebSocket(
 	protocol + '://' + window.location.host + '/ws/pong_online/game/'
 );
 
-console.log("username from request", username);
-
 ws.onopen = function(event) {
 	console.log('WebSocket connection established');
 	ws.send(JSON.stringify({type: 'firstContactfromClient'}));
@@ -35,28 +33,31 @@ function getCookie(name) {
 	return cookieValue;
 }
 
+const routes = {
+    "/": { fetch: "/home" },
+    "/lobby/": { fetch: "/fetch_lobby" },
+    "/pong_online/": { fetch: "fetch_pong_online" },
+};
+
 function router(callback=null) {
-    let view = location.href.replace(location.origin, '');
+	let urlWithoutOrigin = location.href.replace(location.origin, '');
+	let view = routes[urlWithoutOrigin];
+	console.log("router view:", view);
+
 	let content = document.getElementById('content');
 
     if (view) {
-		if (view === '/') {
-			view = '/home';
-		}
-		console.log("router view:", view);
-		fetch(view)
+		fetch(view.fetch)
 		.then(response => response.text())
 		.then(html => {
-			// Replace the content of the main container with the logged-in content
 			content.innerHTML = html;
 			if (callback && typeof callback === 'function') {
 				callback();
 			}
 		})
 		.catch(error => console.error('Error loading logged-in content:', error));
-		// document.title = view.title;
     } else {
-		console.log("else");
+		console.log("router else");
         history.replaceState("", "", "/");
         router();
     }

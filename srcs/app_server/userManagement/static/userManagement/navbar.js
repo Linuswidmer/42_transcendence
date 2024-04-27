@@ -1,4 +1,4 @@
-import {ws} from "./land.js"
+import {ws} from "./main.js"
 
 
 
@@ -13,7 +13,7 @@ class Navbar extends HTMLElement {
 
         this.innerHTML = /*html*/`
 			<div>
-				<a href="/lobby" class="navbar-button" id="lobbyBtn" data-link>Lobby</a>
+				<a href="/lobby/" class="navbar-button" id="lobbyBtn" data-link>Lobby</a>
 				<a href="/profile/${this.username}" class="navbar-button" id="profileBtn" data-link>Profile</a>
 				<a href="/home" class="navbar-button" id="logoutBtn" data-logout>logout</a>
 			</div>
