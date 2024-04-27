@@ -129,12 +129,9 @@ class Tournament extends HTMLElement {
 				this.updateTournamentLobby(data);
 			}
 			if (data.type === "redirect_to_tournament_stats") {
-				console.log(window.location.origin + '/tournament_stats/' + data.tournament_id);
 				let tournamentStatsUrl = '/tournament_stats/' + data.tournament_id;
 				history.pushState("", "", tournamentStatsUrl);
 				router();
-				// fetch_with_internal_js('/tournament_stats/' + data.tournament_id);
-				//window.location.href = window.location.origin + '/tournament_stats/' + data.tournament_id;
 			}
 			if (data.type === "leave_tournament"){
 				console.log(window.location.origin + '/lobby/');

@@ -64,14 +64,15 @@ function router(callback=null) {
 
 // Handle navigation
 window.addEventListener("click", e => {
+	let currentURL = location.href.replace(location.origin, '');
     if (e.target.matches("[data-link]")) {
-		if (location.href.replace(location.origin, '') == '/pong_online/');
+		if (currentURL == '/pong_online/' || currentURL.includes('/tournament/'));
 			ws.send(JSON.stringify({type: 'reset_consumer_after_unusual_game_leave'}));
         e.preventDefault();
         history.pushState("", "", e.target.href);
         router();
     } else if (e.target.matches("[data-logout]")) {
-		if (location.href.replace(location.origin, '') == '/pong_online/');
+		if (currentURL == '/pong_online/' || currentURL.includes('/tournament/'));
 			ws.send(JSON.stringify({type: 'reset_consumer_after_unusual_game_leave'}));
 		e.preventDefault();
 		history.pushState("", "", e.target.href);

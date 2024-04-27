@@ -217,26 +217,30 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 					self.game_group_name,
 					{"type": "end_game_player_left", "player": json_from_client.get("player", "")},
 				)
-			elif(self.in_game and not self.is_playing):
+			elif (self.in_game and not self.is_playing):
 				await self.process_lobby_update_in_consumer({"action": "leave"})
 				await self.channel_layer.group_send(
 					"lobby",
 					{"type": "group_lobby_update"}
 				)
+			elif (self.tournament_group_name):
+				await self.process_lobby_update_in_consumer({"action": "leave_tournament", "tournament_id": self.tournament_group_name})
 
 		#if a client clicks on a link/button in the navbar 		
-		if self.in_game and message_type == "reset_consumer_after_unusual_game_leave":
-			if self.is_playing:
+		if message_type == "reset_consumer_after_unusual_game_leave":
+			if self.in_game and self.is_playing:
 				await self.channel_layer.group_send(
 					self.game_group_name,
 					{"type": "end_game_player_left", "player": self.username},
 				)
-			else:
+			elif (self.in_game and not self.is_playing):
 				await self.process_lobby_update_in_consumer({"action": "leave"})
 				await self.channel_layer.group_send(
 					"lobby",
 					{"type": "group_lobby_update"}
 				)
+			elif (self.tournament_group_name):
+				await self.process_lobby_update_in_consumer({"action": "leave_tournament", "tournament_id": self.tournament_group_name})
 
 		# if the pong_online js was loaded from the client it needs some data
 		# to fill the view
@@ -387,6 +391,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				await self.send(text_data=json.dumps({"type": "error", "message": "Cannot create tournament: player is already registered"}))
 				return None
 			tournament_id = await self.lobby.add_tournament(self.username)
+			self.tournament_group_name = tournament_id
 			await self.send(text_data=json.dumps({"type": "join_tournament", "tournament_id": tournament_id}))
 			await self.channel_layer.group_add(
 					tournament_id, self.channel_name

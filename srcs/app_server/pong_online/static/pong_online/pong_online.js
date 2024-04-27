@@ -161,7 +161,7 @@ class Game extends HTMLElement {
     handle_message(e) {
         try {
             const data = JSON.parse(e.data);
-			//console.log("pong message: ", data)
+			console.log("pong message: ", data)
 			if (data.type === 'send_to_group') {
 				switch (data.identifier) {
 					case 'deliver_init_game_data':
@@ -195,7 +195,7 @@ class Game extends HTMLElement {
 				this.remove_event_listener();
 				let tournamentLobbyUrl = '/tournament/' + data.tournament_id;
 				history.pushState("", "", tournamentLobbyUrl);
-				router()(() => {
+				router(() => {
 					ws.send(JSON.stringify({type: 'tournament_lobby_update', 'tournament_id': data.tournament_id}));
 				});
 			}
