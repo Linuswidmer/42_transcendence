@@ -206,41 +206,63 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 					{"type": "set_is_playing"}
 				)			
 
-
 		print("consumer: ", self.username, " | in_game: ", self.in_game, " | is_playing: ", self.is_playing)
 		print("game_group: ", self.game_group_name, " | tournament_group: ", self.tournament_group_name)
+		print("matches: ", self.lobby.matches)
+		print("tournaments: ", self.lobby.tournaments)
+		print("regustered players", self.lobby.registered_players_total)
 
 		# if a client cloeses the window or leaves the page, this is
 		if message_type == "player_left":
+			#player left during a match --> loses 
 			if (self.in_game and self.is_playing):
 				await self.channel_layer.group_send(
 					self.game_group_name,
 					{"type": "end_game_player_left", "player": json_from_client.get("player", "")},
 				)
-			elif (self.in_game and not self.is_playing):
+			#player left before a match started, that is not a tournament --> leaves game
+			elif (self.in_game and not self.is_playing and not self.tournament_group_name):
 				await self.process_lobby_update_in_consumer({"action": "leave"})
 				await self.channel_layer.group_send(
 					"lobby",
 					{"type": "group_lobby_update"}
 				)
-			elif (self.tournament_group_name):
+			#player left tournament lobby before tournament started --> leaves tournament
+			elif (self.tournament_group_name and not self.in_game):
 				await self.process_lobby_update_in_consumer({"action": "leave_tournament", "tournament_id": self.tournament_group_name})
-
-		#if a client clicks on a link/button in the navbar 		
-		if message_type == "reset_consumer_after_unusual_game_leave":
-			if self.in_game and self.is_playing:
+			#player left before a match started in a tournament --> loses
+			elif (self.in_game and self.tournament_group_name):
+				#simulate the game as played
+				asyncio.create_task(self.game_loop(self.match.modus))
 				await self.channel_layer.group_send(
 					self.game_group_name,
 					{"type": "end_game_player_left", "player": self.username},
 				)
-			elif (self.in_game and not self.is_playing):
+			#player left the tournament lobby after the tournament started
+
+			
+		#if a client clicks on a link/button in the navbar 		
+		if message_type == "reset_consumer_after_unusual_game_leave":
+			if (self.in_game and self.is_playing):
+				await self.channel_layer.group_send(
+					self.game_group_name,
+					{"type": "end_game_player_left", "player": self.username},
+				)
+			elif (self.in_game and not self.is_playing and not self.tournament_group_name):
 				await self.process_lobby_update_in_consumer({"action": "leave"})
 				await self.channel_layer.group_send(
 					"lobby",
 					{"type": "group_lobby_update"}
 				)
-			elif (self.tournament_group_name):
+			elif (self.tournament_group_name and not self.in_game):
 				await self.process_lobby_update_in_consumer({"action": "leave_tournament", "tournament_id": self.tournament_group_name})
+			elif (self.in_game and self.tournament_group_name):
+				#simulate the game as played
+				asyncio.create_task(self.game_loop(self.match.modus))
+				await self.channel_layer.group_send(
+					self.game_group_name,
+					{"type": "end_game_player_left", "player": self.username},
+				)
 
 		# if the pong_online js was loaded from the client it needs some data
 		# to fill the view
