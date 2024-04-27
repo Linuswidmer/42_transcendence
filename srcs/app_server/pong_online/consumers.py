@@ -189,12 +189,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		logger.debug("data received in receive: %s", text_data)
 		print("receive:", text_data)
 
-		#print("consumer: ", self.username, " | in_game: ", self.in_game, " | is_playing: ", self.is_playing)
-		#print("game_group: ", self.game_group_name, " | tournament_group: ", self.tournament_group_name)
-		#print("matches: ", self.lobby.matches)
-		#print("tournaments: ", self.lobby.tournaments)
-		#print("regustered players", self.lobby.registered_players_total)
-
 		json_from_client = json.loads(text_data)
 
 		message_type = json_from_client.get("type", "")
@@ -241,13 +235,15 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 					self.game_group_name,
 					{"type": "end_game_player_left", "player": self.username},
 				)
-			#player left the tournament lobby after the tournament started
+			#player left the tournament lobby after the tournament started --> loses next game
 			elif (not self.in_game and self.tournament_started):
 				tournament = self.lobby.tournaments[self.tournament_group_name]
 				# add § in front of the player name
 				for i in range(len(tournament.players)):
 					if tournament.players[i] == self.username:
 						tournament.players[i] = "§" + tournament.players[i]
+				await self.process_lobby_update_in_consumer({"action": "leave_tournament", "tournament_id": self.tournament_group_name})
+
 
 		#if a client clicks on a link/button in the navbar 		
 		if message_type == "reset_consumer_after_unusual_game_leave":
@@ -543,6 +539,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			
 		tournament = self.lobby.get_tournament(self.tournament_group_name)
 		match = tournament.get_match(match_id)
+
+		print("match players: ", match.registered_players)
 					
 		success, message = self.lobby.register_player_match(opponent, match)
 		print("success register_player_match: ", success, " message: ", message)
