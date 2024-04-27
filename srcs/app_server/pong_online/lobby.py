@@ -279,6 +279,11 @@ class Tournament:
 		self.lobby = lobby
 		self.generate_matches(number_players)
 
+	def get_opponent(self, username):
+		player_index = self.players.index(username)
+		opponent_index = player_index + 1 if player_index % 2 == 0 else player_index - 1
+		return self.players[opponent_index]
+
 	def get_registered_players(self):
 		return self.players
 
