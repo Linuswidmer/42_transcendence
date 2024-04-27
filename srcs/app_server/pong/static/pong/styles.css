@@ -201,7 +201,7 @@ canvas {
     border: 2px solid black;
 }
 
-#leftPlayerName {
+/* #leftPlayerName {
     position: absolute;
     left: 30px;
     top:65%;
@@ -227,4 +227,31 @@ canvas {
     left: 50%;
     transform: translateX(-50%);
     top: 30px;
+} */
+#scoreBoard {
+  display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+
+
+/* Style for player names */
+#leftPlayerName, #rightPlayerName {
+  font-weight: bold;
+  color: #6a0dad;
+  margin-bottom: 10px;
+}
+
+/* Style for player scores */
+#leftScore, #rightScore {
+  font-size: 18px;
+  font-weight: bold;
+  color: #03EEF5;
+}
+#vs {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0 20px;
 }

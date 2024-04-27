@@ -7,8 +7,9 @@
     <button class="btn buttonblue" id="play_ai">Play against Ai</button>
     <button class="btn buttonblue" id="play_local">Play local</button>
 </div>
-<div id="remote_game_list"></div>
-<div id="tournament_list"></div>
+<div class="container" id="remote_game_list">
+</div>
+<div class="container my-4" id="tournament_list"></div>
 {% endblock %}
 {% block extra_scripts %}
 <script>
@@ -26,7 +27,7 @@
     const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
     console.log(protocol + '://' + window.location.host + '/ws/pong_online/game/');
     window.ws = new WebSocket(protocol + '://' + window.location.host + '/ws/pong_online/game/');
-    
+
     const username = "{{ username }}";
     const lobby = new Lobby(ws, username); // Create an instance of the Lobby class
 
@@ -87,7 +88,8 @@
         console.log("lobby_update tm-info: ", tournaments_info);
 
 		let remote_game_list_DIV = document.getElementById('remote_game_list');
-    	let tournament_list_DIV = document.getElementById('tournament_list');
+
+        let tournament_list_DIV = document.getElementById('tournament_list');
 
 		// Check if the elements exist
 		if (!remote_game_list_DIV || !tournament_list_DIV) {
@@ -95,23 +97,23 @@
 			return;
 		}
         //clear remote_game_list div
-        remote_game_list_DIV.innerHTML = '';
-        tournament_list_DIV.innerHTML = '';
+        //remote_game_list_DIV.innerHTML = '';
+        //tournament_list_DIV.innerHTML = '';
 
         for (var match_id in matches_info) {
             ((id) => {
                 var registered_users = matches_info[id];
-        
+
                 var matchElement = document.createElement('div');
-                matchElement.innerHTML = `<div class="card">
+                matchElement.innerHTML = `<div class="my-4 card">
                     <div class="card-header text-center text-white bg-purple"><h2>Match ID: ${id}</h2></div>
                     <div class="card-body">
 					<p>Registered Users: ${registered_users.join(', ')}</p>
                     <button class="join btn buttonblue" data-match-id="${id}">Join Game</button></div>
                 </div>`;
-        
+
                 remote_game_list_DIV.appendChild(matchElement);
-        
+
                 let joinButton = matchElement.querySelector('.join');
                 joinButton.addEventListener('click', () => {
                     console.log("Join button clicked for match id: ", id);
@@ -124,17 +126,17 @@
         for (var tournament_id in tournaments_info) {
             ((id) => {
                 var registered_users = tournaments_info[id];
-        
+
                 var tournamentElement = document.createElement('div');
-                tournamentElement.innerHTML = `<div class="card">
+                tournamentElement.innerHTML = `<div class="my-4 card">
                     <div class="card-header text-center text-white bg-purple"><h2>Tournament ID: ${id}</h2></div>
 					<div class="card-body">
 					<p>Registered Users: ${registered_users.join(', ')}</p>
                     <button class="join btn buttonblue" data-tournament-id="${id}">Join Tournament</button></div>
                 </div>`;
-        
+
                 tournament_list_DIV.appendChild(tournamentElement);
-        
+
                 let joinButton = tournamentElement.querySelector('.join');
                 joinButton.addEventListener('click', () => {
                     console.log("Join button clicked for tournament id: ", id);
@@ -158,5 +160,6 @@
         history.pushState(null, null, '/tournament/' + data.tournament_id + '/');
     }
 })();
+
 </script>
 {% endblock %}

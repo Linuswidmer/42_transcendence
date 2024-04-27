@@ -91,21 +91,21 @@ canvas {
 }
 
 #leftPlayerName {
-    position: absolute; 
-    left: 50%; 
+    position: absolute;
+    left: 50%;
     top:10px;
 }
 
 #rightPlayerName {
-    position: absolute; 
-    left: 50%; 
+    position: absolute;
+    left: 50%;
     top: 30px;
 }
 
 #leftScore {
     position: absolute;
-    left: 40%; 
-    transform: translateX(-50%); 
+    left: 40%;
+    transform: translateX(-50%);
     top: 10px;
 }
 
@@ -115,6 +115,7 @@ canvas {
     transform: translateX(-50%);
     top: 30px;
 }
+
 
 /* Style for the tournament */
 body {
