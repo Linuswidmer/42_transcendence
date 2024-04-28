@@ -405,7 +405,10 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				await self.send(text_data=json.dumps({"type": "error", "message": "Cannot join match: player is already registered"}))
 				return None
 			
-			await self.join_local_game(modus, int(ai_level))
+			if (ai_level):
+				await self.join_local_game(modus, int(ai_level))
+			else:
+				await self.join_local_game(modus)
 			return None
 			
 		json_from_client["type"] = "group_lobby_update"

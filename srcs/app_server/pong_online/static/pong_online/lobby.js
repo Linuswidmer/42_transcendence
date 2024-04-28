@@ -147,8 +147,6 @@ class Lobby extends HTMLElement {
 		// Append the pop-up to the document body
 		document.body.appendChild(popup);
 	}
-	
-	
 
 	update_lobby(data) {
 		let matches_info = data.matches_info;
