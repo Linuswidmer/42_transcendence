@@ -212,10 +212,10 @@
                             <tbody>
                                 {% for gld in stats.gameListData %}
                                 <tr>
-                                    <td class="text-center"><a href="/singleGameStats?matchName={{ gld.game.matchName }}&username={{ gld.userGameStats.user.username }}">{{ gld.game.matchName }}</a></td>
+                                    <td class="text-center"><a href="/singleGameStats/?matchName={{ gld.game.matchName }}&username={{ gld.userGameStats.user.username }}" data-link>{{ gld.game.matchName }}</a></td>
                                     <td class="text-center">{{ gld.game.matchDate }} {{ gld.game.matchTime }} </td>
                                     {% if gld.opponentGameStats.user != None %}
-                                    <td class="text-center"><a href="/profile/{{ gld.opponentGameStats.user }}">{{ gld.opponentGameStats.user }}</a></td>
+                                    <td class="text-center"><a href="/profile/{{ gld.opponentGameStats.user }}" data-link>{{ gld.opponentGameStats.user }} </a></td>
                                     {% endif %}
                                     {% if gld.opponentGameStats.user == None %}
                                     <td class="text-center">Guest</td>
@@ -249,7 +249,7 @@
                             <tbody>
                                 {% for tm in stats.tournaments %}
                                 <tr>
-                                    <td class="text-center"><a href="/tournament_stats/{{ tm.tournament_id }}"> {{ tm.tournament_id }}</a></td>
+                                    <td class="text-center"><a href="/tournament_stats/{{ tm.tournament_id }}" data-link> {{ tm.tournament_id }}</a></td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -274,7 +274,7 @@
                             <tbody>
                                 {% for following in user.profile.follows.all %}
                                 <tr>
-                                    <td class="text-center"><a href="{% url 'userManagement:profile' following.user.username %}"></a>{{ following }}</a></td>
+                                    <td class="text-center"><a href="{% url 'userManagement:profile' following.user.username %}" data-link></a>{{ following }}</a></td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -299,7 +299,7 @@
                             <tbody>
                                 {% for follower in user.profile.followed_by.all %}
                                 <tr>
-                                    <td class="text-center"><a href="{% url 'userManagement:profile' follower.user.username %}">{{ follower }} </a></td>
+                                    <td class="text-center"><a href="{% url 'userManagement:profile' follower.user.username %}" data-link>{{ follower }} </a></td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

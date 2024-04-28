@@ -11,24 +11,40 @@ class Profile extends HTMLElement {
 		let changePasswordUrl = this.getAttribute('data-changePasswordUrl');
 
 
-		document.getElementById("allProfilesBtn").addEventListener("click", function() {
-			console.log("allProfilesBtn");
-			console.log("all profiles Url:", allProfilesUrl);
-			history.pushState("", "", allProfilesUrl);
-			router();
-		});
-		document.getElementById("profilePictureBtn").addEventListener("click", function() {
-			console.log("profilePictureBtn");
-			renderForm(updateProfileUrl, "profilePicture", "Change Profile Picture");
-		});
-		document.getElementById("updateProfileBtn").addEventListener("click", function() {
-			console.log("updateProfileBtn");
-			renderForm(updateUserUrl, "updateProfile", "Update Profile Info");
-		});
-		document.getElementById("passwordBtn").addEventListener("click", function() {
-			console.log("passwordBtn");
-			renderForm(changePasswordUrl, "password", "Change Password");
-		});
+		let allProfilesBtn = document.getElementById("allProfilesBtn");
+		if (allProfilesBtn) {
+			allProfilesBtn.addEventListener("click", function() {
+				console.log("allProfilesBtn");
+				console.log("all profiles Url:", allProfilesUrl);
+				history.pushState("", "", allProfilesUrl);
+				router();
+			});
+		}
+
+		let profilePictureBtn = document.getElementById("profilePictureBtn");
+		if (profilePictureBtn) {
+			profilePictureBtn.addEventListener("click", function() {
+				console.log("profilePictureBtn");
+				renderForm(updateProfileUrl, "profilePicture", "Change Profile Picture");
+			});
+		}
+
+		let updateProfileBtn = document.getElementById("updateProfileBtn");
+		if (updateProfileBtn) {
+			updateProfileBtn.addEventListener("click", function() {
+				console.log("updateProfileBtn");
+				renderForm(updateUserUrl, "updateProfile", "Update Profile Info");
+			});
+		}
+
+		let passwordBtn = document.getElementById("passwordBtn");
+		if (passwordBtn) {
+			passwordBtn.addEventListener("click", function() {
+				console.log("passwordBtn");
+				renderForm(changePasswordUrl, "password", "Change Password");
+			});
+		}
+
 		function renderForm(url, containerId, title) {
 		console.log("triggered")
 			fetch(url, {
