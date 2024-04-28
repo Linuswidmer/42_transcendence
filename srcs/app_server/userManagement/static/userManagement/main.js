@@ -35,7 +35,6 @@ function getCookie(name) {
 
 const routes = {
     "/": { fetch: "/home/" },
-	"/home/": { fetch: "/home/" },
     "/lobby/": { fetch: "/fetch_lobby" },
     "/pong_online/": { fetch: "/fetch_pong_online" },
 	"/singleGameStats/": { fetch: () => { return location.href; } },
