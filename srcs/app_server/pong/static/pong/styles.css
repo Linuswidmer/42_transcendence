@@ -68,6 +68,7 @@ body, html, h1 {
   margin: 0;
   padding: 0;
   height: 100%;
+  width: 100%;
 }
 
 #wrapper {
@@ -112,6 +113,7 @@ label {
 /* ---------------------------- BUTTONS -------------------------------*/
 .button-container {
   margin-top: 10px;
+  margin-bottom: 20px;
   padding-bottom: 10px;
 }
 
@@ -228,13 +230,15 @@ canvas {
     transform: translateX(-50%);
     top: 30px;
 } */
+#centeredContent {
+  margin-bottom: 10px;
+}
 #scoreBoard {
   display: flex;
         justify-content: center;
         align-items: center;
         margin-bottom: 20px;
     }
-
 
 
 /* Style for player names */

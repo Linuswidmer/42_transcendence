@@ -23,41 +23,47 @@
 
         // Other methods of the Lobby class
     }
+    const username = "{{ username }}";;
+    let ws;
+    let lobby;
+    establishWebSocketConnection();
+    function establishWebSocketConnection() {
+        const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
+        console.log(protocol + '://' + window.location.host + '/ws/pong_online/game/');
+        ws = new WebSocket(protocol + '://' + window.location.host + '/ws/pong_online/game/');
 
-    const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
-    console.log(protocol + '://' + window.location.host + '/ws/pong_online/game/');
-    window.ws = new WebSocket(protocol + '://' + window.location.host + '/ws/pong_online/game/');
+        ws.onopen = function(e) {
+            console.log('WebSocket connection established');
+            ws.send(JSON.stringify({type: 'username', 'username': username}));
+            ws.send(JSON.stringify({type: 'lobby_update', 'action': 'display'}));
+            lobby = new Lobby(ws, username); // Create an instance of the Lobby class
+            setUpEventListeners();
+        };
+        ws.onmessage = function(e) {
+            handle_message(e);
+        };
+    }
 
-    const username = "{{ username }}";
-    const lobby = new Lobby(ws, username); // Create an instance of the Lobby class
-
-    document.getElementById('games').addEventListener('click', function(event) {
-        const target = event.target;
-        event.preventDefault();
-        console.log(target.id);
-        switch (target.id) {
-            case 'create_game':
-                ws.send(JSON.stringify({type: 'lobby_update', 'action': 'create', 'username': username}));
-                break;
-            case 'create_tournament':
-                ws.send(JSON.stringify({type: 'lobby_update', 'action': 'create_tournament', 'username': username}));
-                break;
-            case 'play_ai':
-                ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join', 'username': username, 'modus': 'ai'}));
-                break;
-            case 'play_local':
-                ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join', 'username': username, 'modus': 'local'}));
-                break;
-        }
-    });
-
-    ws.onopen = (e) => send_initial_data_to_server(e);
-    ws.onmessage = (e) => handle_message(e);
-
-    function send_initial_data_to_server(e) {
-        console.log('WebSocket connection established');
-        ws.send(JSON.stringify({type: 'username', 'username': username}));
-        ws.send(JSON.stringify({type: 'lobby_update', 'action': 'display'}));
+    function setUpEventListeners() {
+        document.getElementById('games').addEventListener('click', function(event) {
+            const target = event.target;
+            event.preventDefault();
+            console.log(target.id);
+            switch (target.id) {
+                case 'create_game':
+                    ws.send(JSON.stringify({type: 'lobby_update', 'action': 'create', 'username': username}));
+                    break;
+                case 'create_tournament':
+                    ws.send(JSON.stringify({type: 'lobby_update', 'action': 'create_tournament', 'username': username}));
+                    break;
+                case 'play_ai':
+                    ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join', 'username': username, 'modus': 'ai'}));
+                    break;
+                case 'play_local':
+                    ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join', 'username': username, 'modus': 'local'}));
+                    break;
+            }
+        });
     }
 
     function handle_message(e) {
@@ -97,8 +103,8 @@
 			return;
 		}
         //clear remote_game_list div
-        //remote_game_list_DIV.innerHTML = '';
-        //tournament_list_DIV.innerHTML = '';
+        remote_game_list_DIV.innerHTML = '';
+        tournament_list_DIV.innerHTML = '';
 
         for (var match_id in matches_info) {
             ((id) => {
