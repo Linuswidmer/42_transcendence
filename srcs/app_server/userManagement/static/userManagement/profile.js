@@ -6,6 +6,9 @@ class Profile extends HTMLElement {
 		console.log("constructor profile custom element");
 
 		let allProfilesUrl = this.getAttribute('data-allProfilesUrl');
+		let updateProfileUrl = this.getAttribute('data-updateProfileUrl');
+		let updateUserUrl = this.getAttribute('data-updateUserUrl');
+		let changePasswordUrl = this.getAttribute('data-changePasswordUrl');
 
 
 		document.getElementById("allProfilesBtn").addEventListener("click", function() {
@@ -16,15 +19,15 @@ class Profile extends HTMLElement {
 		});
 		document.getElementById("profilePictureBtn").addEventListener("click", function() {
 			console.log("profilePictureBtn");
-			renderForm("{% url 'userManagement:update_profile' %}", "profilePicture", "Change Profile Picture");
+			renderForm(updateProfileUrl, "profilePicture", "Change Profile Picture");
 		});
 		document.getElementById("updateProfileBtn").addEventListener("click", function() {
 			console.log("updateProfileBtn");
-			renderForm("{% url 'userManagement:update_user' %}", "updateProfile", "Update Profile Info");
+			renderForm(updateUserUrl, "updateProfile", "Update Profile Info");
 		});
 		document.getElementById("passwordBtn").addEventListener("click", function() {
 			console.log("passwordBtn");
-			renderForm("{% url 'userManagement:change_password' %}", "password", "Change Password");
+			renderForm(changePasswordUrl, "password", "Change Password");
 		});
 		function renderForm(url, containerId, title) {
 		console.log("triggered")

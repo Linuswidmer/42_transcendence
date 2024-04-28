@@ -333,6 +333,9 @@
 
 <pong-profile 
 	data-allProfilesUrl="{% url 'userManagement:profile_list' %}"
+	data-updateProfileUrl="{% url 'userManagement:update_profile' %}"
+    data-updateUserUrl="{% url 'userManagement:update_user' %}"
+    data-changePasswordUrl="{% url 'userManagement:change_password' %}"
 	data-totalWins="{{ stats.totalWins }}"
 	data-totalDefeats="{{ stats.totalDefeats }}"
 	data-wonTournaments="{{ stats.wonTournaments }}"
