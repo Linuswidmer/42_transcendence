@@ -37,7 +37,7 @@ const routes = {
     "/": { fetch: "/home/" },
     "/lobby/": { fetch: "/fetch_lobby" },
     "/pong_online/": { fetch: "/fetch_pong_online" },
-	"/singleGameStats/": { fetch: () => { return location.href; } },
+	"/singleGameStats/": { fetch: () => { return "/fetch_singleGameStats/" + location.search; } },
 };
 
 function router(callback=null) {
@@ -88,14 +88,6 @@ window.addEventListener("click", e => {
 		})
 		.then(response => {
 			if (response.ok) {
-				// document.getElementById("navbar").innerHTML = '';
-				// document.getElementById("content").innerHTML = '';
-				// fetch("/stranger")
-				// 	.then(response => response.text())
-				// 	.then(html => {
-				// 		document.getElementById("content").innerHTML = html;
-				// 	})
-				// 	.catch(error => console.error('Error loading content:', error));
 				console.log("logout successful");
         		router();
 			} else {

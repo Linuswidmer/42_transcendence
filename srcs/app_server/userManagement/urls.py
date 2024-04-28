@@ -10,7 +10,9 @@ urlpatterns = [
     path("", index, name='index'),
 	path("pong_online/", index, name="pong_online"),
 	path("lobby/", index, name="display_lobby"),
+	path("singleGameStats/", index, name="single_game_stats"),
 
+	path("fetch_singleGameStats/", single_game_stats, name="fetch_single_game_stats"),
 
 	path("accounts/", include("django.contrib.auth.urls")),
 	path("dashboard/", dashboard, name="dashboard"),
@@ -30,6 +32,5 @@ urlpatterns = [
     path('includes/navigation/', navigation, name='navigation'),
     path('check_login_status/', check_login_status, name='check_login_status'),
 
-	path("singleGameStats/", single_game_stats, name="single_game_stats"),
 	path("tournament_stats/<str:tournament_name>/", tournament_stats, name="tournament_stats")
 ]

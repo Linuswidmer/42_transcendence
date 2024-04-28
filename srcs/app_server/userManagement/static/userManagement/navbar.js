@@ -25,47 +25,16 @@ class Navbar extends HTMLElement {
         // State
         lobbyBtn.onclick = () => {
 			console.log("lobby button on navbar tag clicked");
-			// fetch_html_replace_dynamicDIV_activate_js('/lobby', true);
         };
 
 		profileBtn.onclick = () => {
 			console.log("profile button on navbar tag clicked");
-			// const url = `/profile/${this.username}`;
-			// fetch_with_internal_js(url);
         };
 
-		// logoutBtn.onclick = () => {
-		// 	let logoutUrl = "/accounts/logout/"; //maybe dynamic url later from django template
-		// 	fetch(logoutUrl, {
-		// 		method: "POST",
-		// 		headers: {
-		// 			"X-CSRFToken": getCookie("csrftoken")
-		// 		}
-		// 	})
-		// 	.then(response => {
-		// 		if (response.ok) {
-		// 			// document.getElementById("navbar").innerHTML = '';
-		// 			// document.getElementById("content").innerHTML = '';
-		// 			// fetch("/stranger")
-		// 			// 	.then(response => response.text())
-		// 			// 	.then(html => {
-		// 			// 		document.getElementById("content").innerHTML = html;
-		// 			// 	})
-		// 			// 	.catch(error => console.error('Error loading content:', error));
-		// 			console.log("logout successful");
-		// 		} else {
-		// 			console.error("Logout failed");
-		// 		}
-		// 	})
-		// 	.catch(error => console.error('Error:', error));
-        // };
+		logoutBtn.onclick = () => {
+			console.log("logout button on navbar tag clicked");
+        };
     }
-
-	logoutFunction = () => {
-		// Log out the user
-		console.log("Logging out...");
-		// You can add more code here to log out the user
-	}
 }
 
 
