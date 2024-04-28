@@ -12,8 +12,6 @@ let ws = new WebSocket(
 	protocol + '://' + window.location.host + '/ws/pong_online/game/'
 );
 
-console.log("username from request", username);
-
 ws.onopen = function(event) {
 	console.log('WebSocket connection established');
 	ws.send(JSON.stringify({type: 'firstContactfromClient'}));
@@ -35,28 +33,49 @@ function getCookie(name) {
 	return cookieValue;
 }
 
+const routes = {
+    "/": { fetch: "/home/" },
+    "/lobby/": { fetch: "/fetch/lobby" },
+    "/pong_online/": { fetch: "/fetch/pong_online" },
+	"/singleGameStats/": { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
+	"/tournamentStats/": { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
+	"/profile/": { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
+};
+
+function getFirstPath(urlPath) {
+    let parts = urlPath.split('/');
+    if (parts.length > 2) {
+        return '/' + parts[1] + '/';
+    } else {
+        return urlPath;
+    }
+}
+
 function router(callback=null) {
-    let view = location.href.replace(location.origin, '');
+	let urlPath = getFirstPath(location.pathname);
+
+	let view = routes[urlPath];
+
+	console.log("entire url", location.href);
+	console.log("router path:", urlPath);
+	console.log("router view:", view);
+
+
 	let content = document.getElementById('content');
 
     if (view) {
-		if (view === '/') {
-			view = '/home';
-		}
-		console.log("router view:", view);
-		fetch(view)
+		let fetchUrl = typeof view.fetch === 'function' ? view.fetch() : view.fetch;
+		fetch(fetchUrl)
 		.then(response => response.text())
 		.then(html => {
-			// Replace the content of the main container with the logged-in content
 			content.innerHTML = html;
 			if (callback && typeof callback === 'function') {
 				callback();
 			}
 		})
 		.catch(error => console.error('Error loading logged-in content:', error));
-		// document.title = view.title;
     } else {
-		console.log("else");
+		console.log("router else");
         history.replaceState("", "", "/");
         router();
     }
@@ -81,14 +100,6 @@ window.addEventListener("click", e => {
 		})
 		.then(response => {
 			if (response.ok) {
-				// document.getElementById("navbar").innerHTML = '';
-				// document.getElementById("content").innerHTML = '';
-				// fetch("/stranger")
-				// 	.then(response => response.text())
-				// 	.then(html => {
-				// 		document.getElementById("content").innerHTML = html;
-				// 	})
-				// 	.catch(error => console.error('Error loading content:', error));
 				console.log("logout successful");
         		router();
 			} else {

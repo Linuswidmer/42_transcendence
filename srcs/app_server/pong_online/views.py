@@ -12,7 +12,7 @@ def pong_online(request):
 	return render(request, "pong_online/pong_game.html", {"username": request.user.username})
 
 @login_required(login_url='/home')
-def display_lobby(request):
+def lobby(request):
 	return render(request, "pong_online/lobby.html", {"username": request.user.username})
 
 from django.http import JsonResponse
