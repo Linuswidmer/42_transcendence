@@ -13,7 +13,9 @@ urlpatterns = [
 	path("singleGameStats/", index, name="single_game_stats"),
 	path("tournamentStats/<str:tournament_name>/", index, name="tournament_stats"),
     path('profile/<str:username>/', index, name='profile'),
+    path("profile_list/", index, name="profile_list"),
 
+	path("fetch/profile_list/", profile_list, name="fetch_profile_list"),
 	path('fetch/profile/<str:username>/', profile, name='fetch_profile'),
 	path("fetch/singleGameStats/", single_game_stats, name="fetch_single_game_stats"),
 	path("fetch/tournamentStats/<str:tournament_name>/", tournament_stats, name="fetch_tournament_stats"),
@@ -25,7 +27,6 @@ urlpatterns = [
 	path("update_user/", update_user, name="update_user"),
 	path("update_profile/", update_profile, name="update_profile"),
 
-    path("profile_list/", profile_list, name="profile_list"),
 
 	path("home/", home, name="home"),
     path("change_password/", change_password, name="change_password"),
