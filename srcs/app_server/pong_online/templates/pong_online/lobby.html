@@ -24,6 +24,7 @@
         // Other methods of the Lobby class
     }
     const username = "{{ username }}";;
+
     let lobby;
     let remote_game_list_DIV;
     let tournament_list_DIV;
@@ -166,8 +167,8 @@
     }
 
     function join_tournament(data) {
-        console.log('LOAD THE TM LOBBY')
-        document.body.innerHTML = '';
+        console.log('LOAD THE TM LOBBY');
+        ws.send(JSON.stringify({type: 'tournament_lobby_update', 'tournament_id': server_data.tournament_id}));
         loadContent('/tournament/' + data.tournament_id + '/');
         history.pushState(null, null, '/tournament/' + data.tournament_id + '/');
     }

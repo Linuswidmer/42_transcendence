@@ -239,6 +239,7 @@ handle_leave_game_button_click() {
 		}
 		this.modus = data.modus;
 		console.log("modus:", this.modus);
+		this.handle_game_view_population(data);
 	}
 
     handle_keydown = (event) => {
@@ -315,8 +316,8 @@ handle_leave_game_button_click() {
 		var right_name_display = document.getElementById('rightPlayerName');
 		var prompt = document.getElementById('userPrompt');
 
-		modus = data['modus'];
-
+		this.modus = data['modus'];
+		console.log(data.hasOwnProperty("player1"));
 		if (data.hasOwnProperty("player1")){
 			if (data["player1"] == username) {
 				right_name_display.textContent = "Right Player: You";
