@@ -12,9 +12,11 @@ urlpatterns = [
 	path("lobby/", index, name="display_lobby"),
 	path("singleGameStats/", index, name="single_game_stats"),
 	path("tournamentStats/<str:tournament_name>/", index, name="tournament_stats"),
+    path('profile/<str:username>/', index, name='profile'),
 
-	path("fetch_singleGameStats/", single_game_stats, name="fetch_single_game_stats"),
-	path("fetch_tournamentStats/<str:tournament_name>/", tournament_stats, name="fetch_tournament_stats"),
+	path('fetch/profile/<str:username>/', profile, name='fetch_profile'),
+	path("fetch/singleGameStats/", single_game_stats, name="fetch_single_game_stats"),
+	path("fetch/tournamentStats/<str:tournament_name>/", tournament_stats, name="fetch_tournament_stats"),
 
 	path("accounts/", include("django.contrib.auth.urls")),
 	path("dashboard/", dashboard, name="dashboard"),
@@ -25,7 +27,6 @@ urlpatterns = [
 
     path("profile_list/", profile_list, name="profile_list"),
 
-    path('profile/<str:username>/', profile, name='profile'),
 	path("home/", home, name="home"),
     path("change_password/", change_password, name="change_password"),
     path('stranger/', stranger, name='stranger'),

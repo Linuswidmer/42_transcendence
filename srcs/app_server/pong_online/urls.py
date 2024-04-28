@@ -4,8 +4,8 @@ from .views import pong_online, lobby, register_player, join, display_tournament
 app_name = "pong_online"
 
 urlpatterns = [
-    path("fetch_pong_online/", pong_online, name="pong_online"),
-	path("fetch_lobby/", lobby, name="lobby"),
+    path("fetch/pong_online/", pong_online, name="pong_online"),
+	path("fetch/lobby/", lobby, name="lobby"),
 	
 	
 	path('register_player/', register_player, name='register_player'),

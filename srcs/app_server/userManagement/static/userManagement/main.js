@@ -35,14 +35,25 @@ function getCookie(name) {
 
 const routes = {
     "/": { fetch: "/home/" },
-    "/lobby/": { fetch: "/fetch_lobby" },
-    "/pong_online/": { fetch: "/fetch_pong_online" },
-	"/singleGameStats/": { fetch: () => { return "/fetch_singleGameStats/" + location.search; } },
-	"/tournamentStats/": { fetch: () => { return "/fetch_tournamentStats/" + location.search; } },
+    "/lobby/": { fetch: "/fetch/lobby" },
+    "/pong_online/": { fetch: "/fetch/pong_online" },
+	"/singleGameStats/": { fetch: () => { return "/fetch" + location.pathname + location.search; } },
+	"/tournamentStats/": { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
+	"/profile/": { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
 };
 
+function getFirstPath(urlPath) {
+    let parts = urlPath.split('/');
+    if (parts.length > 2) {
+        return '/' + parts[1] + '/';
+    } else {
+        return urlPath;
+    }
+}
+
 function router(callback=null) {
-	let urlPath = location.pathname;
+	let urlPath = getFirstPath(location.pathname);
+
 	let view = routes[urlPath];
 
 	console.log("entire url", location.href);
