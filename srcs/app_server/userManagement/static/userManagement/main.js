@@ -38,6 +38,7 @@ const routes = {
     "/lobby/": { fetch: "/fetch_lobby" },
     "/pong_online/": { fetch: "/fetch_pong_online" },
 	"/singleGameStats/": { fetch: () => { return "/fetch_singleGameStats/" + location.search; } },
+	"/tournamentStats/": { fetch: () => { return "/fetch_tournamentStats/" + location.search; } },
 };
 
 function router(callback=null) {
