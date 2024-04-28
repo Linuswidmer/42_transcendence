@@ -1,6 +1,7 @@
 import "./navbar.js"
 import "./stranger.js"
 import "./profile.js"
+import "./singleGameStats.js"
 import "./profile_list.js"
 import "../pong_online/lobby.js"
 import "../pong_online/pong_online.js"
@@ -71,9 +72,11 @@ function router(callback=null) {
 
     if (view) {
 		let fetchUrl = typeof view.fetch === 'function' ? view.fetch() : view.fetch;
+		console.log("fetch Url:", fetchUrl);
 		fetch(fetchUrl)
 		.then(response => response.text())
 		.then(html => {
+			console.log(html);
 			content.innerHTML = html;
 			if (callback && typeof callback === 'function') {
 				callback();
