@@ -37,7 +37,7 @@ const routes = {
     "/": { fetch: "/home/" },
     "/lobby/": { fetch: "/fetch/lobby" },
     "/pong_online/": { fetch: "/fetch/pong_online" },
-	"/singleGameStats/": { fetch: () => { return "/fetch" + location.pathname + location.search; } },
+	"/singleGameStats/": { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
 	"/tournamentStats/": { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
 	"/profile/": { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
 };

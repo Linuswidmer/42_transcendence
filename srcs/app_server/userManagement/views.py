@@ -19,7 +19,7 @@ import json
 def dashboard(request):
 	return render(request, "userManagement/dashboard.html")
 
-def index(request):
+def index(request, not_used_at_all):
     return render(request, "onepager/index.html")
     
 def	home(request):
