@@ -1,5 +1,6 @@
 import "./navbar.js"
 import "./stranger.js"
+import "./profile.js"
 import "../pong_online/lobby.js"
 import "../pong_online/pong_online.js"
 import "../pong_online/tournament.js"
@@ -16,6 +17,8 @@ ws.onopen = function(event) {
 	console.log('WebSocket connection established');
 	ws.send(JSON.stringify({type: 'firstContactfromClient'}));
 }
+
+
 
 function getCookie(name) {
 	let cookieValue = null;
@@ -36,6 +39,7 @@ function getCookie(name) {
 const routes = {
     "/": { fetch: "/home/" },
     "/lobby/": { fetch: "/fetch/lobby" },
+	"/profile_list/": { fetch: "/fetch/profile_list"},
     "/pong_online/": { fetch: "/fetch/pong_online" },
 	"/singleGameStats/": { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
 	"/tournamentStats/": { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
