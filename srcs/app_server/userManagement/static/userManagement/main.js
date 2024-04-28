@@ -37,19 +37,24 @@ const routes = {
     "/": { fetch: "/home/" },
 	"/home/": { fetch: "/home/" },
     "/lobby/": { fetch: "/fetch_lobby" },
-    "/pong_online/": { fetch: "fetch_pong_online" },
+    "/pong_online/": { fetch: "/fetch_pong_online" },
+	"/singleGameStats/": { fetch: () => { return location.href; } },
 };
 
 function router(callback=null) {
-	let urlWithoutOrigin = location.href.replace(location.origin, '');
-	console.log("router path:", urlWithoutOrigin);
-	let view = routes[urlWithoutOrigin];
+	let urlPath = location.pathname;
+	let view = routes[urlPath];
+
+	console.log("entire url", location.href);
+	console.log("router path:", urlPath);
 	console.log("router view:", view);
+
 
 	let content = document.getElementById('content');
 
     if (view) {
-		fetch(view.fetch)
+		let fetchUrl = typeof view.fetch === 'function' ? view.fetch() : view.fetch;
+		fetch(fetchUrl)
 		.then(response => response.text())
 		.then(html => {
 			content.innerHTML = html;
