@@ -4,15 +4,10 @@ class AIPongOpponent:
 	def __init__(self, pong_instance, dt, level):
 		self.screen_height = pong_instance.screen_height
 		self.screen_width = pong_instance.screen_width
-		self.errorLevels = [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0] #index 10 the hardest --> 0 error
+		self.errorLevels = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0] #index 10 the hardest --> 0 error
 		self.geometricPredictedY = 0
 		self.dt = dt
-		if level < 0:
-			self.level = 0
-		elif level > 10:
-			self.level = 10
-		else:
-			self.level = level
+		self.level = level
 		self.setGameState(pong_instance)
 
 	def __predict_y_on_ai_paddleside(self):
@@ -50,7 +45,7 @@ class AIPongOpponent:
 		self.ballVelocityX = pong_instance.ball.dx
 		self.ballVelocityY = pong_instance.ball.dy
 		randomFactor = random.choice((1, -1)) * random.random() #random float between -1.0 and +1.0
-		errorFactor = random.uniform(0 , self.errorLevels[self.level])
+		errorFactor = random.uniform(0 , self.errorLevels[self.level - 1]) # -1 to get the index
 		if self.paddleY > self.ballY:
 			errorFactor *= -1
 		self.geometricPredictedY = self.__predict_y_on_ai_paddleside() + (self.screen_height * errorFactor) + randomFactor * self.paddleHeight * 0.45

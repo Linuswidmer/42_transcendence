@@ -291,8 +291,9 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		match_id = json_from_client.get("match_id", "")
 		tournament_id = json_from_client.get("tournament_id", None)
 		modus = json_from_client.get("modus", "")
+		ai_level = json_from_client.get("ai_level", None)
+		tm_size = json_from_client.get("tm_size", "4")
 		
-
 		#check if registered -> if not try to register then join
 		if action == "join" and modus == "remote":
 			# if user already registered -> error
@@ -352,7 +353,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			if self.lobby.check_user_registered(self.username):
 				await self.send(text_data=json.dumps({"type": "error", "message": "Cannot create tournament: player is already registered"}))
 				return None
-			tournament_id = await self.lobby.add_tournament(self.username)
+			tournament_id = await self.lobby.add_tournament(self.username, int(tm_size))
 			await self.send(text_data=json.dumps({"type": "join_tournament", "tournament_id": tournament_id}))
 			await self.channel_layer.group_add(
 					tournament_id, self.channel_name
@@ -404,13 +405,13 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				await self.send(text_data=json.dumps({"type": "error", "message": "Cannot join match: player is already registered"}))
 				return None
 			
-			await self.join_local_game(modus)
+			await self.join_local_game(modus, int(ai_level))
 			return None
 			
 		json_from_client["type"] = "group_lobby_update"
 		return json_from_client
 
-	async def join_local_game(self, modus):
+	async def join_local_game(self, modus, ai_level=None):
 		init_data = {}
 		init_data["type"] = "join"
 		init_data["modus"] = modus
@@ -421,7 +422,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			local_opponent_name = 'DUMP_LOCAL'
 		self.in_game = True
 		self.hosts_game = True
-		self.match = self.lobby.create_local_match(modus)
+		self.match = self.lobby.create_local_match(modus, ai_level)
 		self.match.add_player_to_gamedata(local_opponent_name)
 		self.match.add_player_to_gamedata(self.username)
 		self.match.registered_players.append(local_opponent_name)
@@ -572,7 +573,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#here we could import the game from another file to keep things separated
 	async def game_loop(self, modus):
 		players = self.match.registered_players
-		print(players)
+		print("AI LEVEL: ", self.match.ai_level)
 		self.gdc = await sync_to_async(self.create_data_collector)(modus, players[1], players[0], self.match.group_name, self.match.tournament_id)
 		logger.debug("new game loop started")
 		pong_instance = Pong(self.gdc)
@@ -580,7 +581,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		AI_REFRESH_THRESHOLD = 1
 		iteration_time = 1 / FPS
 		if modus == "ai":
-			ai = AIPongOpponent(pong_instance, iteration_time, 10)
+			ai = AIPongOpponent(pong_instance, iteration_time, self.match.ai_level)
 			ai_refresh_timer = time.time()
 		should_run = True
 		initial_entity_data = pong_instance.get_initial_entity_data(self.match.game_data)
