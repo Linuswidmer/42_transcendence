@@ -50,6 +50,7 @@ function getCookie(name) {
 
 function extractErrorMessage(errorMessage) {
     var tempDiv = document.createElement('div');
+    tempDiv.innerHTML = '';
     tempDiv.innerHTML = errorMessage;
     var errorList = tempDiv.querySelector('.errorlist');
     if (errorList) {
@@ -140,10 +141,15 @@ function renderForm(url, containerId, title) {
                     response.text().then(errorMessage => {
                     var extractedMessage = extractErrorMessage(errorMessage);
                     const modal = document.getElementById(`${containerId}Modal`);
-                    const errorContainer = document.createElement("div");
-                    errorContainer.classList.add("alert", "alert-danger");
-                    errorContainer.textContent = extractedMessage;
-                    modal.querySelector(".modal-body").appendChild(errorContainer);
+                    const errorContainerOld = document.querySelector(".alert-danger");
+                    if (!errorContainerOld){
+                        const errorContainer = document.createElement("div");
+                        errorContainer.classList.add("alert", "alert-danger");
+                        errorContainer.textContent = extractedMessage;
+                        modal.querySelector(".modal-body").appendChild(errorContainer);
+                    } else {
+                        errorContainerOld.textContent = extractedMessage;
+                    }
                 });
             }})
             .catch(error => console.error('Error:', error));
