@@ -136,7 +136,7 @@ def change_password(request):
         )
 
 def profile_list(request):
-	all_users = User.objects.all()
+	all_users = User.objects.exclude(username="DUMP_LOCAL")
 	return render(request, "userManagement/profile_list.html", {"registered_users": all_users})
 
 @login_required(login_url='/home')

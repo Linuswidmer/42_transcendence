@@ -1,8 +1,10 @@
 {% include 'includes/navbar.html' %}
-
-<h2 id="vs" class="text-center text-dark my-4 stylish-font"> <a href="/profile/{{ gld.userGameStats.user }}" data-link> {{ gld.userGameStats.user }} </a> vs. <a href="/profile/{{ gld.opponentGameStats.user }}">{{ gld.opponentGameStats.user }}</a></h2>
-
-<div class="container my-4">
+{% if gld.opponentGameStats.user.username != "DUMP_LOCAL" %}
+	<h2 id="vs" class="text-center text-dark my-4 stylish-font"> <a href="/profile/{{ gld.userGameStats.user }}" data-link> {{ gld.userGameStats.user }} </a> vs. <a href="/profile/{{ gld.opponentGameStats.user }}">{{ gld.opponentGameStats.user }}</a></h2>
+{% else %}
+	<h2 id="vs" class="text-center text-dark my-4 stylish-font"> <a href="/profile/{{ gld.userGameStats.user }}" data-link> {{ gld.userGameStats.user }} </a> vs. Local Opponent</a></h2>
+{% endif %}
+	<div class="container my-4">
     <div class="card">
         <div class="card-header text-center text-white bg-purple">
             <h4>Player Stats</h4>

@@ -214,12 +214,14 @@
                                 <tr>
                                     <td class="text-center"><a href="/singleGameStats/?matchName={{ gld.game.matchName }}&username={{ gld.userGameStats.user.username }}" data-link>{{ gld.game.matchName }}</a></td>
                                     <td class="text-center">{{ gld.game.matchDate }} {{ gld.game.matchTime }} </td>
-                                    {% if gld.opponentGameStats.user != None %}
-                                    <td class="text-center"><a href="/profile/{{ gld.opponentGameStats.user }}" data-link>{{ gld.opponentGameStats.user }} </a></td>
-                                    {% endif %}
                                     {% if gld.opponentGameStats.user == None %}
-                                    <td class="text-center">Guest</td>
-                                    {% endif %}
+										<td class="text-center">Guest</td>
+									{% elif gld.opponentGameStats.user.username == "DUMP_LOCAL" %}
+										<td class="text-center">Local Opponent</td>
+									{% else %}
+										<td class="text-center"><a href="/profile/{{ gld.opponentGameStats.user }}" data-link>{{ gld.opponentGameStats.user }}</a></td>
+									{% endif %}
+
                                 </tr>
                                 {% endfor %}
                             </tbody>
