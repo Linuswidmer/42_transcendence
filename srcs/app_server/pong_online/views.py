@@ -52,5 +52,5 @@ def join(request):
 	if "SESSION ID HERE?" not in  match.get_registered_players():
 		return JsonResponse({'status': 'error', 'error_message': 'you are not registered to this game'})
 	# return JsonResponse({'status': 'success'})
-	
+
 	return redirect('pong_online:pong_online')

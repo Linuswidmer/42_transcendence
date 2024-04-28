@@ -27,7 +27,7 @@
 
 {% block extra_scripts %}
 <script>
-const username = "{{request.user}}";
+
 class Entity {
 	constructor(x, y, type) {
 		this.type = type
@@ -95,18 +95,20 @@ class Paddle extends Entity {
 
 class Game {
     constructor(ws, username) {
-		console.log(username);
+		console.log("ws :", ws);
         this.username = username;
         this.ws = ws;
         console.log("username pong_online:", this.username);
         this.entities = [];
-        this.modus = null;
+        this.modus = ws.modus;
+		console.log("modus constructor: ", this.modus);
         this.keys = {
 			'KeyA': false,
 			'KeyD': false,
 			'KeyJ': false,
 			'KeyL': false,
 		};
+
         ws.onmessage = (e) => this.handle_message(e);
 
 this.loggedInMsg = document.querySelector('#loggedInMessage');
@@ -115,13 +117,13 @@ this.loggedInMsg.textContent += this.username;
 this.canvas = document.querySelector('#pongCanvas');
 this.ctx = this.canvas.getContext('2d');
 
-this.start_game_button = document.querySelector('#startGameButton');
-this.start_game_button.addEventListener('click',
-    this.handle_start_game_button_click);
+	this.start_game_button = document.querySelector('#startGameButton');
+	this.start_game_button.addEventListener('click',
+		this.handle_start_game_button_click);
 
-this.leave_game_button = document.querySelector('#leaveGame');
-this.leave_game_button.addEventListener('click',
-this.handle_leave_game_button_click);
+	this.leave_game_button = document.querySelector('#leaveGame');
+	this.leave_game_button.addEventListener('click',
+	this.handle_leave_game_button_click);
 }
 
 norm2height(relativeY) {
@@ -133,17 +135,17 @@ return (relativeX * this.canvas.width)
 }
 
 handle_beforeunload() {
-    this.ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
+    ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
 }
 
 handle_start_game_button_click() {
     startGameButton.style.display = 'none';
-    ws.send(JSON.stringify({'type': 'start', 'modus': 'remote'}));
+    ws.send(JSON.stringify({'type': 'start', 'modus': ws.modus}));
     console.log('Start button remote clicked');
 }
 
 handle_leave_game_button_click() {
-    this.ws.send(JSON.stringify({type: 'leave', 'action': 'leave', 'username': this.username, 'modus': this.modus}));
+    ws.send(JSON.stringify({type: 'leave', 'action': 'leave', 'username': this.username, 'modus': this.modus}));
     loadContent("/lobby");
     history.pushState(null, null, "/lobby");
     console.log('leaveButtonclicked');
@@ -195,7 +197,7 @@ handle_leave_game_button_click() {
 			} else if (data.type == 'redirect_to_tournament_lobby') {
 				this.remove_event_listener();
 				let tournamentLobbyUrl = '/tournament/' + data.tournament_id;
-                this.ws.send(JSON.stringify({type: 'tournament_lobby_update', 'tournament_id': data.tournament_id}));
+                ws.send(JSON.stringify({type: 'tournament_lobby_update', 'tournament_id': data.tournament_id}));
                 loadContent(tournamentLobbyUrl);
 				history.pushState(null, null, tournamentLobbyUrl);
 
@@ -247,10 +249,10 @@ handle_leave_game_button_click() {
         } else if (event.code === 'KeyD'  && !this.keys[event.code]) {
 			this.keys[event.code] = true;
 			data = {'playerId': this.username, 'type': 'keypress', 'action': 'moveDown'};
-		} else if (this.modus === 'local' && event.code === 'KeyJ' && !keys[event.code]) {
+		} else if (this.modus === 'local' && event.code === 'KeyJ' && !this.keys[event.code]) {
 			this.keys[event.code] = true;
 			data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'moveUp'};
-		} else if (this.modus === 'local' && event.code === 'KeyL'  && !keys[event.code]) {
+		} else if (this.modus === 'local' && event.code === 'KeyL'  && !this.keys[event.code]) {
 			this.keys[event.code] = true;
 			data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'moveDown'};
 		}
@@ -300,7 +302,8 @@ handle_leave_game_button_click() {
 
 	handle_game_over(data) {
 		//clear the local entities, they get loaded again for a new game
-		remove_event_listener();
+		console.log("game over");
+		this.remove_event_listener();
 		const statsURL = '/singleGameStats/?matchName=' + data.matchName + '&username=' + data.user;
         loadContent(statsURL);
 		history.pushState(null, null, statsURL);
@@ -309,7 +312,7 @@ handle_leave_game_button_click() {
 	handle_game_view_population(data)
 	{
 		var left_name_display = document.getElementById('leftPlayerName');
-		var right_name_display = document.getElementById('rthiightPlayerName');
+		var right_name_display = document.getElementById('rightPlayerName');
 		var prompt = document.getElementById('userPrompt');
 
 		modus = data['modus'];
@@ -338,6 +341,7 @@ handle_leave_game_button_click() {
 		}
 	}
 }
+const username = "{{request.user}}";
 const ws = window.ws;
 const game = new Game(ws, username);
 </script>

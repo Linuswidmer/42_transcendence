@@ -24,14 +24,17 @@
         // Other methods of the Lobby class
     }
     const username = "{{ username }}";;
-    let ws;
     let lobby;
+    let remote_game_list_DIV;
+    let tournament_list_DIV;
+
     establishWebSocketConnection();
+
     function establishWebSocketConnection() {
         const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
         console.log(protocol + '://' + window.location.host + '/ws/pong_online/game/');
-        ws = new WebSocket(protocol + '://' + window.location.host + '/ws/pong_online/game/');
-
+        let ws = new WebSocket(protocol + '://' + window.location.host + '/ws/pong_online/game/');
+        window.ws = ws;
         ws.onopen = function(e) {
             console.log('WebSocket connection established');
             ws.send(JSON.stringify({type: 'username', 'username': username}));
@@ -64,6 +67,8 @@
                     break;
             }
         });
+        remote_game_list_DIV = document.getElementById('remote_game_list');
+        tournament_list_DIV = document.getElementById('tournament_list');
     }
 
     function handle_message(e) {
@@ -75,7 +80,7 @@
                     update_lobby(data);
                     break;
                 case 'join':
-                    join_game(data.modus);
+                    join_game(ws, data.modus);
                     break;
                 case 'join_tournament':
                     join_tournament(data);
@@ -93,9 +98,9 @@
         let tournaments_info = data.tournaments_info;
         console.log("lobby_update tm-info: ", tournaments_info);
 
-		let remote_game_list_DIV = document.getElementById('remote_game_list');
+		//let remote_game_list_DIV = document.getElementById('remote_game_list');
 
-        let tournament_list_DIV = document.getElementById('tournament_list');
+        //let tournament_list_DIV = document.getElementById('tournament_list');
 
 		// Check if the elements exist
 		if (!remote_game_list_DIV || !tournament_list_DIV) {
@@ -153,7 +158,8 @@
         }
     }
 
-    function join_game(modus) {
+    function join_game(ws, modus) {
+        ws.send(JSON.stringify({type: 'get_game_data'}));
         ws.modus = modus;
         loadContent("/pong_online");
         history.pushState(null, null, "/pong_online");
@@ -165,6 +171,7 @@
         loadContent('/tournament/' + data.tournament_id + '/');
         history.pushState(null, null, '/tournament/' + data.tournament_id + '/');
     }
+
 })();
 
 </script>
