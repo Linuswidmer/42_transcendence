@@ -45,6 +45,7 @@ const routes = {
 	"/singleGameStats/": { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
 	"/tournamentStats/": { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
 	"/profile/": { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
+	"/tournament/":  { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
 };
 
 function getFirstPath(urlPath) {
