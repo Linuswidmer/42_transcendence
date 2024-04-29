@@ -3,6 +3,7 @@ import "./stranger.js"
 import "./profile.js"
 import "./profile_list.js"
 import "./singleGameStats.js"
+import "./tournament_stats.js"
 import "../pong_online/lobby.js"
 import "../pong_online/pong_online.js"
 import "../pong_online/tournament.js"
@@ -19,8 +20,6 @@ ws.onopen = function(event) {
 	console.log('WebSocket connection established');
 	ws.send(JSON.stringify({type: 'firstContactfromClient'}));
 }
-
-
 
 function getCookie(name) {
 	let cookieValue = null;
@@ -44,7 +43,7 @@ const routes = {
 	"/profile_list/": { fetch: "/fetch/profile_list"},
     "/pong_online/": { fetch: "/fetch/pong_online" },
 	"/singleGameStats/": { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
-	"/tournamentStats/": { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
+	"/tournament_stats/": { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
 	"/profile/": { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
 	"/tournament/":  { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
 };

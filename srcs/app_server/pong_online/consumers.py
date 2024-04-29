@@ -758,6 +758,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		#remove player from registred after match, so the player can play again
 		#also remove the match from the lobby and update the lobby
 		if (modus == 'remote'):
+			print('DELETE MATCH?: ', self.match.tournament_id)
 			if (self.match.tournament_id == None):
 				self.lobby.delete_match(self.match)
 			self.lobby.remove_registered_player(players[0])

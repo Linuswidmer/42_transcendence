@@ -1,6 +1,6 @@
 class singleGameStats extends HTMLElement {
-    constructor() {
-        super();
+	constructor() {
+		super();
 		console.log("constructor singleGameStats custom element");
 
 		var statsTable = document.getElementById('stats-table');
