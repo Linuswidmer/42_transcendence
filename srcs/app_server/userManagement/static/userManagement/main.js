@@ -3,6 +3,7 @@ import "./stranger.js"
 import "./profile.js"
 import "./profile_list.js"
 import "./singleGameStats.js"
+import "./tournament_stats.js"
 import "../pong_online/lobby.js"
 import "../pong_online/pong_online.js"
 import "../pong_online/tournament.js"
@@ -19,8 +20,6 @@ ws.onopen = function(event) {
 	console.log('WebSocket connection established');
 	ws.send(JSON.stringify({type: 'firstContactfromClient'}));
 }
-
-
 
 function getCookie(name) {
 	let cookieValue = null;

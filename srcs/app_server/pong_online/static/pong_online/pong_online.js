@@ -297,7 +297,6 @@ class Game extends HTMLElement {
 	}
 
 	handle_game_over(data) {
-		//clear the local entities, they get loaded again for a new game
 		this.remove_event_listener();
 		const statsURL = '/singleGameStats/?matchName=' + data.matchName + '&username=' + data.user;
 		history.pushState("", "", statsURL);

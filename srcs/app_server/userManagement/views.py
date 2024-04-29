@@ -19,7 +19,7 @@ import json
 def dashboard(request):
 	return render(request, "userManagement/dashboard.html")
 
-def index(request, username=None):
+def index(request, username=None, tournament_name=None):
     return render(request, "onepager/index.html")
     
 def	home(request):
