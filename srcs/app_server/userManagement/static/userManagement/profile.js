@@ -270,6 +270,15 @@ class Profile extends HTMLElement {
 			console.log("aiGames");
 			setTableData(aiAveragePointsPerGame, aiBestGameScore, aiHighestWinningStreak, aiLongestBallRally);
 		});
+
+        document.getElementById("expand-btn").addEventListener("click", function() {
+            var hiddenRows = document.querySelectorAll(".hide");
+            console.log("hiddenRows: ", hiddenRows);
+            hiddenRows.forEach(function(row) {
+                row.style.display = "table-row";
+            });
+            document.getElementById("expand-btn").style.display = "none";
+        });
     }
 }
 

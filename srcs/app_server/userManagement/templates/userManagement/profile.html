@@ -202,7 +202,7 @@
                 <div class="col-md-10">
                     <div class="table-responsive">
                         <table class="table table-hover">
-                            <thead class>
+                            <thead>
                                 <tr>
                                     <th class="text-center">ID</th>
                                     <th class="text-center">Date & Time</th>
@@ -211,8 +211,7 @@
                             </thead>
                             <tbody>
                                 {% for gld in stats.gameListData %}
-                                <tr>
-                                    <td class="text-center"><a href="/singleGameStats/?matchName={{ gld.game.matchName }}&username={{ gld.userGameStats.user.username }}" data-link>{{ gld.game.matchName }}</a></td>
+                                <tr {% if forloop.counter > 10 %}class="hide"; style="display: none{% endif %}">                                    <td class="text-center"><a href="/singleGameStats/?matchName={{ gld.game.matchName }}&username={{ gld.userGameStats.user.username }}" data-link>{{ gld.game.matchName }}</a></td>
                                     <td class="text-center">{{ gld.game.matchDate }} {{ gld.game.matchTime }} </td>
                                     {% if gld.opponentGameStats.user == None %}
 										<td class="text-center">Guest</td>
@@ -221,11 +220,13 @@
 									{% else %}
 										<td class="text-center"><a href="/profile/{{ gld.opponentGameStats.user }}" data-link>{{ gld.opponentGameStats.user }}</a></td>
 									{% endif %}
-
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
+                        {% if stats.gameListData|length > 10 %}
+                        <button id="expand-btn" class="btn btn-primary">Expand</button>
+                        {% endif %}
                     </div>
                 </div>
             </div>
