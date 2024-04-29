@@ -19,12 +19,12 @@ import json
 def dashboard(request):
 	return render(request, "userManagement/dashboard.html")
 
-def my_view(request):
-    return render(request, "onepager/land.html")
+def index(request, username=None):
+    return render(request, "onepager/index.html")
     
 def	home(request):
 	if request.user.is_authenticated:
-		return render(request, "pong_online/lobby.html", {"username": request.user.username})
+		return render(request, "onepager/logged_in.html", {"username": request.user.username})
 	else:
 		return render(request, "onepager/stranger.html")
 
@@ -136,7 +136,7 @@ def change_password(request):
         )
 
 def profile_list(request):
-	all_users = User.objects.all()
+	all_users = User.objects.exclude(username="DUMP_LOCAL")
 	return render(request, "userManagement/profile_list.html", {"registered_users": all_users})
 
 @login_required(login_url='/home')

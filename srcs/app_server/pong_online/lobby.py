@@ -159,9 +159,10 @@ class Lobby:
 	def create_django_tournament(self, tournament_id):
 		return Tournaments.objects.create(tournament_id=tournament_id)
 
-	async def add_tournament(self, username) -> bool:
+	async def add_tournament(self, username, size) -> bool:
 		tournament_id = self.generate_name()
-		self.tournaments[tournament_id] = Tournament(tournament_id, 4, self)
+		print('Create Tournamnet, generated name: ', tournament_id)
+		self.tournaments[tournament_id] = Tournament(tournament_id, size, self)
 		self.tournaments[tournament_id].django_tournament = await sync_to_async(self.create_django_tournament)(tournament_id)
 		self.tournaments[tournament_id].players.append(username)
 		# self.registered_players_total.append(username) # Are you sure you need this?
@@ -176,9 +177,9 @@ class Lobby:
 		for tm in tournaments:
 			self.used_generated_names.add(tm.tournament_id)
 	
-	def	create_local_match(self, modus) -> bool:
+	def	create_local_match(self, modus, ai_level=None) -> bool:
 		match_id = self.generate_name()
-		return Match(match_id, modus)
+		return Match(match_id, modus, ai_level)
 
 	def get_match(self, match_id):
 		return self.matches.get(match_id)
@@ -209,13 +210,14 @@ class Lobby:
 	# 	return self.games
 	
 class Match:
-	def __init__(self, match_id, modus, tournament_id=None) -> None:
+	def __init__(self, match_id, modus, ai_level=None, tournament_id=None) -> None:
 		#generate unique identifier for group communication
 		self.group_name = match_id
 		self.modus = modus
 		self.n_registered_players = 0
 		self.registered_players = []
 		self.tournament_id = tournament_id
+		self.ai_level = ai_level
 
 		self.game_data = {}
 

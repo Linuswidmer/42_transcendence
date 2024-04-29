@@ -1,5 +1,7 @@
 #!/bin/bash
 
+. /usr/src/app/venv/bin/activate
+
 # Function to handle SIGTERM signal
 term_handler() {
     kill $GUNICORN_PID $DAPHNE_PID
@@ -20,6 +22,8 @@ then
 
         echo "PostgreSQL started"
 fi
+
+pip3 install --no-cache-dir -r requirements.txt
 
 python3 manage.py collectstatic --noinput
 python3 manage.py makemigrations

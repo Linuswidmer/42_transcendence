@@ -1,4 +1,4 @@
-import {router, ws} from "../userManagement/land.js"
+import {router, ws} from "../userManagement/main.js"
 
 class Lobby extends HTMLElement {
     constructor() {
@@ -82,8 +82,29 @@ class Lobby extends HTMLElement {
 	
 	handle_create_tournament_button_click = () => {
 		console.log("Create tournament button clicked");
-		ws.send(JSON.stringify({type: 'lobby_update', 'action': 'create_tournament',
-		'username': this.username}));
+		// Create a pop-up container
+		var popup = document.createElement('div');
+		popup.className = 'popup';
+
+		for (let i = 4; i <=16; i = i * 2){
+			var tournamentSizeButton = document.createElement('button');
+			tournamentSizeButton.innerText = 'Size: ' + i;
+			tournamentSizeButton.value = i; // Set the value attribute to distinguish levels
+			tournamentSizeButton.addEventListener('click', function() {
+				// Action to perform when a level button is clicked
+				var selectedSize = this.value;
+				console.log("TM Size: " + selectedSize + " selected");
+				// Here, you can send the selected level to the server or perform any other action
+				// For example, you can send it via websockets
+				ws.send(JSON.stringify({type: 'lobby_update', 'action': 'create_tournament', 'username': this.username, 'tm_size': selectedSize}));;
+				// Close the pop-up after selecting a level
+				popup.remove();
+			});
+			// Append the level button to the pop-up
+			popup.appendChild(tournamentSizeButton);
+		}
+		// Append the pop-up to the document body
+		document.body.appendChild(popup);
 	}
 	
 	handle_play_local_button_click = () => {
@@ -94,8 +115,37 @@ class Lobby extends HTMLElement {
 	
 	handle_play_ai_button_click = () => {
 		console.log("AI Opponent button clicked");
-		ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join',
-		'username': this.username, 'modus': 'ai'}));
+	
+		// Create a pop-up container
+		var popup = document.createElement('div');
+		popup.className = 'popup';
+	
+		// Create buttons for levels 1 to 10
+		for (let i = 1; i <= 10; i++) {
+			var levelButton = document.createElement('button');
+			levelButton.innerText = 'Level ' + i;
+			levelButton.value = i; // Set the value attribute to distinguish levels
+			levelButton.addEventListener('click', function() {
+				// Action to perform when a level button is clicked
+				var selectedLevel = this.value;
+				console.log("Level " + selectedLevel + " selected");
+				// Here, you can send the selected level to the server or perform any other action
+				// For example, you can send it via websockets
+				ws.send(JSON.stringify({
+					type: 'lobby_update',
+					'action': 'join',
+					'username': this.username,
+					'modus': 'ai',
+					'ai_level': selectedLevel // Include the selected level in the message
+				}));
+				// Close the pop-up after selecting a level
+				popup.remove();
+			});
+			// Append the level button to the pop-up
+			popup.appendChild(levelButton);
+		}
+		// Append the pop-up to the document body
+		document.body.appendChild(popup);
 	}
 
 	update_lobby(data) {

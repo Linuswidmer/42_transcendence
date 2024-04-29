@@ -1,4 +1,4 @@
-import {router, ws} from "../userManagement/land.js"
+import {router, ws} from "../userManagement/main.js"
 
 class Tournament extends HTMLElement {
     constructor() {

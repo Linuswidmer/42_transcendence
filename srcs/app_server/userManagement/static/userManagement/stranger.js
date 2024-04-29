@@ -1,4 +1,4 @@
-import {router, getCookie} from "./land.js"
+import {router, getCookie} from "./main.js"
 
 class Stranger extends HTMLElement {
     constructor() {
@@ -153,7 +153,7 @@ function renderForm(url, containerId, title) {
 const csrftoken = getCookie('csrftoken');
  // Function to load logged-in content after successful login
 function loadLoggedInContent() {
-	history.pushState("", "", "/home");
+	history.pushState("", "", "/");
 	router();
 }
 
