@@ -1,4 +1,4 @@
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User, Group
 from .models import Profile
@@ -20,8 +20,8 @@ def dashboard(request):
 	return render(request, "userManagement/dashboard.html")
 
 def index(request, username=None, tournament_id=None):
-    return render(request, "onepager/index.html")
-    
+	return render(request, "onepager/index.html")
+	
 def	home(request):
 	if request.user.is_authenticated:
 		return render(request, "onepager/logged_in.html", {"username": request.user.username})
@@ -52,26 +52,26 @@ def register_user(request):
 
 #view for registering a new guest
 def register_guest(request):
-    if request.method == "GET":
-        return render(
-            request, "userManagement/register.html",
-            {"form": CustomGuestCreationForm}
-        )
-    elif request.method == "POST":
-        form = CustomGuestCreationForm(request.POST)
-        if form.is_valid():
-            guest_users, created = Group.objects.get_or_create(name='guest_users')
-            user = form.save()
-            user.groups.add(guest_users)
-            user.set_unusable_password()
-            user.save()
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            return redirect("userManagement:profile_list")
-        else:
-            return render(
-            request, "userManagement/register.html",
-            {"form": form}
-        )
+	if request.method == "GET":
+		return render(
+			request, "userManagement/register.html",
+			{"form": CustomGuestCreationForm}
+		)
+	elif request.method == "POST":
+		form = CustomGuestCreationForm(request.POST)
+		if form.is_valid():
+			guest_users, created = Group.objects.get_or_create(name='guest_users')
+			user = form.save()
+			user.groups.add(guest_users)
+			user.set_unusable_password()
+			user.save()
+			login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+			return redirect("userManagement:profile_list")
+		else:
+			return render(
+			request, "userManagement/register.html",
+			{"form": form}
+		)
 
 #view for updating existing user
 def update_user(request):
@@ -85,7 +85,7 @@ def update_user(request):
 		form = CustomUserChangeForm(request.POST, instance=request.user)
 		if form.is_valid():
 			user = form.save()
-			return redirect(reverse('userManagement:profile'))
+			return redirect('userManagement:profile', username=request.user.username)
 		else:
 			return render(
 			request, "userManagement/register.html",
@@ -110,7 +110,8 @@ def update_profile(request):
 		form = CustomProfileChangeForm(request.POST, request.FILES, instance=request.user.profile)
 		if form.is_valid():
 			form.save()
-			return redirect(reverse('userManagement:profile'))
+			#update_session_auth_hash(request, user)
+			return redirect('userManagement:profile', username=request.user.username)
 		else:
 			return render(
 			request, "userManagement/update_profile.html",
@@ -118,22 +119,24 @@ def update_profile(request):
 		)
 
 def change_password(request):
-    if request.method == "GET":
-        form = PasswordChangeForm(instance=request.user)
-        return render(
-            request, "userManagement/register.html",
-            {"form": form}
-        )
-    elif request.method == "POST":
-        form = PasswordChangeForm(request.POST, instance=request.user)
-        if form.is_valid():
-            user = form.save()
-            return redirect(reverse('userManagement:dashboard'))
-        else:
-            return render(
-            request, "userManagement/register.html",
-            {"form": form}
-        )
+	if request.method == "GET":
+		form = PasswordChangeForm(instance=request.user)
+		return render(
+			request, "userManagement/register.html",
+			{"form": form}
+		)
+	elif request.method == "POST":
+		form = PasswordChangeForm(request.POST, instance=request.user)
+		if form.is_valid():
+			user = form.save()
+			update_session_auth_hash(request, user)
+			print('')
+			return redirect('userManagement:profile', username=request.user.username)
+		else:
+			return render(
+			request, "userManagement/register.html",
+			{"form": form}
+		)
 
 def profile_list(request):
 	all_users = User.objects.exclude(username="DUMP_LOCAL")
@@ -141,10 +144,10 @@ def profile_list(request):
 
 @login_required(login_url='/home')
 def profile(request, username):
-    user = get_object_or_404(User, username=username)
-    sb = StatsBuilder(user)
-    sb.build()
-    return render(request, "userManagement/profile.html", {"user": user, "stats": sb})
+	user = get_object_or_404(User, username=username)
+	sb = StatsBuilder(user)
+	sb.build()
+	return render(request, "userManagement/profile.html", {"user": user, "stats": sb})
 
 def follow(request, username):
 	user = get_object_or_404(User, username=username)
@@ -163,29 +166,29 @@ def follow(request, username):
 		return redirect('userManagement:profile', username=username)
 
 def logged_in(request):
-    return render(request, 'onepager/logged_in.html', {"username": request.user.username})
+	return render(request, 'onepager/logged_in.html', {"username": request.user.username})
 
 def stranger(request):
-    return render(request, 'onepager/stranger.html')
+	return render(request, 'onepager/stranger.html')
 
 
 def check_login_status(request):
-    if request.user.is_authenticated:
-        return JsonResponse({'logged_in': True})
-    else:
-        return JsonResponse({'logged_in': False})
+	if request.user.is_authenticated:
+		return JsonResponse({'logged_in': True})
+	else:
+		return JsonResponse({'logged_in': False})
 
 def dynamic_content(request):
-    # Your logic to fetch dynamic content
-    data = {'message': 'This is dynamic content!'}
-    return JsonResponse(data)
+	# Your logic to fetch dynamic content
+	data = {'message': 'This is dynamic content!'}
+	return JsonResponse(data)
 
 
 def navbar(request):
-    return render(request, 'includes/navbar.html')
+	return render(request, 'includes/navbar.html')
 
 def navigation(request):
-    return render(request, 'includes/navigation.html')
+	return render(request, 'includes/navigation.html')
 
 @login_required(login_url='/home')
 def single_game_stats(request):
