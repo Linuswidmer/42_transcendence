@@ -43,7 +43,7 @@ def register_user(request):
 			user.groups.add(registered_users)
 			user.save()
 			login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-			return redirect(reverse('userManagement:profile'))
+			return redirect('userManagement:profile', {"username": user.username})
 		else:
 			return render(
 			request, "userManagement/register.html",
@@ -66,7 +66,7 @@ def register_guest(request):
 			user.set_unusable_password()
 			user.save()
 			login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-			return redirect("userManagement:profile_list")
+			return redirect("userManagement:logged_in")
 		else:
 			return render(
 			request, "userManagement/register.html",
@@ -149,8 +149,6 @@ def profile(request, username):
 
 def follow(request, username):
 	user = get_object_or_404(User, username=username)
-	sb = StatsBuilder(user)
-	sb.build()
 	if request.method == "POST":
 		#user = get_object_or_404(User, username=username)
 		current_user_profile = request.user.profile
@@ -168,7 +166,6 @@ def logged_in(request):
 
 def stranger(request):
 	return render(request, 'onepager/stranger.html')
-
 
 def check_login_status(request):
 	if request.user.is_authenticated:
