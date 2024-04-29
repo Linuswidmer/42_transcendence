@@ -5,6 +5,7 @@ class Profile extends HTMLElement {
         super();
 		console.log("constructor profile custom element");
 
+		let username = this.getAttribute('data-username');
 		let allProfilesUrl = this.getAttribute('data-allProfilesUrl');
 		let updateProfileUrl = this.getAttribute('data-updateProfileUrl');
 		let updateUserUrl = this.getAttribute('data-updateUserUrl');
@@ -121,7 +122,11 @@ class Profile extends HTMLElement {
 								modal.classList.remove('show');
 								modal.style.display = 'none';
 								if (containerId == 'profilePicture' || containerId == 'updateProfile'){
-									reloadProfilePage();
+									if (containerId == 'updateProfile') {
+										username = formData.get('username');
+										console.log("new username: ", username)
+									}
+									reloadProfilePage(username);
 								}
 							} else {
 								// Login failed
@@ -146,9 +151,9 @@ class Profile extends HTMLElement {
 	
 	
 	
-	function reloadProfilePage() {
+	function reloadProfilePage(username) {
 	  		console.log("reloading profile page")
-			history.pushState("", "", "/profile/");
+			history.pushState("", "", "/profile/" + username);
 			router();
 		}
 	
