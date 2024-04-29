@@ -144,17 +144,23 @@ def profile(request, username):
     user = get_object_or_404(User, username=username)
     sb = StatsBuilder(user)
     sb.build()
-    if request.method == "POST":
-        current_user_profile = request.user.profile
-        data = request.POST
-        action = data.get("follow")
-        if action == "follow":
-            current_user_profile.follows.add(user.profile)
-        elif action == "unfollow":
-            current_user_profile.follows.remove(user.profile)
-        current_user_profile.save()
     return render(request, "userManagement/profile.html", {"user": user, "stats": sb})
 
+def follow(request, username):
+	user = get_object_or_404(User, username=username)
+	sb = StatsBuilder(user)
+	sb.build()
+	if request.method == "POST":
+		#user = get_object_or_404(User, username=username)
+		current_user_profile = request.user.profile
+		data = request.POST
+		action = data.get("follow")
+		if action == "follow":
+			current_user_profile.follows.add(user.profile)
+		elif action == "unfollow":
+			current_user_profile.follows.remove(user.profile)
+		current_user_profile.save()
+		return redirect('userManagement:profile', username=username)
 
 def logged_in(request):
     return render(request, 'onepager/logged_in.html', {"username": request.user.username})

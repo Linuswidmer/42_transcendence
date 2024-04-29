@@ -1,6 +1,6 @@
 from django.urls import path, include
 
-from .views import dashboard, profile_list, profile, register_user, register_guest, update_user, update_profile, change_password, index, stranger, logged_in, navbar, check_login_status, navigation, dynamic_content, single_game_stats, tournament_stats, home
+from .views import dashboard, profile_list, profile, register_user, register_guest, update_user, update_profile, change_password, index, stranger, logged_in, navbar, check_login_status, navigation, dynamic_content, single_game_stats, tournament_stats, home, follow
 
 
 
@@ -26,6 +26,7 @@ urlpatterns = [
 	path("register_guest/", register_guest, name="register_guest"),
 	path("update_user/", update_user, name="update_user"),
 	path("update_profile/", update_profile, name="update_profile"),
+	path("follow/<str:username>", follow, name="follow"),
 
 
 	path("home/", home, name="home"),
