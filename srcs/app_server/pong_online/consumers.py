@@ -637,8 +637,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 	async def send_to_group(self, event):
 		#check again
-		if ("identifier" in event and event["identifier"] == "game_end"):
-			self.game_group_name = ""
+		#if ("identifier" in event and event["identifier"] == "game_end"):
+			#self.game_group_name = ""
 		if ("game_over" in event and event["game_over"] == True):
 			self.in_game = False
 			self.is_playing = False
