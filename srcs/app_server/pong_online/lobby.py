@@ -87,7 +87,7 @@ class Lobby:
 		if not tournament:
 			return False, "tournament does not exist"
 		elif not (username in tournament.players):
-			return False, "player not in tournament"
+			return True, ""
 		tournament.players.remove(username)
 		#self.registered_players_total.remove(username)
 		if (len(tournament.players) == 0):
