@@ -33,6 +33,7 @@ class Tournament extends HTMLElement {
 		this.leaveTournamentButton = document.createElement('button');
 		this.leaveTournamentButton.textContent = 'Leave Tournament';
 		this.leaveTournamentButton.addEventListener('click', this.handle_leave_tournament_button_click);
+		window.addEventListener('beforeunload', this.handle_beforeunload);	
     }
 
 	updateTournamentLobby(data) {
@@ -105,6 +106,10 @@ class Tournament extends HTMLElement {
 		}
 	}
 
+	handle_beforeunload = () => {
+		ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
+	}
+
 	handle_leave_tournament_button_click= () => {
 		console.log("Leave Tournament button clicked");
 		ws.send(JSON.stringify({type: 'lobby_update', 'action': 'leave_tournament', 'tournament_id': this.tournament_name}));
@@ -128,10 +133,9 @@ class Tournament extends HTMLElement {
 				let tournamentStatsUrl = '/tournament_stats/' + data.tournament_id + '/';
 				history.pushState("", "", tournamentStatsUrl);
 				router();
-				// fetch_with_internal_js('/tournament_stats/' + data.tournament_id);
-				//window.location.href = window.location.origin + '/tournament_stats/' + data.tournament_id;
 			}
 			if (data.type === "leave_tournament"){
+				window.removeEventListener('beforeunload', this.handle_beforeunload);
 				console.log(window.location.origin + '/lobby/');
 				history.pushState("", "", "/lobby");
 				router();

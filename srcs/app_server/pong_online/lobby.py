@@ -47,12 +47,10 @@ class Lobby:
 	
 	def check_user_registered(self, username):
 		if username in self.registered_players_total:
-			print('check user: is in self.registered_players_total')
 			return True
 		for tournament_id in self.tournaments:
 			tournament = self.get_tournament(tournament_id)
 			if username in tournament.players:
-				print('check user: is in tournament.players')
 				return True
 		return False
 	
@@ -62,7 +60,6 @@ class Lobby:
 		if not match:
 			return False, "match does not exist"
 		elif username in self.registered_players_total:
-			print("Already registered in Match")
 			return False, "player already registered"
 		elif not (match.register_player(username)):
 			return False, "game full"
@@ -78,7 +75,6 @@ class Lobby:
 		if not tournament:
 			return False, "tournament does not exist"
 		elif username in self.registered_players_total:
-			print("Already registered in Match")
 			return False, "player already registered"
 		elif not (tournament.register_player(username)):
 			return False, "tournament full"
@@ -94,7 +90,6 @@ class Lobby:
 			return False, "player not in tournament"
 		tournament.players.remove(username)
 		#self.registered_players_total.remove(username)
-		#print(self.tournaments)
 		if (len(tournament.players) == 0):
 			del self.tournaments[tournament_id]
 		return True, ""
@@ -151,7 +146,6 @@ class Lobby:
 	def generate_name(self):
 		name = generate()
 		while ((name in self.used_generated_names) or (not self.is_valid_group_name(name))):
-			print('Name already in use or not valid: ', name)
 			name = str(generate())
 		self.used_generated_names.add(name)
 		return name
@@ -194,6 +188,7 @@ class Lobby:
 		return self.tournaments.get(tournament_id)
 		
 	def delete_match(self, match):
+		#if (match in self.matches):
 		del self.matches[match.group_name]
 	
 	def delete_tournament(self, tournament):
@@ -286,6 +281,11 @@ class Tournament:
 		self.lobby = lobby
 		self.generate_matches(number_players)
 
+	def get_opponent(self, username):
+		player_index = self.players.index(username)
+		opponent_index = player_index + 1 if player_index % 2 == 0 else player_index - 1
+		return self.players[opponent_index]
+
 	def get_registered_players(self):
 		return self.players
 
@@ -327,7 +327,7 @@ class Tournament:
 				}
 			games_added += 1
 			self.matches.append(Match(match_id, "remote", tournament_id=self.tournament_name))
-		print(json.dumps(self.data, indent=4))
+
 
 	def get_match(self, match_id):
 		for match in self.matches:
