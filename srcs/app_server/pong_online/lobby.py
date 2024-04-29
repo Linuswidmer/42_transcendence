@@ -159,7 +159,7 @@ class Lobby:
 	# rename to create_match
 	def add_match(self, modus) -> bool:
 		match_name = self.generate_name()
-		self.matches[match_name] = Match(match_name, modus)
+		self.matches[match_name] = Match(match_id=match_name, modus=modus)
 		return match_name
 
 	def create_django_tournament(self, tournament_id):
@@ -326,7 +326,7 @@ class Tournament:
 					}
 				}
 			games_added += 1
-			self.matches.append(Match(match_id, "remote", self.tournament_name))
+			self.matches.append(Match(match_id, "remote", tournament_id=self.tournament_name))
 		print(json.dumps(self.data, indent=4))
 
 	def get_match(self, match_id):

@@ -117,7 +117,7 @@ class Tournament extends HTMLElement {
 			if (data.action === "start_tournament_round"){
 				console.log("starting round", data.match_id)
 				//window.location.href = window.location.origin + '/lobby/';
-				ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join', 'match_id': data.match_id, 'tournament_id': data.tournament_id, 'username': username, 'modus': 'remote'}));
+				ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join', 'match_id': data.match_id, 'tournament_id': data.tournament_id, 'username': this.username, 'modus': 'remote'}));
 			}
 			if (data.type === "tournament_lobby_update") {
 				console.log('Update tm lobby');
@@ -137,7 +137,7 @@ class Tournament extends HTMLElement {
 				router();
 			}
 			if (data.type === "join") {
-				history.pushState("", "", "/pong_online");
+				history.pushState("", "", "/pong_online/");
 				router(() => {
 					ws.send(JSON.stringify({type: 'get_game_data'}));
 				});

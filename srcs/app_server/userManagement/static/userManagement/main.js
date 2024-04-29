@@ -44,7 +44,7 @@ const routes = {
 	"/profile_list/": { fetch: "/fetch/profile_list"},
     "/pong_online/": { fetch: "/fetch/pong_online" },
 	"/singleGameStats/": { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
-	"/tournamentStats/": { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
+	"/tournament_stats/": { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
 	"/profile/": { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
 	"/tournament/":  { fetch: () => { return "/fetch" + location.href.replace(location.origin, ''); } },
 };
