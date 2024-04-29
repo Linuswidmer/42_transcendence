@@ -142,7 +142,7 @@ class Game extends HTMLElement {
 	
 	handle_leave_game_button_click = () => {
 		ws.send(JSON.stringify({type: 'leave', 'action': 'leave', 'username': this.username, 'modus': this.modus}));
-		history.pushState("", "", "/lobby");
+		history.pushState("", "", "/lobby/");
 		router();
 		console.log('leaveButtonclicked');
 	}

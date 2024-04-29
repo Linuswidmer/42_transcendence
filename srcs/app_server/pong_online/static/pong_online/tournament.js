@@ -137,7 +137,7 @@ class Tournament extends HTMLElement {
 			if (data.type === "leave_tournament"){
 				window.removeEventListener('beforeunload', this.handle_beforeunload);
 				console.log(window.location.origin + '/lobby/');
-				history.pushState("", "", "/lobby");
+				history.pushState("", "", "/lobby/");
 				router();
 			}
 			if (data.type === "join") {
