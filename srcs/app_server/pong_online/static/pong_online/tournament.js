@@ -5,9 +5,9 @@ class Tournament extends HTMLElement {
         super();
 
 		this.username = this.getAttribute('data-username');
-		this.tournament_name = this.getAttribute('data-tournament');
+		this.tournament_id = this.getAttribute('data-tournament');
 		console.log("username tournament:", this.username);
-		console.log("tournament name:", this.tournament_name);
+		console.log("tournament name:", this.tournament_id);
 
         this.innerHTML = /*html*/`
 				<div class="tournament-container">
@@ -37,14 +37,14 @@ class Tournament extends HTMLElement {
     }
 
 	updateTournamentLobby(data) {
-		this.tournament_name = data.tournament_id;
+		this.tournament_id = data.tournament_id;
 		let tournament_data = data.tournament_data;
 		if ('error' in data) {
 			alert(data.error);
 		}
 		const tournamentNameElement = this.querySelector('#tournamentName');
 		tournamentNameElement.textContent = '';
-		tournamentNameElement.textContent = this.tournament_name;
+		tournamentNameElement.textContent = this.tournament_id;
 	
 		// Get players container
 		const playersContainer = this.querySelector('#tournamentPlayers');
@@ -112,7 +112,7 @@ class Tournament extends HTMLElement {
 
 	handle_leave_tournament_button_click= () => {
 		console.log("Leave Tournament button clicked");
-		ws.send(JSON.stringify({type: 'lobby_update', 'action': 'leave_tournament', 'tournament_id': this.tournament_name}));
+		ws.send(JSON.stringify({type: 'lobby_update', 'action': 'leave_tournament', 'tournament_id': this.tournament_id}));
 	}
 
 	handle_message(e) {

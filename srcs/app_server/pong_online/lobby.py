@@ -192,7 +192,7 @@ class Lobby:
 		del self.matches[match.group_name]
 	
 	def delete_tournament(self, tournament):
-		del self.tournaments[tournament.tournament_name]
+		del self.tournaments[tournament.tournament_id]
 
 	# 	#generate unique identifier for match_id
 	# 	#will also be used for group communication
@@ -270,7 +270,7 @@ class Match:
 
 class Tournament:
 	def __init__(self, name, number_players, lobby) -> None:
-		self.tournament_name = name
+		self.tournament_id = name
 		self.players = []
 		self.matches = []
 		self.data = {}
@@ -326,7 +326,7 @@ class Tournament:
 					}
 				}
 			games_added += 1
-			self.matches.append(Match(match_id, "remote", tournament_id=self.tournament_name))
+			self.matches.append(Match(match_id, "remote", tournament_id=self.tournament_id))
 
 
 	def get_match(self, match_id):

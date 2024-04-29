@@ -19,7 +19,7 @@ import json
 def dashboard(request):
 	return render(request, "userManagement/dashboard.html")
 
-def index(request, username=None, tournament_name=None):
+def index(request, username=None, tournament_id=None):
     return render(request, "onepager/index.html")
     
 def	home(request):
@@ -193,6 +193,6 @@ def single_game_stats(request):
 			return render(request, "userManagement/single_game_stats.html", {"gld": gld})
 
 @login_required(login_url='/home')	
-def tournament_stats(request, tournament_name):
-	tournament = Tournaments.objects.get(tournament_id=tournament_name)
+def tournament_stats(request, tournament_id):
+	tournament = Tournaments.objects.get(tournament_id=tournament_id)
 	return render(request, "userManagement/tournament_stats.html", {"tm_name": tournament.tournament_id, "tm_data": json.dumps(tournament.data)})
