@@ -139,10 +139,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGOUT_REDIRECT_URL = 'userManagement:dashboard'
+LOGOUT_REDIRECT_URL = 'userManagement:index'
 
-LOGIN_REDIRECT_URL = 'userManagement:profile_list'
-ACCOUNT_REDIRECT_URL = 'userManagement:dashboard'
+LOGIN_REDIRECT_URL = 'userManagement:display_lobby'
+ACCOUNT_REDIRECT_URL = 'userManagement:index'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SITE_ID = 1
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

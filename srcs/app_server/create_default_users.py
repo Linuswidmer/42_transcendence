@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password
 from allauth.socialaccount.models import SocialApp
 from django.contrib.sites.models import Site
 
@@ -10,13 +11,13 @@ username = 'AI_Ursula'
 user_exists = User.objects.filter(username=username).exists()
 
 if not user_exists:
-    User.objects.create_user(username=username, password='AI_Ursula')
+    User.objects.create_user(username=username, password=make_password(''))
 
 username = 'DUMP_LOCAL'
 user_exists = User.objects.filter(username=username).exists()
 
 if not user_exists:
-    User.objects.create_user(username=username, password='DUMP_LOCAL')
+    User.objects.create_user(username=username, password=make_password(''))
 
 username = 'admin'
 user_exists = User.objects.filter(username=username).exists()

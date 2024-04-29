@@ -112,7 +112,7 @@ class Tournament extends HTMLElement {
 
 	handle_leave_tournament_button_click= () => {
 		console.log("Leave Tournament button clicked");
-		ws.send(JSON.stringify({type: 'lobby_update', 'action': 'leave_tournament', 'tournament_id': this.tournament_id}));
+		ws.send(JSON.stringify({type: 'leave'})); //action': 'leave_tournament', 'tournament_id': this.tournament_id}));
 	}
 
 	handle_message(e) {
