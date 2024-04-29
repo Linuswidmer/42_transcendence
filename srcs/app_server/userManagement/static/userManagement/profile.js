@@ -272,7 +272,7 @@ class Profile extends HTMLElement {
 		});
 
         document.getElementById("expand-btn").addEventListener("click", function() {
-            var hiddenRows = document.querySelectorAll(".hide");
+            var hiddenRows = document.querySelectorAll(".hideSingleGame");
             console.log("hiddenRows: ", hiddenRows);
             hiddenRows.forEach(function(row) {
                 row.style.display = "table-row";

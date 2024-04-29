@@ -211,7 +211,7 @@
                             </thead>
                             <tbody>
                                 {% for gld in stats.gameListData %}
-                                <tr {% if forloop.counter > 10 %}class="hide"; style="display: none{% endif %}">                                    <td class="text-center"><a href="/singleGameStats/?matchName={{ gld.game.matchName }}&username={{ gld.userGameStats.user.username }}" data-link>{{ gld.game.matchName }}</a></td>
+                                <tr {% if forloop.counter > 10 %}class="hideSingleGame"; style="display: none{% endif %}">                                    <td class="text-center"><a href="/singleGameStats/?matchName={{ gld.game.matchName }}&username={{ gld.userGameStats.user.username }}" data-link>{{ gld.game.matchName }}</a></td>
                                     <td class="text-center">{{ gld.game.matchDate }} {{ gld.game.matchTime }} </td>
                                     {% if gld.opponentGameStats.user == None %}
 										<td class="text-center">Guest</td>
@@ -224,9 +224,7 @@
                                 {% endfor %}
                             </tbody>
                         </table>
-                        {% if stats.gameListData|length > 10 %}
-                        <button id="expand-btn" class="btn btn-primary">Expand</button>
-                        {% endif %}
+                        <button id="expand-btn" class="btn btn-primary" {% if stats.gameListData|length <= 10 %} style="display: none"{% endif %}>Expand</button>
                     </div>
                 </div>
             </div>

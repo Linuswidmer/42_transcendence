@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. /usr/src/app/venv/bin/activate
+. /opt/venv/bin/activate
 
 # Function to handle SIGTERM signal
 term_handler() {
