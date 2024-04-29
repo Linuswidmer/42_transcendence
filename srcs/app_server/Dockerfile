@@ -11,17 +11,18 @@ RUN apt-get update && apt-get install -qqy x11-apps
 # install python, pip and venv
 RUN apt-get install -y python3 python3-pip python3-venv
 
+RUN python3 -m venv /opt/venv
+
 # create a virtual environment and activate it
-RUN python3 -m venv venv
-ENV PATH="/usr/src/app/venv/bin:$PATH"
+#RUN python3 -m venv venv
+#ENV PATH="/usr/src/app/venv/bin:$PATH"
+ENV PATH="/opt/venv/bin:$PATH"
 
 # upgrade pip
 RUN pip3 install --upgrade pip
 
 COPY ./requirements.txt /usr/src/app/requirements.txt
 
-# install requirements
-# RUN pip3 install --no-cache-dir -r requirements.txt
 
 #entry point file
 COPY ./entrypoint.sh /usr/src/app/entrypoint.sh
