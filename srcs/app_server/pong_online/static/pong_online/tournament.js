@@ -33,6 +33,7 @@ class Tournament extends HTMLElement {
 		this.leaveTournamentButton = document.createElement('button');
 		this.leaveTournamentButton.textContent = 'Leave Tournament';
 		this.leaveTournamentButton.addEventListener('click', this.handle_leave_tournament_button_click);
+		window.addEventListener('beforeunload', this.handle_beforeunload);	
     }
 
 	updateTournamentLobby(data) {
@@ -105,6 +106,10 @@ class Tournament extends HTMLElement {
 		}
 	}
 
+	handle_beforeunload = () => {
+		ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
+	}
+
 	handle_leave_tournament_button_click= () => {
 		console.log("Leave Tournament button clicked");
 		ws.send(JSON.stringify({type: 'lobby_update', 'action': 'leave_tournament', 'tournament_id': this.tournament_name}));
@@ -117,26 +122,26 @@ class Tournament extends HTMLElement {
 			if (data.action === "start_tournament_round"){
 				console.log("starting round", data.match_id)
 				//window.location.href = window.location.origin + '/lobby/';
-				ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join', 'match_id': data.match_id, 'tournament_id': data.tournament_id, 'username': username, 'modus': 'remote'}));
+				ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join', 'match_id': data.match_id, 'tournament_id': data.tournament_id, 'username': username, 'modus': 'remote'}));					
 			}
 			if (data.type === "tournament_lobby_update") {
 				console.log('Update tm lobby');
 				this.updateTournamentLobby(data);
 			}
 			if (data.type === "redirect_to_tournament_stats") {
-				console.log(window.location.origin + '/tournament_stats/' + data.tournament_id);
+				window.removeEventListener('beforeunload', this.handle_beforeunload);
 				let tournamentStatsUrl = '/tournament_stats/' + data.tournament_id;
 				history.pushState("", "", tournamentStatsUrl);
 				router();
-				// fetch_with_internal_js('/tournament_stats/' + data.tournament_id);
-				//window.location.href = window.location.origin + '/tournament_stats/' + data.tournament_id;
 			}
 			if (data.type === "leave_tournament"){
+				window.removeEventListener('beforeunload', this.handle_beforeunload);
 				console.log(window.location.origin + '/lobby/');
 				history.pushState("", "", "/lobby");
 				router();
 			}
 			if (data.type === "join") {
+				window.removeEventListener('beforeunload', this.handle_beforeunload);
 				history.pushState("", "", "/pong_online");
 				router(() => {
 					ws.send(JSON.stringify({type: 'get_game_data'}));
