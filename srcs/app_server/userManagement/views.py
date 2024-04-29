@@ -85,7 +85,7 @@ def update_user(request):
 		form = CustomUserChangeForm(request.POST, instance=request.user)
 		if form.is_valid():
 			user = form.save()
-			return redirect('userManagement:profile', username=request.user.username)
+			return redirect('userManagement:profile', username=user.username)
 		else:
 			return render(
 			request, "userManagement/register.html",
@@ -110,7 +110,6 @@ def update_profile(request):
 		form = CustomProfileChangeForm(request.POST, request.FILES, instance=request.user.profile)
 		if form.is_valid():
 			form.save()
-			#update_session_auth_hash(request, user)
 			return redirect('userManagement:profile', username=request.user.username)
 		else:
 			return render(
@@ -130,7 +129,6 @@ def change_password(request):
 		if form.is_valid():
 			user = form.save()
 			update_session_auth_hash(request, user)
-			print('')
 			return redirect('userManagement:profile', username=request.user.username)
 		else:
 			return render(
