@@ -7,8 +7,19 @@ class Lobby extends HTMLElement {
 		this.username = this.getAttribute('data-username');
 		console.log("username lobby:", this.username);
 
-		ws.send(JSON.stringify({type: 'username', 'username': this.username}));
-
+		console.log('WS STATE: ', ws.readyState);
+		if (ws.readyState == WebSocket.OPEN){
+			console.log('WS was already open: send username to consumer: ', this.username);
+			ws.send(JSON.stringify({type: 'username', 'username': this.username}));
+			ws.send(JSON.stringify({type: 'lobby_update', 'action': 'display'}));
+		}else {
+			var username = this.username; //this is necessary because i cannot use this in the onopen callback
+			ws.onopen = function(event) {
+				console.log('Waited for ws to open: send username to consumer after waiting: ', username);
+				ws.send(JSON.stringify({type: 'username', 'username': username}));
+				ws.send(JSON.stringify({type: 'lobby_update', 'action': 'display'}));
+			}
+		}
 
         this.innerHTML = /*html*/`
 			<div>
@@ -45,7 +56,6 @@ class Lobby extends HTMLElement {
 
 		// this.ws.onopen = (e) => this.send_initial_data_to_server(e);
 
-		ws.send(JSON.stringify({type: 'lobby_update', 'action': 'display'}));
     }
 
 	handle_message(e) {

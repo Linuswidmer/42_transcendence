@@ -3,11 +3,19 @@ import {ws} from "./main.js"
 class Navbar extends HTMLElement {
     constructor() {
         super();
-
-		ws.send(JSON.stringify({type: 'test'}));
-        
 		this.username = this.getAttribute('data-username');
 		console.log("username please:", this.username);
+
+		console.log('WS STATE: ', ws.readyState);
+		if (ws.readyState == WebSocket.OPEN){
+			console.log('WS was already open in navbar')
+			ws.send(JSON.stringify({type: 'test'}));
+		}else {
+			ws.onopen = function(event) {
+				console.log('WS open in navbar after waiting')
+				ws.send(JSON.stringify({type: 'test'}));
+			}
+		}
 
         this.innerHTML = /*html*/`
 			<div>

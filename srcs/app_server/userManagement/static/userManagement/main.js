@@ -91,14 +91,18 @@ function router(callback=null) {
 window.addEventListener("click", e => {
 	let currentURL = location.href.replace(location.origin, '');
     if (e.target.matches("[data-link]")) {
-		if (currentURL == '/pong_online/' || currentURL.includes('/tournament/'));
+		if (currentURL == '/pong_online/' || currentURL.includes('/tournament/')){
 			ws.send(JSON.stringify({type: 'reset_consumer_after_unusual_game_leave'}));
+			history.replaceState(null, "", "/");
+		}
         e.preventDefault();
         history.pushState("", "", e.target.href);
         router();
     } else if (e.target.matches("[data-logout]")) {
-		if (currentURL == '/pong_online/' || currentURL.includes('/tournament/'));
+		if (currentURL == '/pong_online/' || currentURL.includes('/tournament/')){
 			ws.send(JSON.stringify({type: 'reset_consumer_after_unusual_game_leave'}));
+			history.replaceState(null, "", "/");
+		}
 		e.preventDefault();
 		history.pushState("", "", e.target.href);
 		console.log("logout pressed");
