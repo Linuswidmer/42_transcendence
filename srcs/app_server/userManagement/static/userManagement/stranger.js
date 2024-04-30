@@ -128,18 +128,24 @@ function renderForm(url, containerId, title) {
                             const modal = document.getElementById(`${containerId}Modal`);
                             modal.classList.remove('show');
                             modal.style.display = 'none';
-                            loadLoggedInContent();
-                        } else {
-                            // Login failed
-                            // Display error message
-                            response.text().then(errorMessage => {
-                            var extractedMessage = extractErrorMessage(errorMessage);
-                            const modal = document.getElementById(`${containerId}Modal`);
-                            const errorContainer = document.createElement("div");
-                            errorContainer.classList.add("alert", "alert-danger");
-                            errorContainer.textContent = extractedMessage;
-                            modal.querySelector(".modal-body").appendChild(errorContainer);
-                        });
+							if(containerId == 'loginModal' || containerId == 'registerModal' || containerId == 'guestModal')
+							loadLoggedInContent();
+						} else {
+							// Login failed
+							// Display error message
+							response.text().then(errorMessage => {
+							var extractedMessage = extractErrorMessage(errorMessage);
+							const modal = document.getElementById(`${containerId}Modal`);
+							const errorContainerOld = document.querySelector(".alert-danger");
+							if (!errorContainerOld){
+								const errorContainer = document.createElement("div");
+								errorContainer.classList.add("alert", "alert-danger");
+								errorContainer.textContent = extractedMessage;
+								modal.querySelector(".modal-body").appendChild(errorContainer);
+							} else {
+								errorContainerOld.textContent = extractedMessage;
+							}
+						});
                     }})
                     .catch(error => console.error('Error:', error));
                     });

@@ -1,12 +1,5 @@
 {% include 'includes/navbar.html' %}
-<html>
 <h2>{{ tm_name }}</h2>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Link to your desired style.css file -->
-    <link rel="stylesheet" href="./style.css">
-</head>
 <div class="tournament-container">
     <!-- Tournament rounds -->
     <div class="rounds" id="rounds">
@@ -14,4 +7,3 @@
     </div>
 </div>
 <pong-tournament-stats tournamentData="{{ tm_data }}"></pong-tournament-stats>
-</html>

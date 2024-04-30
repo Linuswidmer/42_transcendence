@@ -1,20 +1,8 @@
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tournament Visualization</title>
-<link rel="stylesheet" type="text/css" href="{% static 'pong_online/styles.css' %}">
-</head>
-<body>
 {% include 'includes/navbar.html' %}
 
 
 <pong-tournament data-username="{{ user.username }}"
 	data-tournament="{{ tournament }}"></pong-tournament>
 
-
-</body>
-</html>

@@ -19,8 +19,7 @@
                                         <img src="{{ user.profile.avatar.url }}" alt="avatar" class="rounded-circle" style="width: 50px; height: 50px;">
                                     </td>
                                     <td class="text-center">
-                                        <button type="button"  class="btn buttonblue profileBtn" data-username="{{ user.username }}"> {{ user.username }}</button>
-                                        <a href="{% url 'userManagement:profile' user.username %}" data-link>
+                                        <a class="btn buttonblue" href="{% url 'userManagement:profile' user.username %}" data-link>
                                             {{ user.username }}
                                         </a>
                                     </td>
