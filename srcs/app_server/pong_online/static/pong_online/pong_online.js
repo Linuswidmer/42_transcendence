@@ -300,6 +300,7 @@ class Game extends HTMLElement {
 	handle_game_over(data) {
 		this.remove_event_listener();
 		const statsURL = '/singleGameStats/?matchName=' + data.matchName + '&username=' + data.user;
+		history.back();
 		history.pushState("", "", statsURL);
 		router();
 	}
