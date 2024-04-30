@@ -31,6 +31,8 @@ class Tournament extends HTMLElement {
 		ws.onmessage = (e) => this.handle_message(e);
 
 		this.leaveTournamentButton = document.createElement('button');
+		this.leaveTournamentButton.classList.add("btn");
+		this.leaveTournamentButton.classList.add("buttonblue");
 		this.leaveTournamentButton.textContent = 'Leave Tournament';
 		this.leaveTournamentButton.addEventListener('click', this.handle_leave_tournament_button_click);
 		window.addEventListener('beforeunload', this.handle_beforeunload);	
