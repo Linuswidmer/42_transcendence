@@ -20,10 +20,6 @@
     justify-content: center;
 }
 
-/* Style for the tournament */
-body {
-    font-family: Arial, sans-serif;
-}
 .tournament-container {
     max-width: 800px;
     margin: 0 auto;

@@ -18,19 +18,24 @@ class Navbar extends HTMLElement {
 		}
 
         this.innerHTML = /*html*/`
-			<div>
+			<div id="navbar">
+			<div class="navbar navbar-light" style="background-color: #6a0dad;">
 				<a href="/lobby/" class="navbar-button" id="lobbyBtn" data-link>Lobby</a>
 				<a href="/profile/${this.username}" class="navbar-button" id="profileBtn" data-link>Profile</a>
-				<a href="/" class="navbar-button" id="logoutBtn" data-logout>logout</a>
+				<a href="/" class="navbar-button" id="logoutBtn" data-logout>Logout</a>
 			</div>
+		</div>
         `;
         
-
+		let logoBtn = document.querySelector("#logoBtn");
         let lobbyBtn = this.querySelector("#lobbyBtn");
 		let profileBtn = this.querySelector("#profileBtn");
 		let logoutBtn = this.querySelector("#logoutBtn");
 
         // State
+		logoBtn.onclick = () => {
+			console.log("logo button on navbar tag clicked");
+        };
         lobbyBtn.onclick = () => {
 			console.log("lobby button on navbar tag clicked");
         };

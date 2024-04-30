@@ -1,9 +1,10 @@
 {% load static %}
 
 <div class="navbar navbar-light" style="background-color: #6a0dad;">
-    <button class="navbar-button" id="logoBtn"> 
+    <a href="/" class="navbar-button" id="logoBtn" data-link>
         <img src="{% static 'pong_online/pong_logo.png' %}" alt="Logo" class="logo">
-    </button>
+    </a>
 
-    <pong-navbar data-username="{{ user.username }}"></pong-navbar>
+
+    <pong-navbar data-username="{{ request.user }}"></pong-navbar>
 </div>
