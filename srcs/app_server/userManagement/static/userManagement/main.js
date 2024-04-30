@@ -93,7 +93,7 @@ window.addEventListener("click", e => {
     if (e.target.matches("[data-link]")) {
 		if (currentURL == '/pong_online/' || currentURL.includes('/tournament/')){
 			ws.send(JSON.stringify({type: 'reset_consumer_after_unusual_game_leave'}));
-			history.back();
+			history.replaceState(null, "", "/lobby/");
 		}
         e.preventDefault();
         history.pushState("", "", e.target.href);
@@ -101,7 +101,7 @@ window.addEventListener("click", e => {
     } else if (e.target.matches("[data-logout]")) {
 		if (currentURL == '/pong_online/' || currentURL.includes('/tournament/')){
 			ws.send(JSON.stringify({type: 'reset_consumer_after_unusual_game_leave'}));
-			history.back();
+			history.replaceState(null, "", "/lobby/");
 		}
 		e.preventDefault();
 		history.pushState("", "", e.target.href);
