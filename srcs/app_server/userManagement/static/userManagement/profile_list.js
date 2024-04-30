@@ -12,8 +12,8 @@ class ProfileList extends HTMLElement {
 				const username = this.dataset.username; // Retrieve username from data attribute
 				console.log(username);
 				const url = `/profile/${username}/`; // Construct the URL with the username
-				history.pushState("", "", url);
-				router();
+				//history.pushState("", "", url);
+				router(url);
 		 	});
 		});
     }

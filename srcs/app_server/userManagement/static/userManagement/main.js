@@ -57,7 +57,29 @@ function getFirstPath(urlPath) {
     }
 }
 
-function router(callback=null) {
+function router(url=null, callback=null) {
+
+	currentState = "TBD"
+
+	if (url) {
+		if (currentState == '/pong_online/'){
+			//The only way to leave a game legally is going to the game stats or to the tm lobby if it is a tm game
+			if (url != "/singleGameStats/" && url != "/tournaments/"){
+				//I think this triggers yanns leave game logic, should also handle normal leave button presses, since I commented the ws.send out there
+				ws.send(JSON.stringify({type: 'reset_consumer_after_unusual_game_leave'}));
+			}
+			history.replaceState("", "", url)
+		}else if (currentState == '/tournaments/'){
+			if (url != "/pong_online/"){
+				//I think this triggers yanns working leave tournament logic
+				ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
+			}
+			history.replaceState("", "", url)
+		}else {
+			history.pushState("", "", url);
+		}
+	}
+
 	let urlPath = getFirstPath(location.pathname);
 
 	let view = routes[urlPath];
@@ -82,7 +104,7 @@ function router(callback=null) {
 		.catch(error => console.error('Error loading logged-in content:', error));
     } else {
 		console.log("router else");
-        history.replaceState("", "", "/");
+        history.replaceState("", "", "/"); //@LEON: HIER wollen wir die logik nciht oder, ist ja ein replace? deshalb passen wir nichts und die url ist null
         router();
     }
 };
@@ -97,7 +119,7 @@ window.addEventListener("click", e => {
 		}
         e.preventDefault();
         history.pushState("", "", e.target.href);
-        router();
+        router(); //@LEON: das brauchen wir ja dann nicht mehr 
     } else if (e.target.matches("[data-logout]")) {
 		if (currentURL == '/pong_online/' || currentURL.includes('/tournament/')){
 			ws.send(JSON.stringify({type: 'reset_consumer_after_unusual_game_leave'}));
@@ -116,7 +138,7 @@ window.addEventListener("click", e => {
 		.then(response => {
 			if (response.ok) {
 				console.log("logout successful");
-        		router();
+        		router(); //@LEON: das brauchen wir ja dann nicht mehr 
 			} else {
 				console.error("Logout failed");
 			}
