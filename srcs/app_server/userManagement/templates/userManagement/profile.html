@@ -29,16 +29,6 @@
         <!-- Column for logout and all profiles buttons -->
         <div class="col">
             <div style="width: 200px; margin: 20px;">
-                <!-- {% if user == request.user %}
-                <form method="post" action="{% url 'userManagement:logout' %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger btn-block">logout</button>
-                </form>
-                {% endif %}  -->
-                <!-- <a href="{% url 'userManagement:profile_list' %}" class="btn btn-success btn-block">
-                    All Profiles
-                </a> -->
-                <!-- CHANGE FROM MERGE -->
                 <button type="button" class="btn buttonblue" id="allProfilesBtn">All Profiles</button>
             </div>
             {% if user != request.user %}
@@ -211,14 +201,15 @@
                             </thead>
                             <tbody>
                                 {% for gld in stats.gameListData %}
-                                <tr {% if forloop.counter > 10 %}class="hideSingleGame"; style="display: none{% endif %}">                                    <td class="text-center"><a href="/singleGameStats/?matchName={{ gld.game.matchName }}&username={{ gld.userGameStats.user.username }}" data-link>{{ gld.game.matchName }}</a></td>
+                                <tr {% if forloop.counter > 10 %}class="hideSingleGame"; style="display: none{% endif %}">                                    
+                                    <td class="text-center"><a class="btn buttonblue" href="/singleGameStats/?matchName={{ gld.game.matchName }}&username={{ gld.userGameStats.user.username }}" data-link>{{ gld.game.matchName }}</a></td>
                                     <td class="text-center">{{ gld.game.matchDate }} {{ gld.game.matchTime }} </td>
                                     {% if gld.opponentGameStats.user == None %}
 										<td class="text-center">Guest</td>
 									{% elif gld.opponentGameStats.user.username == "DUMP_LOCAL" %}
 										<td class="text-center">Local Opponent</td>
 									{% else %}
-										<td class="text-center"><a href="/profile/{{ gld.opponentGameStats.user }}" data-link>{{ gld.opponentGameStats.user }}</a></td>
+										<td class="text-center"><a class="btn buttonblue" href="/profile/{{ gld.opponentGameStats.user }}" data-link>{{ gld.opponentGameStats.user }}</a></td>
 									{% endif %}
                                 </tr>
                                 {% endfor %}
@@ -250,7 +241,7 @@
                             <tbody>
                                 {% for tm in stats.tournaments %}
                                 <tr>
-                                    <td class="text-center"><a href="/tournament_stats/{{ tm.tournament_id }}/" data-link> {{ tm.tournament_id }}</a></td>
+                                    <td class="text-center"><a class="btn buttonblue" href="/tournament_stats/{{ tm.tournament_id }}/" data-link> {{ tm.tournament_id }}</a></td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -275,7 +266,7 @@
                             <tbody>
                                 {% for following in user.profile.follows.all %}
                                 <tr>
-                                    <td class="text-center"><a href="{% url 'userManagement:profile' following.user.username %}" data-link></a>{{ following }}</a></td>
+                                    <td class="text-center"><a class="btn buttonblue" href="{% url 'userManagement:profile' following.user.username %}" data-link>{{ following }}</a></td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -300,7 +291,7 @@
                             <tbody>
                                 {% for follower in user.profile.followed_by.all %}
                                 <tr>
-                                    <td class="text-center"><a href="{% url 'userManagement:profile' follower.user.username %}" data-link>{{ follower }} </a></td>
+                                    <td class="text-center"><a class="btn buttonblue" href="{% url 'userManagement:profile' follower.user.username %}" data-link>{{ follower }} </a></td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -314,17 +305,8 @@
 
 {% if user == request.user %}
 <div class="d-flex justify-content-center">
-    <!-- <a href="{% url 'userManagement:update_profile' %}" class="btn btn-secondary" role="button" style="margin-right: 15px;">
-        Change Profile Picture
-    </a> -->
     <button type="button" class="btn buttonblue" id="profilePictureBtn">Change Profile Picture</button>
-    <!-- <a href="{% url 'userManagement:update_user' %}" class="btn btn-secondary" role="button" style="margin-right: 15px;">
-        Update Profile Info
-    </a> -->
     <button type="button" class="btn buttonblue" id="updateProfileBtn">Update Profile Info</button>
-    <!-- <a href="{% url 'userManagement:change_password' %}" class="btn btn-secondary" role="button">
-        Change Password
-    </a> -->
     <button type="button" class="btn buttonblue" id="passwordBtn">Change Password</button>
     {% endif %}
     <div id="modalContainer"></div>

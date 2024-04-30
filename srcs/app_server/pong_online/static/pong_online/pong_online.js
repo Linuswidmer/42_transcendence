@@ -85,24 +85,29 @@ class Game extends HTMLElement {
 
 
         this.innerHTML = /*html*/`
-			<div id="loggedInMessage">Logged in as: </div>
+		<div id="loggedInMessage">Logged in as: </div>
 
-			<div id="userPrompt">Waiting for BLAH to start the game: </div>
-		
-			<div id="centeredContent">
-				<div class="container" id="pongGamePage">
-					<div id="scoreBoard">
-						<div id="leftScore"></div>
+		<div id="userPrompt">Waiting for BLAH to start the game: </div>
+	
+		<div id="centeredContent">
+			<div class="container" id="pongGamePage">
+				<div id="scoreBoard">
+				<div class="card-body">
 						<div id="leftPlayerName">Left player: </div>
-						<div id="rightScore"></div>
-						<div id="rightPlayerName">Right player: </div>
+						<div id="leftScore"></div>
 					</div>
-					<canvas id="pongCanvas" width="600" height="400"></canvas>
+					<div id="vs">VS</div>
+					<div class="card-body">
+						<div id="rightPlayerName">Right player: </div>
+						<div id="rightScore"></div>
+					</div>
 				</div>
-				<button id="startGameButton">Start</button>
-				<button id="leaveGame">leaveGame_backToLobby</button>
+				<canvas id="pongCanvas" width="600" height="400"></canvas>
 			</div>
-        `;
+			<button class="btn buttonblue" id="startGameButton">Start</button>
+			<button class="btn buttonblue" id="leaveGame">leaveGame_backToLobby</button>
+		</div>
+	`;
 
 		ws.onmessage = (e) => this.handle_message(e);
 

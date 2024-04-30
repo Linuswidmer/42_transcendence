@@ -83,29 +83,51 @@ class Lobby extends HTMLElement {
 	
 	handle_create_tournament_button_click = () => {
 		console.log("Create tournament button clicked");
-		// Create a pop-up container
-		var popup = document.createElement('div');
-		popup.className = 'popup';
-
-		for (let i = 4; i <=16; i = i * 2){
-			var tournamentSizeButton = document.createElement('button');
-			tournamentSizeButton.innerText = 'Size: ' + i;
-			tournamentSizeButton.value = i; // Set the value attribute to distinguish levels
-			tournamentSizeButton.addEventListener('click', function() {
+	
+		// Create a modal container
+		var modal = document.createElement('div');
+		modal.className = 'modal';
+		modal.classList.add("modalContainer");
+	
+		// Create a modal content container
+		var modalContent = document.createElement('div');
+		modalContent.className = 'modal-content';
+	
+		// Create a heading for the modal
+		var heading = document.createElement('h5');
+		heading.innerText = 'How many players?';
+		heading.className = 'modal-header';
+		modalContent.appendChild(heading);
+		
+		var buttonContainer = document.createElement('div');
+		buttonContainer.className = 'button-popup-container';
+		// Create buttons for different levels
+		for (let i = 4; i <= 16; i = i * 2) {
+			var levelButton = document.createElement('button');
+			levelButton.classList.add('levelButton');
+			levelButton.classList.add('buttonblue');
+			levelButton.classList.add('btn');
+			levelButton.innerText = 'Size: ' + i;
+			levelButton.value = i; // Set the value attribute to distinguish levels
+			levelButton.addEventListener('click', function() {
 				// Action to perform when a level button is clicked
 				var selectedSize = this.value;
 				console.log("TM Size: " + selectedSize + " selected");
 				// Here, you can send the selected level to the server or perform any other action
 				// For example, you can send it via websockets
-				ws.send(JSON.stringify({type: 'lobby_update', 'action': 'create_tournament', 'username': this.username, 'tm_size': selectedSize}));;
-				// Close the pop-up after selecting a level
-				popup.remove();
+				ws.send(JSON.stringify({type: 'lobby_update', 'action': 'create_tournament', 'username': this.username, 'tm_size': selectedSize}));
+				// Close the modal after selecting a level
+				modal.remove();
 			});
-			// Append the level button to the pop-up
-			popup.appendChild(tournamentSizeButton);
+			// Append the level button to the modal content
+			buttonContainer.appendChild(levelButton);
 		}
-		// Append the pop-up to the document body
-		document.body.appendChild(popup);
+		modalContent.appendChild(buttonContainer);
+		// Append the modal content to the modal container
+		modal.appendChild(modalContent);
+	
+		// Append the modal to the document body
+		document.body.appendChild(modal);
 	}
 	
 	handle_play_local_button_click = () => {
@@ -115,38 +137,56 @@ class Lobby extends HTMLElement {
 	}
 	
 	handle_play_ai_button_click = () => {
-		console.log("AI Opponent button clicked");
+		// Create a modal container
+		var modal = document.createElement('div');
+		modal.className = 'modal';
+		modal.classList.add("modalContainer");
 	
-		// Create a pop-up container
-		var popup = document.createElement('div');
-		popup.className = 'popup';
+		// Create a modal content container
+		var modalContent = document.createElement('div');
+		modalContent.className = 'modal-content';
 	
+		// Create a heading for the modal
+		var heading = document.createElement('h5');
+		heading.innerText = 'Select your level';
+		heading.className = 'modal-header';
+		modalContent.appendChild(heading);
+		
+		var buttonContainer = document.createElement('div');
+		buttonContainer.className = 'button-popup-container';
 		// Create buttons for levels 1 to 10
-		for (let i = 1; i <= 10; i++) {
+	 	for (let i = 1; i <= 10; i++) {
 			var levelButton = document.createElement('button');
-			levelButton.innerText = 'Level ' + i;
+			levelButton.classList.add('levelButton');
+			levelButton.classList.add('buttonblue');
+			levelButton.classList.add('btn');
+			levelButton.innerText = 'Level: ' + i;
 			levelButton.value = i; // Set the value attribute to distinguish levels
 			levelButton.addEventListener('click', function() {
 				// Action to perform when a level button is clicked
 				var selectedLevel = this.value;
-				console.log("Level " + selectedLevel + " selected");
+	 			console.log("Level " + selectedLevel + " selected");
 				// Here, you can send the selected level to the server or perform any other action
 				// For example, you can send it via websockets
 				ws.send(JSON.stringify({
 					type: 'lobby_update',
 					'action': 'join',
-					'username': this.username,
+		 			'username': this.username,
 					'modus': 'ai',
 					'ai_level': selectedLevel // Include the selected level in the message
 				}));
-				// Close the pop-up after selecting a level
-				popup.remove();
+				// Close the modal after selecting a level
+				modal.remove();
 			});
-			// Append the level button to the pop-up
-			popup.appendChild(levelButton);
+			// Append the level button to the modal content
+			buttonContainer.appendChild(levelButton);
 		}
-		// Append the pop-up to the document body
-		document.body.appendChild(popup);
+		modalContent.appendChild(buttonContainer);
+		// Append the modal content to the modal container
+		modal.appendChild(modalContent);
+	
+		// Append the modal to the document body
+		document.body.appendChild(modal);
 	}
 
 	update_lobby(data) {
@@ -163,11 +203,12 @@ class Lobby extends HTMLElement {
 				var registered_users = matches_info[id];
 				
 				var matchElement = document.createElement('div');
-				matchElement.innerHTML = `
-				<h2>Match ID: ${id}</h2>
+				matchElement.innerHTML = `<div class="my-4 card">
+				<div class="card-header text-center text-white bg-purple"><h2>Match ID: ${id}</h2></div>
+				<div class="card-body">
 				<p>Registered Users: ${registered_users.join(', ')}</p>
-				<button class="join" data-match-id="${id}">Join Game</button>
-				`;
+				<button class="join btn buttonblue" data-match-id="${id}">Join Game</button></div>
+				</div>`;
 				
 				this.remote_game_list_DIV.appendChild(matchElement);
 				
@@ -185,11 +226,12 @@ class Lobby extends HTMLElement {
 				var registered_users = tournaments_info[id];
 				
 				var tournamentElement = document.createElement('div');
-				tournamentElement.innerHTML = `
-				<h2>Tournament ID: ${id}</h2>
+				tournamentElement.innerHTML = `<div class="my-4 card">
+				<div class="card-header text-center text-white bg-purple"><h2>Tournament ID: ${id}</h2></div>
+				<div class="card-body">
 				<p>Registered Users: ${registered_users.join(', ')}</p>
-				<button class="join" data-tournament-id="${id}">Join Tournament</button>
-				`;
+				<button class="join btn buttonblue" data-tournament-id="${id}">Join Tournament</button></div>
+				</div>`;
 				
 				this.tournament_list_DIV.appendChild(tournamentElement);
 				
