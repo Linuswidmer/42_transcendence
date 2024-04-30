@@ -4,7 +4,10 @@ class Navbar extends HTMLElement {
     constructor() {
         super();
 
-		ws.send(JSON.stringify({type: 'test'}));
+		ws.onopen = function(event) {
+			ws.send(JSON.stringify({type: 'test'}));
+		}
+
         
 		this.username = this.getAttribute('data-username');
 		console.log("username please:", this.username);
