@@ -177,9 +177,16 @@ label {
   color: #03EEF5;
 }
 
+.modal-content {
+  background-color: #fff;
+  border: 1px solid #03EEF5;
+  width: 50%;
+  text-align: center;
+}
+
 .modal {
   position: fixed;
-  display: block !important;
+  display: block;
   z-index: 1000;
   left: 0;
   top: 0;
@@ -187,13 +194,6 @@ label {
   height: 100%;
   overflow: auto;
   background-color: rgba(0, 0, 0, 0.5);
-}
-
-.modal-content {
-  background-color: #fff;
-  border: 1px solid #03EEF5;
-  width: 50%;
-  text-align: center;
 }
 
 .card{

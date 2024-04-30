@@ -121,7 +121,7 @@ class Profile extends HTMLElement {
 								const modal = document.getElementById(`${containerId}Modal`);
 								modal.classList.remove('show');
 								modal.style.display = 'none';
-								if (containerId == 'profilePicture' || containerId == 'updateProfile'){
+								if (containerId == 'profilePicture' || containerId == 'updateProfile' || containerId == 'password'){
 									if (containerId == 'updateProfile') {
 										username = formData.get('username');
 										console.log("new username: ", username)

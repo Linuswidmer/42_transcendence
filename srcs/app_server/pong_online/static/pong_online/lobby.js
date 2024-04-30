@@ -31,6 +31,7 @@ class Lobby extends HTMLElement {
 			
 			<div id="remote_game_list"></div>
 			<div id="tournament_list"></div>
+			<div id="modalContainer"></div>
         `;
 
 		ws.onmessage = (e) => this.handle_message(e);
@@ -90,54 +91,127 @@ class Lobby extends HTMLElement {
 		'username': this.username, 'modus': 'remote'}));
 	}
 	
+	// handle_create_tournament_button_click = () => {
+	// 	console.log("Create tournament button clicked");
+	
+	// 	// Create a modal container
+	// 	var modal = document.createElement('div');
+	// 	modal.className = 'modal';
+	// 	modal.classList.add("modalContainer");
+	
+	// 	// Create a modal content container
+	// 	var modalContent = document.createElement('div');
+	// 	modalContent.className = 'modal-content';
+	
+	// 	// Create a heading for the modal
+	// 	var heading = document.createElement('h5');
+	// 	heading.innerText = 'How many players?';
+	// 	heading.className = 'modal-header';
+	// 	modalContent.appendChild(heading);
+		
+	// 	var buttonContainer = document.createElement('div');
+	// 	buttonContainer.className = 'button-popup-container';
+	// 	// Create buttons for different levels
+	// 	for (let i = 4; i <= 16; i = i * 2) {
+	// 		var levelButton = document.createElement('button');
+	// 		levelButton.classList.add('levelButton');
+	// 		levelButton.classList.add('buttonblue');
+	// 		levelButton.classList.add('btn');
+	// 		levelButton.innerText = 'Size: ' + i;
+	// 		levelButton.value = i; // Set the value attribute to distinguish levels
+	// 		levelButton.addEventListener('click', function() {
+	// 			// Action to perform when a level button is clicked
+	// 			var selectedSize = this.value;
+	// 			console.log("TM Size: " + selectedSize + " selected");
+	// 			// Here, you can send the selected level to the server or perform any other action
+	// 			// For example, you can send it via websockets
+	// 			ws.send(JSON.stringify({type: 'lobby_update', 'action': 'create_tournament', 'username': this.username, 'tm_size': selectedSize}));
+	// 			// Close the modal after selecting a level
+	// 			modal.remove();
+	// 		});
+	// 		// Append the level button to the modal content
+	// 		buttonContainer.appendChild(levelButton);
+	// 	}
+	// 	modalContent.appendChild(buttonContainer);
+	// 	// Append the modal content to the modal container
+	// 	modal.appendChild(modalContent);
+	
+	// 	// Append the modal to the document body
+	// 	document.body.appendChild(modal);
+	// }
 	handle_create_tournament_button_click = () => {
 		console.log("Create tournament button clicked");
 	
-		// Create a modal container
-		var modal = document.createElement('div');
-		modal.className = 'modal';
-		modal.classList.add("modalContainer");
+		// Function to create modal HTML dynamically
+		const createModal = (containerId, title, html) => {
+			const modalHtml = `
+				<div class="modal fade" id="${containerId}Modal" tabindex="-1" role="dialog" aria-labelledby="${containerId}ModalLabel" aria-hidden="true">
+					<div class="modal-dialog" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="${containerId}ModalLabel">${title}</h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body text-center">
+								${html} <!-- Render the fetched form here -->
+							</div>
+						</div>
+					</div>
+				</div>
+			`;
+			// Append the modal HTML to the container
+			document.getElementById("modalContainer").innerHTML = modalHtml;
+			// Show the modal
+			const modal = document.getElementById(`${containerId}Modal`);
+			modal.classList.add('show');
+			modal.style.display = 'block';
 	
-		// Create a modal content container
-		var modalContent = document.createElement('div');
-		modalContent.className = 'modal-content';
-	
-		// Create a heading for the modal
-		var heading = document.createElement('h5');
-		heading.innerText = 'How many players?';
-		heading.className = 'modal-header';
-		modalContent.appendChild(heading);
-		
-		var buttonContainer = document.createElement('div');
-		buttonContainer.className = 'button-popup-container';
-		// Create buttons for different levels
-		for (let i = 4; i <= 16; i = i * 2) {
-			var levelButton = document.createElement('button');
-			levelButton.classList.add('levelButton');
-			levelButton.classList.add('buttonblue');
-			levelButton.classList.add('btn');
-			levelButton.innerText = 'Size: ' + i;
-			levelButton.value = i; // Set the value attribute to distinguish levels
-			levelButton.addEventListener('click', function() {
-				// Action to perform when a level button is clicked
-				var selectedSize = this.value;
-				console.log("TM Size: " + selectedSize + " selected");
-				// Here, you can send the selected level to the server or perform any other action
-				// For example, you can send it via websockets
-				ws.send(JSON.stringify({type: 'lobby_update', 'action': 'create_tournament', 'username': this.username, 'tm_size': selectedSize}));
-				// Close the modal after selecting a level
-				modal.remove();
+			// Add event listener to close modal when clicking on the cross (close button)
+			const closeButton = modal.querySelector('.close');
+			closeButton.addEventListener('click', function() {
+				modal.style.display = 'none';
 			});
-			// Append the level button to the modal content
-			buttonContainer.appendChild(levelButton);
-		}
-		modalContent.appendChild(buttonContainer);
-		// Append the modal content to the modal container
-		modal.appendChild(modalContent);
 	
-		// Append the modal to the document body
-		document.body.appendChild(modal);
+			// Close modal when clicking outside of it
+			window.addEventListener('click', function(event) {
+				if (event.target === modal) {
+					modal.style.display = 'none';
+				}
+			});
+
+		 // Add event listener to handle button clicks inside the modal
+		 modal.querySelectorAll('.levelButton').forEach(button => {
+            button.addEventListener('click', function() {
+                const selectedSize = this.getAttribute('data-level');
+                console.log("TM Size: " + selectedSize + " selected");
+                // Send selected size to the server via WebSockets
+                ws.send(JSON.stringify({
+                    type: 'lobby_update',
+                    action: 'create_tournament',
+                    username: this.username,
+                    tm_size: selectedSize
+                }));
+                // Close the modal after selecting a size
+                modal.style.display = 'none';
+            });
+        });
+    };
+	
+		// Call createModal function with desired parameters
+		createModal(
+			'createTournament', // Container ID
+			'How many players?', // Modal title
+			`<div class="button-popup-container">
+				<!-- Create buttons for different levels -->
+				${[4, 8, 12, 16].map(level => `
+					<button class="levelButton buttonblue btn" data-level="${level}">Size: ${level}</button>
+				`).join('')}
+			</div>`
+		);
 	}
+	
 	
 	handle_play_local_button_click = () => {
 		console.log("Local game button clicked");
@@ -146,57 +220,79 @@ class Lobby extends HTMLElement {
 	}
 	
 	handle_play_ai_button_click = () => {
-		// Create a modal container
-		var modal = document.createElement('div');
-		modal.className = 'modal';
-		modal.classList.add("modalContainer");
+		console.log("Play AI button clicked");
 	
-		// Create a modal content container
-		var modalContent = document.createElement('div');
-		modalContent.className = 'modal-content';
+		// Function to create modal HTML dynamically
+		const createModal = (containerId, title, html) => {
+			const modalHtml = `
+				<div class="modal fade" id="${containerId}Modal" tabindex="-1" role="dialog" aria-labelledby="${containerId}ModalLabel" aria-hidden="true">
+					<div class="modal-dialog" role="document" style="max-width: 80%;">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="${containerId}ModalLabel">${title}</h5>
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+									<span aria-hidden="true">&times;</span>
+								</button>
+							</div>
+							<div class="modal-body text-center" style="max-height: 400px; overflow-y: auto;">
+								${html} <!-- Render the fetched form here -->
+							</div>
+						</div>
+					</div>
+				</div>
+			`;
+			// Append the modal HTML to the container
+			document.getElementById("modalContainer").innerHTML = modalHtml;
+			// Show the modal
+			const modal = document.getElementById(`${containerId}Modal`);
+			modal.classList.add('show');
+			modal.style.display = 'block';
 	
-		// Create a heading for the modal
-		var heading = document.createElement('h5');
-		heading.innerText = 'Select your level';
-		heading.className = 'modal-header';
-		modalContent.appendChild(heading);
-		
-		var buttonContainer = document.createElement('div');
-		buttonContainer.className = 'button-popup-container';
-		// Create buttons for levels 1 to 10
-	 	for (let i = 1; i <= 10; i++) {
-			var levelButton = document.createElement('button');
-			levelButton.classList.add('levelButton');
-			levelButton.classList.add('buttonblue');
-			levelButton.classList.add('btn');
-			levelButton.innerText = 'Level: ' + i;
-			levelButton.value = i; // Set the value attribute to distinguish levels
-			levelButton.addEventListener('click', function() {
-				// Action to perform when a level button is clicked
-				var selectedLevel = this.value;
-	 			console.log("Level " + selectedLevel + " selected");
-				// Here, you can send the selected level to the server or perform any other action
-				// For example, you can send it via websockets
-				ws.send(JSON.stringify({
-					type: 'lobby_update',
-					'action': 'join',
-		 			'username': this.username,
-					'modus': 'ai',
-					'ai_level': selectedLevel // Include the selected level in the message
-				}));
-				// Close the modal after selecting a level
-				modal.remove();
+			// Add event listener to close modal when clicking on the cross (close button)
+			const closeButton = modal.querySelector('.close');
+			closeButton.addEventListener('click', function() {
+				modal.style.display = 'none';
 			});
-			// Append the level button to the modal content
-			buttonContainer.appendChild(levelButton);
-		}
-		modalContent.appendChild(buttonContainer);
-		// Append the modal content to the modal container
-		modal.appendChild(modalContent);
 	
-		// Append the modal to the document body
-		document.body.appendChild(modal);
+			// Close modal when clicking outside of it
+			window.addEventListener('click', function(event) {
+				if (event.target === modal) {
+					modal.style.display = 'none';
+				}
+			});
+	
+			// Add event listener to handle button clicks inside the modal
+			modal.querySelectorAll('.levelButton').forEach(button => {
+				button.addEventListener('click', function() {
+					const selectedLevel = this.getAttribute('data-level');
+					console.log("AI Difficulty Level " + selectedLevel + " selected");
+					// Send selected AI difficulty level to the server via WebSockets
+					ws.send(JSON.stringify({
+						type: 'lobby_update',
+						action: 'join',
+						username: this.username,
+						modus: 'ai',
+						ai_level: selectedLevel
+					}));
+					// Close the modal after selecting a level
+					modal.style.display = 'none';
+				});
+			});
+		};
+	
+		// Call createModal function with desired parameters
+		createModal(
+			'playAi', // Container ID
+			'Select AI Difficulty', // Modal title
+			`<div class="button-popup-container">
+				<!-- Create buttons for AI difficulty levels -->
+				${Array.from({ length: 10 }, (_, i) => i + 1).map(level => `
+					<button class="levelButton buttonblue btn" data-level="${level}">Level: ${level}</button>
+				`).join('')}
+			</div>`
+		);
 	}
+	
 
 	update_lobby(data) {
 		let matches_info = data.matches_info;
