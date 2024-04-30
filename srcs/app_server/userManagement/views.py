@@ -202,6 +202,7 @@ def tournament_stats(request, tournament_id):
 	tournament = Tournaments.objects.get(tournament_id=tournament_id)
 	return render(request, "userManagement/tournament_stats.html", {"tm_name": tournament.tournament_id, "tm_data": json.dumps(tournament.data)})
 
+
 def callback(request):
 	User = get_user_model()
 	code = request.GET.get('code')
@@ -236,6 +237,7 @@ def callback(request):
 				if user is not None:
 					login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 					user.online = True
+					request.user.save()
 					user.save()
 				return render(request, "onepager/logged_in.html")
 			else:
