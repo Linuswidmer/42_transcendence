@@ -3,14 +3,14 @@ import {router, getCookie} from "./main.js"
 class Stranger extends HTMLElement {
     constructor() {
         super();
-        
+
         this.innerHTML = /*html*/`
 			<div class="button-container">
 				<!-- Content for non-authenticated users -->
 				<button type="button" class="button" id="loginBtn">Login</button>
 				<button type="button" class="button" id="registerBtn">Register</button>
 				<button type="button" class="button" id="guestBtn">Continue as Guest</button>
-				<button type="button" class="button" id="fortyTwoBtn">Sign In with 42</button>
+
 			</div>
 
 			<div id="modalContainer"></div>
