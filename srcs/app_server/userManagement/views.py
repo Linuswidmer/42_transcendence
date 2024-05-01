@@ -16,6 +16,7 @@ from pong_online.models import UserGameStats, Tournaments
 import json
 import requests
 from django.contrib import messages
+from django.shortcuts import redirect
 
 def dashboard(request):
 	return render(request, "userManagement/dashboard.html")
@@ -235,7 +236,7 @@ def callback(request):
 				login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 				user.online = True
 				user.save()
-				return render(request, "onepager/logged_in.html")
+				return redirect('/')
 			else:
 				# If the user doesn't exist, create a new user and log in
 				user = User.objects.create_user(username=username, email=email, password=None)  # No password required
@@ -246,7 +247,7 @@ def callback(request):
 				login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 				user.online = True
 				user.save()
-				return render(request, "onepager/logged_in.html")
+				return redirect('/')
 		except requests.exceptions.RequestException as e:
 			print("Request Exception:", e)
 			message = 'Failed to authenticate user. Please try again.'
