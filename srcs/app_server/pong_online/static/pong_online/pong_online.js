@@ -146,9 +146,11 @@ class Game extends HTMLElement {
 	}
 	
 	handle_leave_game_button_click = () => {
-		ws.send(JSON.stringify({type: 'leave', 'action': 'leave', 'username': this.username, 'modus': this.modus}));
-		history.pushState("", "", "/lobby/");
-		router();
+		//ALEX: We might use the new leav logic when we just leave the page because it calls the same
+		// function in the backend
+		//ws.send(JSON.stringify({type: 'leave', 'action': 'leave', 'username': this.username, 'modus': this.modus}));
+		//history.pushState("", "", "/lobby/");
+		router("/lobby/");
 		console.log('leaveButtonclicked');
 	}
 
@@ -166,7 +168,7 @@ class Game extends HTMLElement {
     handle_message(e) {
         try {
             const data = JSON.parse(e.data);
-			console.log("pong message: ", data)
+			// console.log("pong message: ", data)
 			if (data.type === 'send_to_group') {
 				switch (data.identifier) {
 					case 'deliver_init_game_data':
@@ -193,14 +195,13 @@ class Game extends HTMLElement {
 			} else if (data.type == 'redirect_to_tournament_stats') {
 				this.remove_event_listener();
 				let tournamentStatsUrl = '/tournament_stats/' + data.tournament_id;
-				history.pushState("", "", tournamentStatsUrl);
-				router();
-				// fetch_with_internal_js('/tournament_stats/' + data.tournament_id);
+				//history.pushState("", "", tournamentStatsUrl);
+				router(tournamentStatsUrl);
 			} else if (data.type == 'redirect_to_tournament_lobby') {
 				this.remove_event_listener();
 				let tournamentLobbyUrl = '/tournament/' + data.tournament_id;
-				history.pushState("", "", tournamentLobbyUrl);
-				router(() => {
+				//history.pushState("", "", tournamentLobbyUrl);
+				router(tournamentLobbyUrl, () => {
 					ws.send(JSON.stringify({type: 'tournament_lobby_update', 'tournament_id': data.tournament_id}));
 				});
 			}
@@ -287,8 +288,8 @@ class Game extends HTMLElement {
 
 	handle_game_update(data) {
 		let server_entities = data.entity_data.entities;
-		console.log("server entities", server_entities);
-		console.log("local entities:", this.entities);
+		// console.log("server entities", server_entities);
+		// console.log("local entities:", this.entities);
 		for (var id in server_entities) {
 			var entity = this.entities[id];
 	
@@ -305,8 +306,8 @@ class Game extends HTMLElement {
 	handle_game_over(data) {
 		this.remove_event_listener();
 		const statsURL = '/singleGameStats/?matchName=' + data.matchName + '&username=' + data.user;
-		history.replaceState("", "", statsURL);
-		router();
+		//history.replaceState("", "", statsURL);
+		router(statsURL);
 	}
 
 	handle_game_view_population(data)

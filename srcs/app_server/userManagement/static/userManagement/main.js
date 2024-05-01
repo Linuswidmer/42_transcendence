@@ -57,13 +57,50 @@ function getFirstPath(urlPath) {
     }
 }
 
-function router(callback=null) {
-	let urlPath = getFirstPath(location.pathname);
+let lastRoute = null;
 
-	let view = routes[urlPath];
+function router(url=null, callback=null) {
+	if (typeof url !== 'string') {
+		url = null;
+	}
 
-	console.log("entire url", location.href);
-	console.log("router path:", urlPath);
+	let currentURLPath = lastRoute;
+	console.log('Current urlPath: ', currentURLPath)
+	console.log('Requested URL: ', url)
+	if (url === null) {
+		url = location.pathname;
+	}
+	if (url) {
+		//url = getFirstPath(url);
+		let requestedURLPath = getFirstPath(url);
+		console.log('Requested urlPath: ', requestedURLPath)
+		if (currentURLPath === '/pong_online/'){
+			//The only way to leave a game legally is going to the game stats or to the tm lobby if it is a tm game
+			if (requestedURLPath !== "/singleGameStats/" && requestedURLPath !== "/tournament/"){
+				//I think this triggers yanns leave game logic, should also handle normal leave button presses, since I commented the ws.send out there
+				ws.send(JSON.stringify({type: 'reset_consumer_after_unusual_game_leave'}));
+				console.log('UNUSUAL MEME LEAVE');
+			}
+			history.replaceState("", "", url)
+		}else if (currentURLPath === '/tournament/'){
+			if (requestedURLPath !== "/pong_online/" && requestedURLPath !== "/tournament_stats/"){
+				//I think this triggers yanns working leave tournament logic
+				ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
+				console.log('UNUSUAL TM LEAVE');
+			}
+			history.replaceState("", "", url)
+		}else {
+			history.pushState("", "", url);
+			console.log('USUAL PUSH');
+		}
+		currentURLPath = requestedURLPath//getFirstPath(location.pathname);
+	}
+
+	lastRoute = currentURLPath;
+	let view = routes[currentURLPath];
+
+	// console.log("entire url", location.href);
+	console.log("router path:", currentURLPath);
 	console.log("router view:", view);
 
 
@@ -91,20 +128,21 @@ function router(callback=null) {
 window.addEventListener("click", e => {
 	let currentURL = location.href.replace(location.origin, '');
     if (e.target.matches("[data-link]")) {
-		if (currentURL == '/pong_online/' || currentURL.includes('/tournament/')){
-			ws.send(JSON.stringify({type: 'unusual_leave'}));
+		/* if (currentURL == '/pong_online/' || currentURL.includes('/tournament/')){
+			ws.send(JSON.stringify({type: 'reset_consumer_after_unusual_game_leave'}));
 			history.replaceState(null, "", "/");
-		}
+		} */
         e.preventDefault();
-        history.pushState("", "", e.target.href);
-        router();
+        //history.pushState("", "", e.target.href);
+		
+        router(e.target.href.replace(e.target.origin, '')); //@LEON: das brauchen wir ja dann nicht mehr 
     } else if (e.target.matches("[data-logout]")) {
-		if (currentURL == '/pong_online/' || currentURL.includes('/tournament/')){
-			ws.send(JSON.stringify({type: 'unusual_leave'}));
+		/* if (currentURL == '/pong_online/' || currentURL.includes('/tournament/')){
+			ws.send(JSON.stringify({type: 'reset_consumer_after_unusual_game_leave'}));
 			history.replaceState(null, "", "/");
-		}
+		} */
 		e.preventDefault();
-		history.pushState("", "", e.target.href);
+		//history.pushState("", "", e.target.href);
 		console.log("logout pressed");
 		let logoutUrl = "/accounts/logout/"; //maybe dynamic url later from django template
 		fetch(logoutUrl, {
@@ -116,7 +154,7 @@ window.addEventListener("click", e => {
 		.then(response => {
 			if (response.ok) {
 				console.log("logout successful");
-        		router();
+        		router(e.target.href.replace(e.target.origin, '')); //@LEON: das brauchen wir ja dann nicht mehr 
 			} else {
 				console.error("Logout failed");
 			}
