@@ -133,18 +133,18 @@ class Tournament extends HTMLElement {
 			if (data.type === "redirect_to_tournament_stats") {
 				console.log(window.location.origin + '/tournament_stats/' + data.tournament_id + '/');
 				let tournamentStatsUrl = '/tournament_stats/' + data.tournament_id + '/';
-				history.pushState("", "", tournamentStatsUrl);
-				router();
+				//history.pushState("", "", tournamentStatsUrl);
+				router(tournamentStatsUrl);
 			}
 			if (data.type === "leave_tournament"){
 				window.removeEventListener('beforeunload', this.handle_beforeunload);
 				console.log(window.location.origin + '/lobby/');
-				history.pushState("", "", "/lobby/");
-				router();
+				//history.pushState("", "", "/lobby/");
+				router("/lobby/");
 			}
 			if (data.type === "join") {
-				history.pushState("", "", "/pong_online/");
-				router(() => {
+				//history.pushState("", "", "/pong_online/");
+				router("/pong_online/", () => {
 					ws.send(JSON.stringify({type: 'get_game_data'}));
 				});
 			}

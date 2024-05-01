@@ -17,8 +17,8 @@ class Profile extends HTMLElement {
 			allProfilesBtn.addEventListener("click", function() {
 				console.log("allProfilesBtn");
 				console.log("all profiles Url:", allProfilesUrl);
-				history.pushState("", "", allProfilesUrl);
-				router();
+				//history.pushState("", "", allProfilesUrl);
+				router(allProfilesUrl);
 			});
 		}
 
@@ -158,8 +158,8 @@ class Profile extends HTMLElement {
 	
 	function reloadProfilePage(username) {
 	  		console.log("reloading profile page")
-			history.pushState("", "", "/profile/" + username);
-			router();
+			//history.pushState("", "", "/profile/" + username);
+			router("/profile/" + username);
 		}
 	
 
