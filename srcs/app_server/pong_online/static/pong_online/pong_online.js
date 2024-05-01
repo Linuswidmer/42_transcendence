@@ -135,8 +135,8 @@ class Game extends HTMLElement {
 	}
 
 	handle_beforeunload = () => {
-		this.remove_event_listener();
 		ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
+		this.remove_event_listener();
 	}
 
 	handle_start_game_button_click = () => {
