@@ -22,7 +22,7 @@ def dashboard(request):
 
 def index(request, username=None, tournament_id=None):
 	return render(request, "onepager/index.html")
-	
+
 def	home(request):
 	if request.user.is_authenticated:
 		return render(request, "onepager/logged_in.html", {"username": request.user.username})
@@ -197,7 +197,7 @@ def single_game_stats(request):
 		if gld.game.matchName == matchName:
 			return render(request, "userManagement/single_game_stats.html", {"gld": gld})
 
-@login_required(login_url='/home')	
+@login_required(login_url='/home')
 def tournament_stats(request, tournament_id):
 	tournament = Tournaments.objects.get(tournament_id=tournament_id)
 	return render(request, "userManagement/tournament_stats.html", {"tm_name": tournament.tournament_id, "tm_data": json.dumps(tournament.data)})
@@ -229,16 +229,12 @@ def callback(request):
 			avatar_url = user_info['image']['link']
 			last_name = user_info['last_name']
 			first_name = user_info['first_name']
-			password = user_info['login'] + "@secretpw1#"
+			#password = user_info['login'] + "@secretpw1#"
 			user = User.objects.filter(username=username).first()
 			if user:
-				# If the user exists, authenticate and log in
-				user = authenticate(username=username, password=None)  # No password required
-				if user is not None:
-					login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-					user.online = True
-					request.user.save()
-					user.save()
+				login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+				user.online = True
+				user.save()
 				return render(request, "onepager/logged_in.html")
 			else:
 				# If the user doesn't exist, create a new user and log in
