@@ -60,10 +60,10 @@ class Lobby extends HTMLElement {
     }
 
 	handle_message(e) {
-		console.log('handle message');
+		// console.log('handle message');
 		try {
 			const data = JSON.parse(e.data);
-			console.log("data from server: ", data);
+			// console.log("data from server: ", data);
 			switch (data.type) {
 				case 'lobby_update':
 					this.update_lobby(data);
@@ -78,7 +78,7 @@ class Lobby extends HTMLElement {
 					alert(data.message);
 					break;
 				default:
-					console.log('Unknown message', data);
+					// console.log('Unknown message', data);
 			}
 		} catch (error) {
 				console.log('Error parsing JSON:', error);

@@ -168,7 +168,7 @@ class Game extends HTMLElement {
     handle_message(e) {
         try {
             const data = JSON.parse(e.data);
-			console.log("pong message: ", data)
+			// console.log("pong message: ", data)
 			if (data.type === 'send_to_group') {
 				switch (data.identifier) {
 					case 'deliver_init_game_data':
@@ -288,8 +288,8 @@ class Game extends HTMLElement {
 
 	handle_game_update(data) {
 		let server_entities = data.entity_data.entities;
-		console.log("server entities", server_entities);
-		console.log("local entities:", this.entities);
+		// console.log("server entities", server_entities);
+		// console.log("local entities:", this.entities);
 		for (var id in server_entities) {
 			var entity = this.entities[id];
 	
