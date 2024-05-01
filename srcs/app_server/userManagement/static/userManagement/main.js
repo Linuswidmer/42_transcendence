@@ -67,25 +67,33 @@ function router(url=null, callback=null) {
 	let currentURLPath = lastRoute;
 	console.log('Current urlPath: ', currentURLPath)
 	console.log('Requested URL: ', url)
+	console.log('last route', lastRoute)
+
 	if (url === null) {
 		url = location.pathname;
 	}
 	if (url) {
-		//url = getFirstPath(url);
 		let requestedURLPath = getFirstPath(url);
 		console.log('Requested urlPath: ', requestedURLPath)
-		if (currentURLPath === '/pong_online/'){
+		if (lastRoute === null && requestedURLPath === '/pong_online/'){
+			console.log('REFRESH TRIGGERED')
+			ws.onopen = function(event) {
+				ws.send(JSON.stringify({type: 'unusual_leave'}));
+				console.log('UNUSUAL REFRESH SEND');
+			}
+		}else if (currentURLPath === '/pong_online/'){
 			//The only way to leave a game legally is going to the game stats or to the tm lobby if it is a tm game
 			if (requestedURLPath !== "/singleGameStats/" && requestedURLPath !== "/tournament/"){
 				//I think this triggers yanns leave game logic, should also handle normal leave button presses, since I commented the ws.send out there
-				ws.send(JSON.stringify({type: 'reset_consumer_after_unusual_game_leave'}));
+				ws.send(JSON.stringify({type: 'unusual_leave'}));
 				console.log('UNUSUAL MEME LEAVE');
 			}
 			history.replaceState("", "", url)
 		}else if (currentURLPath === '/tournament/'){
 			if (requestedURLPath !== "/pong_online/" && requestedURLPath !== "/tournament_stats/"){
 				//I think this triggers yanns working leave tournament logic
-				ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
+				//ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
+				ws.send(JSON.stringify({type: 'unusual_leave'}));
 				console.log('UNUSUAL TM LEAVE');
 			}
 			history.replaceState("", "", url)
@@ -167,7 +175,7 @@ window.addEventListener("click", e => {
 window.addEventListener("popstate", router);
 
 // load page the first time here
-window.addEventListener("DOMContentLoaded", router);
+window.addEventListener("DOMContentLoaded", router('/', null));
 
 
 export {getCookie, router, ws};

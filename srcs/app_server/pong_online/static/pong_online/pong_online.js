@@ -135,6 +135,7 @@ class Game extends HTMLElement {
 	}
 
 	handle_beforeunload = () => {
+		console.log("HANDLE BEFORE UNLOAD TRIGGERED")
 		ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
 		this.remove_event_listener();
 	}
