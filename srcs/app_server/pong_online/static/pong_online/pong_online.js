@@ -141,6 +141,7 @@ class Game extends HTMLElement {
 	}
 	
 	handle_leave_game_button_click = () => {
+		//this.remove_event_listener();
 		ws.send(JSON.stringify({type: 'leave', 'action': 'leave', 'username': this.username, 'modus': this.modus}));
 		history.pushState("", "", "/lobby/");
 		router();
@@ -156,6 +157,7 @@ class Game extends HTMLElement {
 		window.removeEventListener('keydown', this.handle_keydown);
 		window.removeEventListener('keyup', this.handle_keyup);
 		window.removeEventListener('beforeunload', this.handle_beforeunload);
+		console.log('YAAAAAY');
 	}
 
     handle_message(e) {
@@ -337,4 +339,5 @@ class Game extends HTMLElement {
 	} 
 }
 
+export {Game};
 customElements.define("pong-game", Game);

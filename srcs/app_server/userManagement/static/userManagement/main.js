@@ -8,6 +8,8 @@ import "../pong_online/lobby.js"
 import "../pong_online/pong_online.js"
 import "../pong_online/tournament.js"
 
+import {Game} from "../pong_online/pong_online.js"
+
 const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
 	// const wsUrl = protocol + `://${window.location.host}/ws/pong/${roomName}/`; // this has to be modified to be a unique identifier
 
@@ -92,16 +94,18 @@ window.addEventListener("click", e => {
 	let currentURL = location.href.replace(location.origin, '');
     if (e.target.matches("[data-link]")) {
 		if (currentURL == '/pong_online/' || currentURL.includes('/tournament/'));
-			ws.send(JSON.stringify({type: 'reset_consumer_after_unusual_game_leave'}));
-        e.preventDefault();
+			Game.handle_beforeunload()
+			//ws.send(JSON.stringify({type: 'player_left_navbar'}));
+		e.preventDefault();
         history.pushState("", "", e.target.href);
         router();
     } else if (e.target.matches("[data-logout]")) {
-		if (currentURL == '/pong_online/' || currentURL.includes('/tournament/'));
-			ws.send(JSON.stringify({type: 'reset_consumer_after_unusual_game_leave'}));
+		//if (currentURL == '/pong_online/' || currentURL.includes('/tournament/')) {
+		// 	ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
+		// }
+		console.log("logout pressed");
 		e.preventDefault();
 		history.pushState("", "", e.target.href);
-		console.log("logout pressed");
 		let logoutUrl = "/accounts/logout/"; //maybe dynamic url later from django template
 		fetch(logoutUrl, {
 			method: "POST",
