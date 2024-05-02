@@ -57,9 +57,13 @@ function getFirstPath(urlPath) {
     }
 }
 
+//This is neccessary because with refreh and back we dont have full control over
+// the history stack
 let lastRoute = null;
 
 function router(url=null, callback=null) {
+
+	//when an event like popstate is passed
 	if (typeof url !== 'string') {
 		url = null;
 	}
@@ -175,7 +179,17 @@ window.addEventListener("click", e => {
 window.addEventListener("popstate", router);
 
 // load page the first time here
-window.addEventListener("DOMContentLoaded", router('/', null));
+window.addEventListener("DOMContentLoaded", function() {
+	let path = getFirstPath(location.pathname)
+	//if refresh and location is pong online or tm go to home and. so the game is lost
+	if (path === '/pong_online/' || path === '/tournament/')
+	{
+		router('/lobby/', null);
+	}
+	else {
+		router();
+	}
+});
 
 
 export {getCookie, router, ws};
