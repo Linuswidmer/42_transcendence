@@ -40,7 +40,7 @@ class tournamentStats extends HTMLElement{
 				matchLink.classList.add('match-info');
 
 				if (match.winner !== "None") {
-					matchLink.innerHTML = `<strong>${matchKey}</strong>: <br>Winner: ${match.winner} <br>Loser: ${match.loser}`;
+					matchLink.innerHTML = `<strong>Game: ${matchKey}</strong>: <br>Winner: ${match.winner} <br>Loser: ${match.loser}`;
 				} else {
 					matchLink.innerHTML = `<strong>${matchKey}</strong>: <br>Not played yet!`;
 				}

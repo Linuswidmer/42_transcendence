@@ -205,7 +205,7 @@ class Lobby extends HTMLElement {
 			'How many players?', // Modal title
 			`<div class="button-popup-container">
 				<!-- Create buttons for different levels -->
-				${[4, 8, 12, 16].map(level => `
+				${[4, 8, 16].map(level => `
 					<button class="levelButton buttonblue btn" data-level="${level}">Size: ${level}</button>
 				`).join('')}
 			</div>`
