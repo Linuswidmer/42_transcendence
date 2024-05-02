@@ -345,3 +345,14 @@ class Game extends HTMLElement {
 }
 
 customElements.define("pong-game", Game);
+
+// Function to remove key event listeners
+function removeKeyEventListeners() {
+    // Call remove_event_listener method of Game class
+    const gameElement = document.querySelector("pong-game");
+    if (gameElement) {
+        gameElement.remove_event_listener();
+    }
+}
+
+export {removeKeyEventListeners};

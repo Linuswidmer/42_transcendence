@@ -8,6 +8,8 @@ import "../pong_online/lobby.js"
 import "../pong_online/pong_online.js"
 import "../pong_online/tournament.js"
 
+import {removeKeyEventListeners} from "../pong_online/pong_online.js"
+
 const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
 	// const wsUrl = protocol + `://${window.location.host}/ws/pong/${roomName}/`; // this has to be modified to be a unique identifier
 
@@ -78,6 +80,7 @@ function router(url=null, callback=null) {
 		if (lastRoute === null && requestedURLPath === '/pong_online/'){
 			console.log('REFRESH TRIGGERED')
 			ws.onopen = function(event) {
+				removeKeyEventListeners()
 				ws.send(JSON.stringify({type: 'unusual_leave'}));
 				console.log('UNUSUAL REFRESH SEND');
 			}
@@ -85,6 +88,7 @@ function router(url=null, callback=null) {
 			//The only way to leave a game legally is going to the game stats or to the tm lobby if it is a tm game
 			if (requestedURLPath !== "/singleGameStats/" && requestedURLPath !== "/tournament/"){
 				//I think this triggers yanns leave game logic, should also handle normal leave button presses, since I commented the ws.send out there
+				removeKeyEventListeners()
 				ws.send(JSON.stringify({type: 'unusual_leave'}));
 				console.log('UNUSUAL MEME LEAVE');
 			}
@@ -93,6 +97,7 @@ function router(url=null, callback=null) {
 			if (requestedURLPath !== "/pong_online/" && requestedURLPath !== "/tournament_stats/"){
 				//I think this triggers yanns working leave tournament logic
 				//ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
+				removeKeyEventListeners()
 				ws.send(JSON.stringify({type: 'unusual_leave'}));
 				console.log('UNUSUAL TM LEAVE');
 			}
