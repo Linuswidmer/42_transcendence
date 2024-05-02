@@ -145,21 +145,10 @@ function router(url=null, callback=null) {
 window.addEventListener("click", e => {
 	let currentURL = location.href.replace(location.origin, '');
     if (e.target.matches("[data-link]")) {
-		/* if (currentURL == '/pong_online/' || currentURL.includes('/tournament/')){
-			ws.send(JSON.stringify({type: 'reset_consumer_after_unusual_game_leave'}));
-			history.replaceState(null, "", "/");
-		} */
         e.preventDefault();
-        //history.pushState("", "", e.target.href);
-		
         router(e.target.href.replace(e.target.origin, '')); //@LEON: das brauchen wir ja dann nicht mehr 
     } else if (e.target.matches("[data-logout]")) {
-		/* if (currentURL == '/pong_online/' || currentURL.includes('/tournament/')){
-			ws.send(JSON.stringify({type: 'reset_consumer_after_unusual_game_leave'}));
-			history.replaceState(null, "", "/");
-		} */
 		e.preventDefault();
-		//history.pushState("", "", e.target.href);
 		console.log("logout pressed");
 		let logoutUrl = "/accounts/logout/"; //maybe dynamic url later from django template
 		fetch(logoutUrl, {

@@ -174,7 +174,17 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		)
 
 	async def disconnect(self, close_code):
-		pass
+		try:
+			print("username in disconnect: ", self.username)
+			user = await sync_to_async(User.objects.select_related('profile').get)(username=self.username)
+			profile = user.profile
+			profile.logged_in = False
+			await sync_to_async(profile.save)()
+			print("User logged_in ", profile.logged_in)
+		except User.DoesNotExist:
+			pass
+		
+		
 		# await self.channel_layer.group_discard(
 		# 	"lobby", self.channel_name
 		# )
@@ -195,7 +205,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 		if message_type == "username":
 			self.username = json_from_client.get("username", "")
-		
+
 		# to indicate that the player is playing (not like in_game)
 		if message_type == "start":
 			await self.channel_layer.group_send(
