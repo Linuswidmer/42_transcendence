@@ -47,7 +47,7 @@ class tournamentStats extends HTMLElement{
 
 				// Add a click event listener
 				matchLink.addEventListener('click', function(event) {
-					const statsURL = '/singleGameStats/?matchName=' + matchKey + '&username=' + match.winner;
+					const statsURL = '/singleGameStats/' + matchKey + '/';
 					console.log('Game link clicked: ', statsURL);
 					//history.pushState("", "", statsURL);
 					router(statsURL);
