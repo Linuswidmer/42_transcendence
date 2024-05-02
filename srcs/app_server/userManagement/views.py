@@ -12,14 +12,14 @@ from django.template import loader
 from django.contrib.auth.decorators import login_required
 import uuid
 from .StatsBuilder import StatsBuilder, GameListData
-from pong_online.models import UserGameStats, Tournaments
+from pong_online.models import UserGameStats, Tournaments, Games
 import json
 
 
 def dashboard(request):
 	return render(request, "userManagement/dashboard.html")
 
-def index(request, username=None, tournament_id=None):
+def index(request, username=None, tournament_id=None, match_id=None):
 	return render(request, "onepager/index.html")
 	
 def	home(request):
@@ -186,14 +186,14 @@ def navigation(request):
 	return render(request, 'includes/navigation.html')
 
 @login_required(login_url='/home')
-def single_game_stats(request):
-	matchName = request.GET.get('matchName')
-	username = request.GET.get('username')
-	user = User.objects.get(username=username)
+def single_game_stats(request, match_id):
+	game = Games.objects.get(matchName=match_id)
+	user_game_stat = UserGameStats.objects.filter(game=game).first()
+	user = user_game_stat.user
 	sb = StatsBuilder(user)
 	sb.build()
 	for gld in sb.gameListData:
-		if gld.game.matchName == matchName:
+		if gld.game.matchName == match_id:
 			return render(request, "userManagement/single_game_stats.html", {"gld": gld})
 
 @login_required(login_url='/home')	
