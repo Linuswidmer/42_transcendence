@@ -144,6 +144,7 @@ class Tournament extends HTMLElement {
 			}
 			if (data.type === "join") {
 				//history.pushState("", "", "/pong_online/");
+				window.removeEventListener('beforeunload', this.handle_beforeunload);
 				router("/pong_online/", () => {
 					ws.send(JSON.stringify({type: 'get_game_data'}));
 				});
