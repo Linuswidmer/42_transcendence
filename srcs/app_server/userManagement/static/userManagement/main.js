@@ -63,22 +63,25 @@ function getFirstPath(urlPath) {
 // the history stack
 let lastRoute = null;
 
-function router(url=null, callback=null) {
-
+function router(url=null, callback=null, event=null) {
+	console.log("url at router start:", url);
+	let currentURLPath = lastRoute;
 	//when an event like popstate is passed
 	if (typeof url !== 'string') {
-		url = null;
+		console.log("WARNING URL SHOULD BE STRING");
+	}
+	if (event instanceof PopStateEvent) {
+		console.log("POPSTATE");
+		let requestedURLPath = getFirstPath(url);
+		currentURLPath = requestedURLPath;
 	}
 
-	let currentURLPath = lastRoute;
 	console.log('Current urlPath: ', currentURLPath)
 	console.log('Requested URL: ', url)
 	console.log('last route', lastRoute)
 
-	if (url === null) {
-		url = location.pathname;
-	}
-	if (url) {
+	
+	if (url && !event) {
 		let requestedURLPath = getFirstPath(url);
 		console.log('Requested urlPath: ', requestedURLPath)
 		if (lastRoute === null && requestedURLPath === '/pong_online/'){
@@ -125,6 +128,7 @@ function router(url=null, callback=null) {
 
     if (view) {
 		let fetchUrl = typeof view.fetch === 'function' ? view.fetch() : view.fetch;
+		document.title = fetchUrl;
 		fetch(fetchUrl)
 		.then(response => response.text())
 		.then(html => {
@@ -137,7 +141,7 @@ function router(url=null, callback=null) {
     } else {
 		console.log("router else");
         history.replaceState("", "", "/");
-        router();
+        router("/", null, null);
     }
 };
 
@@ -181,7 +185,15 @@ window.addEventListener("click", e => {
 });
 
 // Update router
-window.addEventListener("popstate", router);
+window.addEventListener("popstate", function(event) {
+	let path = getFirstPath(location.pathname)
+	//if refresh and location is pong online or tm go to home and. so the game is lost
+	if (path === '/pong_online/' || path === '/tournament/')
+	{
+		history.replaceState("", "", "/lobby/")
+	}
+	router(location.pathname, null, event);
+});
 
 // load page the first time here
 window.addEventListener("DOMContentLoaded", function() {
@@ -189,10 +201,10 @@ window.addEventListener("DOMContentLoaded", function() {
 	//if refresh and location is pong online or tm go to home and. so the game is lost
 	if (path === '/pong_online/' || path === '/tournament/')
 	{
-		router('/lobby/', null);
+		router('/lobby/', null, null);
 	}
 	else {
-		router();
+		router(location.pathname, null, null);
 	}
 });
 
