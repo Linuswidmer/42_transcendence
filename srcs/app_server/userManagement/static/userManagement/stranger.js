@@ -19,7 +19,7 @@ class Stranger extends HTMLElement {
 		let loginBtn = this.querySelector("#loginBtn");
 		let registerBtn = this.querySelector("#registerBtn");
 		let guestBtn = this.querySelector("#guestBtn");
-		let _42Btn = this.querySelector("#fortyTwoBtn");
+		// let _42Btn = doc.querySelector("#fortyTwoBtn");
 
 		this.loginUrl = this.getAttribute("data-loginUrl");
 		this.registerUrl = this.getAttribute("data-registerUrl");
@@ -42,10 +42,10 @@ class Stranger extends HTMLElement {
 			renderForm(this.guestUrl, "guestModal", "Continue as guest");
 		};
 
-		_42Btn.onclick = () => {
-			console.log("42btn");
-			window.location.href=this.remoteAuthUrl;
-		};
+		// _42Btn.onclick = () => {
+		// 	console.log("42btn");
+		// 	window.location.href=this.remoteAuthUrl;
+		// };
 
 
     }

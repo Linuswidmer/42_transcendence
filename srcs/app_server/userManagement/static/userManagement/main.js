@@ -65,13 +65,16 @@ let lastRoute = null;
 
 function router(url=null, callback=null, event=null) {
 	console.log("url at router start:", url);
+	console.log("event in router:", event);
 	let currentURLPath = lastRoute;
 	//when an event like popstate is passed
 	if (typeof url !== 'string') {
 		console.log("WARNING URL SHOULD BE STRING");
 	}
-	if (event instanceof PopStateEvent) {
-		console.log("POPSTATE");
+	if (event) {
+		console.log("EVENT");
+		removeKeyEventListeners()
+		ws.send(JSON.stringify({type: 'unusual_leave'}));
 		let requestedURLPath = getFirstPath(url);
 		currentURLPath = requestedURLPath;
 	}
@@ -173,7 +176,7 @@ window.addEventListener("click", e => {
 	}
 });
 
-// Update router
+// Called on back and forth
 window.addEventListener("popstate", function(event) {
 	let path = getFirstPath(location.pathname)
 	//if refresh and location is pong online or tm go to home and. so the game is lost
@@ -184,7 +187,7 @@ window.addEventListener("popstate", function(event) {
 	router(location.pathname, null, event);
 });
 
-// load page the first time here
+// Called on refresh or first laod
 window.addEventListener("DOMContentLoaded", function() {
 	let path = getFirstPath(location.pathname)
 	//if refresh and location is pong online or tm go to home and. so the game is lost
