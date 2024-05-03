@@ -185,6 +185,17 @@ class Profile extends HTMLElement {
 	}
 	const csrftoken = getCookie('csrftoken');
 		// this will only work while the js is not a separate file
+
+        var totalWins = parseInt(this.getAttribute('data-totalWins'));
+        var totalLosses = parseInt(this.getAttribute('data-totalDefeats'));
+        
+        var totalGames = totalWins + totalLosses;
+        document.getElementById('wins').title = 'Total Wins: ' + totalWins;
+        document.getElementById('losses').title = 'Total Losses: ' + totalLosses;
+
+        document.getElementById('wins').style.height = (totalWins / totalGames * 100) + '%';
+        document.getElementById('losses').style.height = (totalLosses / totalGames * 100) + '%';
+
 		var chartElement = document.getElementById('winLossChart');
 		if (chartElement !== null)
 		{

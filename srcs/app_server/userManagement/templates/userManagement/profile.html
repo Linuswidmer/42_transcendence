@@ -121,7 +121,20 @@
                     </div>
                 </div>
             </div>
-            <div class="d-flex justify-content-center">
+
+            <h2>Games Win/Loss Ratio</h2>
+            <div class="chart">
+                <div class="bar-container">
+                <div id="wins" class="bar" style="height: 0%; background-color: green;"></div>
+                <div class="label">Wins</div>
+                </div>
+                <div class="bar-container">
+                <div id="losses" class="bar" style="height: 0%; background-color: red;"></div>
+                <div class="label">Losses</div>
+                </div>
+            </div>
+
+            <!-- <div class="d-flex justify-content-center">
                 {% if stats.totalGames != 0 %}
                 <div class="chart">
                     <canvas id="winLossChart"></canvas>
@@ -132,7 +145,7 @@
                     <canvas id="winLossChartTournament"></canvas>
                 </div>
                 {% endif %}
-            </div>
+            </div> -->
         </div>
 </div>
 

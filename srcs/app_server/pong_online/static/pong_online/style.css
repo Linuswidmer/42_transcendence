@@ -223,6 +223,18 @@ input {
   border: 2px solid #03EEF5;
 }
 
+.bar-container {
+    height: 300px;
+    position: relative;
+    width: 20%;
+}
+
+.bar {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
 /* ---------------------------- GAME -------------------------------*/
 
 canvas {
