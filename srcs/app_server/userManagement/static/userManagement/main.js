@@ -8,6 +8,8 @@ import "../pong_online/lobby.js"
 import "../pong_online/pong_online.js"
 import "../pong_online/tournament.js"
 
+import {removeKeyEventListeners} from "../pong_online/pong_online.js"
+
 const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
 	// const wsUrl = protocol + `://${window.location.host}/ws/pong/${roomName}/`; // this has to be modified to be a unique identifier
 
@@ -57,35 +59,53 @@ function getFirstPath(urlPath) {
     }
 }
 
+//This is neccessary because with refreh and back we dont have full control over
+// the history stack
 let lastRoute = null;
 
-function router(url=null, callback=null) {
+function router(url=null, callback=null, event=null) {
+	console.log("url at router start:", url);
+	let currentURLPath = lastRoute;
+	//when an event like popstate is passed
 	if (typeof url !== 'string') {
-		url = null;
+		console.log("WARNING URL SHOULD BE STRING");
+	}
+	if (event instanceof PopStateEvent) {
+		console.log("POPSTATE");
+		let requestedURLPath = getFirstPath(url);
+		currentURLPath = requestedURLPath;
 	}
 
-	let currentURLPath = lastRoute;
 	console.log('Current urlPath: ', currentURLPath)
 	console.log('Requested URL: ', url)
-	if (url === null) {
-		url = location.pathname;
-	}
-	if (url) {
-		//url = getFirstPath(url);
+	console.log('last route', lastRoute)
+
+	
+	if (url && !event) {
 		let requestedURLPath = getFirstPath(url);
 		console.log('Requested urlPath: ', requestedURLPath)
-		if (currentURLPath === '/pong_online/'){
+		if (lastRoute === null && requestedURLPath === '/pong_online/'){
+			console.log('REFRESH TRIGGERED')
+			ws.onopen = function(event) {
+				removeKeyEventListeners()
+				ws.send(JSON.stringify({type: 'unusual_leave'}));
+				console.log('UNUSUAL REFRESH SEND');
+			}
+		}else if (currentURLPath === '/pong_online/'){
 			//The only way to leave a game legally is going to the game stats or to the tm lobby if it is a tm game
 			if (requestedURLPath !== "/singleGameStats/" && requestedURLPath !== "/tournament/"){
 				//I think this triggers yanns leave game logic, should also handle normal leave button presses, since I commented the ws.send out there
-				ws.send(JSON.stringify({type: 'reset_consumer_after_unusual_game_leave'}));
+				removeKeyEventListeners()
+				ws.send(JSON.stringify({type: 'unusual_leave'}));
 				console.log('UNUSUAL MEME LEAVE');
 			}
 			history.replaceState("", "", url)
 		}else if (currentURLPath === '/tournament/'){
 			if (requestedURLPath !== "/pong_online/" && requestedURLPath !== "/tournament_stats/"){
 				//I think this triggers yanns working leave tournament logic
-				ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
+				//ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
+				removeKeyEventListeners()
+				ws.send(JSON.stringify({type: 'unusual_leave'}));
 				console.log('UNUSUAL TM LEAVE');
 			}
 			history.replaceState("", "", url)
@@ -108,6 +128,7 @@ function router(url=null, callback=null) {
 
     if (view) {
 		let fetchUrl = typeof view.fetch === 'function' ? view.fetch() : view.fetch;
+		document.title = fetchUrl;
 		fetch(fetchUrl)
 		.then(response => response.text())
 		.then(html => {
@@ -120,7 +141,7 @@ function router(url=null, callback=null) {
     } else {
 		console.log("router else");
         history.replaceState("", "", "/");
-        router();
+        router("/", null, null);
     }
 };
 
@@ -164,10 +185,28 @@ window.addEventListener("click", e => {
 });
 
 // Update router
-window.addEventListener("popstate", router);
+window.addEventListener("popstate", function(event) {
+	let path = getFirstPath(location.pathname)
+	//if refresh and location is pong online or tm go to home and. so the game is lost
+	if (path === '/pong_online/' || path === '/tournament/')
+	{
+		history.replaceState("", "", "/lobby/")
+	}
+	router(location.pathname, null, event);
+});
 
 // load page the first time here
-window.addEventListener("DOMContentLoaded", router);
+window.addEventListener("DOMContentLoaded", function() {
+	let path = getFirstPath(location.pathname)
+	//if refresh and location is pong online or tm go to home and. so the game is lost
+	if (path === '/pong_online/' || path === '/tournament/')
+	{
+		router('/lobby/', null, null);
+	}
+	else {
+		router(location.pathname, null, null);
+	}
+});
 
 
 export {getCookie, router, ws};

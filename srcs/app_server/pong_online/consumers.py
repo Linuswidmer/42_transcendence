@@ -202,13 +202,13 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 					self.game_group_name,
 					{"type": "set_is_playing"}
 				)			
-		print("...................")
+		#print("...................")
 		print("consumer: ", self.username, " | in_game: ", self.in_game, " | is_playing: ", self.is_playing, " | in_tm: ", self.tournament_started)
-		print("game_group: ", self.game_group_name, " | tournament_group: ", self.tournament_group_name)
-		print("matches: ", self.lobby.matches)
-		print("tournaments: ", self.lobby.tournaments)
-		print("registered players", self.lobby.registered_players_total)
-		print("...................")
+		# print("game_group: ", self.game_group_name, " | tournament_group: ", self.tournament_group_name)
+		# print("matches: ", self.lobby.matches)
+		# print("tournaments: ", self.lobby.tournaments)
+		# print("registered players", self.lobby.registered_players_total)
+		# print("...................")
 		
 		# if a client cloeses the window or leaves the page, this is
 		if message_type == "player_left" or message_type == "leave" or message_type == "unusual_leave":
@@ -225,6 +225,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			elif (self.in_game and not self.is_playing and not self.tournament_group_name):
 				print(self.username, " #2")
 				await self.process_lobby_update_in_consumer({"action": "leave", 'username': self.username, 'modus': self.match.modus})
+				if (self.match and (self.match.modus == 'local' and self.match.modus == 'ai')):
+					return
 				await self.channel_layer.group_send(
 					"lobby",
 					{"type": "group_lobby_update"}
@@ -253,43 +255,6 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				#player has to leave the tm
 				if message_type == "leave":
 					await self.process_lobby_update_in_consumer({"action": "leave_tournament", "tournament_id": self.tournament_group_name})
-
-
-		# #if a client clicks on a link/button in the navbar 		
-		# if message_type == "reset_consumer_after_unusual_game_leave" or message_type == "leave":
-		# 	if (self.in_game and self.is_playing):
-		# 		print("#6")
-		# 		await self.channel_layer.group_send(
-		# 			self.game_group_name,
-		# 			{"type": "end_game_player_left", "player": self.username},
-		# 		)
-		# 	elif (self.in_game and not self.is_playing and not self.tournament_group_name):
-		# 		print("#7")
-		# 		await self.process_lobby_update_in_consumer({"action": "leave"})
-		# 		await self.channel_layer.group_send(
-		# 			"lobby",
-		# 			{"type": "group_lobby_update"}
-		# 		)
-		# 	elif (self.tournament_group_name and not self.in_game and not self.tournament_started):
-		# 		print("#8")
-		# 		await self.process_lobby_update_in_consumer({"action": "leave_tournament", "tournament_id": self.tournament_group_name})
-		# 	elif (self.in_game and self.tournament_started):
-		# 		print("#9")
-		# 		#simulate the game as played
-		# 		asyncio.create_task(self.game_loop(self.match.modus))
-		# 		await self.channel_layer.group_send(
-		# 			self.game_group_name,
-		# 			{"type": "end_game_player_left", "player": self.username},
-		# 		)
-		# 		#await self.process_lobby_update_in_consumer({"action": "leave_tournament", "tournament_id": self.tournament_group_name})
-		# 	elif (not self.in_game and self.tournament_started):
-		# 		print("#10")
-		# 		tournament = self.lobby.tournaments[self.tournament_group_name]
-		# 		# add § in front of the player name
-		# 		for i in range(len(tournament.players)):
-		# 			if tournament.players[i] == self.username:
-		# 				tournament.players[i] = "§" + tournament.players[i]
-		# 		await self.process_lobby_update_in_consumer({"action": "leave_tournament", "tournament_id": self.tournament_group_name})
 
 		# if the pong_online js was loaded from the client it needs some data
 		# to fill the view

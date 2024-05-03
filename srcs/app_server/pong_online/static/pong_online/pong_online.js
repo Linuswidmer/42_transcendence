@@ -135,6 +135,7 @@ class Game extends HTMLElement {
 	}
 
 	handle_beforeunload = () => {
+		console.log("HANDLE BEFORE UNLOAD TRIGGERED")
 		ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
 		this.remove_event_listener();
 	}
@@ -305,7 +306,7 @@ class Game extends HTMLElement {
 
 	handle_game_over(data) {
 		this.remove_event_listener();
-		const statsURL = '/singleGameStats/?matchName=' + data.matchName + '&username=' + data.user;
+		const statsURL = '/singleGameStats/' + data.matchName + '/';
 		//history.replaceState("", "", statsURL);
 		router(statsURL);
 	}
@@ -344,3 +345,14 @@ class Game extends HTMLElement {
 }
 
 customElements.define("pong-game", Game);
+
+// Function to remove key event listeners
+function removeKeyEventListeners() {
+    // Call remove_event_listener method of Game class
+    const gameElement = document.querySelector("pong-game");
+    if (gameElement) {
+        gameElement.remove_event_listener();
+    }
+}
+
+export {removeKeyEventListeners};
