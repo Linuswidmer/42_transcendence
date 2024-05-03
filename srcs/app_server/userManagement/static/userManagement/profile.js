@@ -184,67 +184,31 @@ class Profile extends HTMLElement {
 		}
 	}
 	const csrftoken = getCookie('csrftoken');
-		// this will only work while the js is not a separate file
-
-        var totalWins = parseInt(this.getAttribute('data-totalWins'));
-        var totalLosses = parseInt(this.getAttribute('data-totalDefeats'));
+        var totalWinsSingle = parseInt(this.getAttribute('data-totalWins'));
+        var totalLossesSingle = parseInt(this.getAttribute('data-totalDefeats'));
         
-        var totalGames = totalWins + totalLosses;
-        document.getElementById('wins').title = 'Total Wins: ' + totalWins;
-        document.getElementById('losses').title = 'Total Losses: ' + totalLosses;
+        var totalGamesSingle = totalWinsSingle + totalLossesSingle;
+        document.getElementById('winsSingleDesc').innerHTML = totalWinsSingle;
+        document.getElementById('lossesSingleDesc').innerHTML = totalLossesSingle;
 
-        document.getElementById('wins').style.height = (totalWins / totalGames * 100) + '%';
-        document.getElementById('losses').style.height = (totalLosses / totalGames * 100) + '%';
+        document.getElementById('winsSingle').style.height = (totalWinsSingle / totalGamesSingle * 100) + '%';
+        document.getElementById('lossesSingle').style.height = (totalLossesSingle / totalGamesSingle * 100) + '%';
 
-		var chartElement = document.getElementById('winLossChart');
-		if (chartElement !== null)
-		{
-			var ctx = chartElement  .getContext('2d');
-			var chart = new Chart(ctx, {
-				type: 'pie',
-				data: {
-					labels: ['Wins', 'Losses'],
-					datasets: [{
-						data: [this.getAttribute('data-totalWins'), this.getAttribute('data-totalDefeats')],
-						backgroundColor: ['green', 'red'],
-					}] // workaround would be reading the data from the html element
-				},
-				options: {
-					responsive: true,
-					plugins: {
-						title: {
-							display: true,
-							text: 'Games Win/Loss Ratio'
-						}
-					}
-				}
-			});
-		}
-	
-		var chartElement2 = document.getElementById('winLossChartTournament');
-		if (chartElement2 !== null)
-		{
-			var ctx2 = chartElement2.getContext('2d');
-			var chart2 = new Chart(ctx2, {
-				type: 'pie',
-				data: {
-					labels: ['Wins', 'Losses'],
-					datasets: [{
-						data: [this.getAttribute('data-wonTournaments'), this.getAttribute('data-totalTournaments')],
-						backgroundColor: ['green', 'red'],
-					}]
-				},
-				options: {
-					responsive: true,
-					plugins: {
-						title: {
-							display: true,
-							text: 'Tournaments Win/Loss Ratio'
-						}
-					}
-				}
-			});
-		}
+        console.log(this.getAttribute('data-totalTournaments'));
+
+        var totalWinsTournament = parseInt(this.getAttribute('data-wonTournaments'));
+        var totalLossesTournament = this.getAttribute('data-totalTournaments') - totalWinsTournament;
+        
+        console.log("totalWinsTournament: ", totalWinsTournament);
+        console.log("totalLossesTournament: ", totalLossesTournament);
+
+        var totalGamesTournament = totalWinsTournament + totalLossesTournament;
+        document.getElementById('winsTournamentDesc').innerHTML = totalWinsTournament;
+        document.getElementById('lossesTournamentDesc').innerHTML = totalLossesTournament;
+
+        document.getElementById('winsTournament').style.height = (totalWinsTournament / totalGamesTournament * 100) + '%';
+        document.getElementById('lossesTournament').style.height = (totalLossesTournament / totalGamesTournament * 100) + '%';
+
 	
 		var localAveragePointsPerGame = this.getAttribute('data-localAveragePointsPerGame');
 		var localBestGameScore = this.getAttribute('data-localBestGameScore');

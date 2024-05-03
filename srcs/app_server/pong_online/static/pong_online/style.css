@@ -223,18 +223,49 @@ input {
   border: 2px solid #03EEF5;
 }
 
+.charts {
+    display: flex;
+    justify-content: space-around;
+}
+
+.chart {
+    width: 45%;
+}
+
 .bar-container {
-    height: 300px;
-    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 200px;
     width: 20%;
+    position: relative; 
 }
 
 .bar {
-    position: absolute;
-    bottom: 0;
     width: 100%;
 }
 
+.chart-titles {
+    display: flex;
+    justify-content: space-between;
+    margin: auto; 
+    width: 70%;
+  }
+
+  .description {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #fff;
+    padding: 5px;
+    border: 1px solid #ccc;
+}
+
+.bar-container:hover .description {
+    display: block;
+}
+  
 /* ---------------------------- GAME -------------------------------*/
 
 canvas {
