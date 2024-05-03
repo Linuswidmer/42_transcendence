@@ -63,7 +63,7 @@ function getFirstPath(urlPath) {
 // the history stack
 let lastRoute = null;
 
-function router(url=null, callback=null, event=null) {
+function router(url=null, callback=null, event=null, data=null) {
 	console.log("url at router start:", url);
 	console.log("event in router:", event);
 	let currentURLPath = lastRoute;
@@ -87,13 +87,23 @@ function router(url=null, callback=null, event=null) {
 	if (url && !event) {
 		let requestedURLPath = getFirstPath(url);
 		console.log('Requested urlPath: ', requestedURLPath)
-		if (lastRoute === null && requestedURLPath === '/pong_online/'){
-			console.log('REFRESH TRIGGERED')
-			ws.onopen = function(event) {
-				removeKeyEventListeners()
-				ws.send(JSON.stringify({type: 'unusual_leave'}));
-				console.log('UNUSUAL REFRESH SEND');
+		// Check if WebSocket is already open
+		if (data == 'leave'){
+			console.log('REFRESH TRIGGERED');
+			console.log('ws state: ', ws.readyState);
+			if (ws.readyState === WebSocket.OPEN) {
+				// WebSocket is already open, send data
+				ws.send(JSON.stringify({ type: 'unusual_leave' }));
+				console.log('UNUSUAL REFRESH SEND ALREADY OPEN');
+			} else {
+				// WebSocket is not open yet, wait for it to open
+				ws.onopen = function() {
+					// WebSocket is now open, send data
+					ws.send(JSON.stringify({ type: 'unusual_leave' }));
+					console.log('UNUSUAL REFRESH SEND ON OPEN');
+				}
 			}
+			history.replaceState("", "", "/lobby/");
 		}else if (currentURLPath === '/pong_online/'){
 			//The only way to leave a game legally is going to the game stats or to the tm lobby if it is a tm game
 			if (requestedURLPath !== "/singleGameStats/" && requestedURLPath !== "/tournament/"){
@@ -184,7 +194,7 @@ window.addEventListener("popstate", function(event) {
 	{
 		history.replaceState("", "", "/lobby/")
 	}
-	router(location.pathname, null, event);
+	router(location.pathname, null, event, null);
 });
 
 // Called on refresh or first laod
@@ -193,10 +203,10 @@ window.addEventListener("DOMContentLoaded", function() {
 	//if refresh and location is pong online or tm go to home and. so the game is lost
 	if (path === '/pong_online/' || path === '/tournament/')
 	{
-		router('/lobby/', null, null);
+		router('/lobby/', null, null, "leave");
 	}
 	else {
-		router(location.pathname, null, null);
+		router(location.pathname, null, null, null);
 	}
 });
 

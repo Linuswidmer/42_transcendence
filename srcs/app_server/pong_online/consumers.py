@@ -50,6 +50,11 @@ class apiConsumer(AsyncWebsocketConsumer):
 	async def receive(self, text_data):
 		print("api_text_data: ", text_data)
 		# Split the received text into command and arguments
+		if text_data.strip() == "":
+			response = "Error: Empty command"
+			await self.send(response)
+			return
+
 		tokens = text_data.strip().split()
 		command = tokens.pop(0)
 		option = tokens.pop(0) if tokens else None
