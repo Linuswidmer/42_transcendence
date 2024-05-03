@@ -553,16 +553,11 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			self.match.game_data[winning_player]["score"] = 3
 
 	async def register_opponent(self, opponent, match_id):
-		print("register opponent called by ", self.username)	
 		tournament = self.lobby.get_tournament(self.tournament_group_name)
 		match = tournament.get_match(match_id)
-
-		print("match players: ", match.registered_players)
 					
 		success, message = self.lobby.register_player_match(opponent, match)
-		print("success register_player_match: ", success, " message: ", message)
 		success, message = self.lobby.join(opponent, match)
-		print("success lobby.join: ", success, " message: ", message)
 
 
 	async def group_tournament_update(self, event):
@@ -572,6 +567,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			basic_update["error"] = event["error"]
 
 		if "action" in event and "redirect_to_tournament_stats" in event["action"]:
+			print("over from ", self.username)
 			self.game_group_name = ""
 			self.tournament_group_name = ""
 			self.in_game = False
@@ -591,23 +587,25 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		# print("in TM update from ", self.username)
 		# print("tournament players: ", tournament.players)
 		# print("tournament number of players: ", tournament.number_players, " | round: ", tournament.round)
+		# print("tournament matches: ", tournament.matches)
 		# print("---------------")
 
 		# if full do matchmaking and send start_round to all group members
-		if (len(tournament.matches) > 0 and len(tournament.players) == tournament.number_players - tournament.round * tournament.number_players // 2):
+		if (len(tournament.matches) > 0 and (tournament.round != 0 and len(tournament.players) == tournament.number_players / ((tournament.round) * 2))
+	  		or (tournament.round == 0 and len(tournament.players) == tournament.number_players)):
 			tournament.visible_in_lobby = False
 			self.tournament_started = True
 			if self.username in tournament.players:
 				match_index = tournament.players.index(self.username) // 2
 				match_id = tournament.matches[match_index].group_name
 				opponent = tournament.get_opponent(self.username)
-				print('opponent of ', self.username, ' is ', opponent)
+				#print('opponent of ', self.username, ' is ', opponent)
 				#check if opponent is still in TM:
 				if not opponent.startswith('§'):
 					basic_update["match_id"] = match_id
 					basic_update["action"] = "start_tournament_round"
 				elif opponent.startswith('§'):
-					print(self.username, ' start both games and leave')
+					#print(self.username, ' start both games and leave')
 					await self.register_opponent(opponent[1:], match_id)
 					await self.process_lobby_update_in_consumer({type: 'lobby_update', 'action': 'join', 'match_id': match_id, 'tournament_id': tournament_id, 'username': self.username, 'modus': 'remote'})
 					self.hosts_game = True
@@ -786,6 +784,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			message = {"type": "show_tournament_lobby", "tournament_id" : self.match.tournament_id}
 			
 			#if tournament is finished, delete from lobby and redirect to tournament stats
+			#print("tournament matches in gameloop: ", tournament.matches)
 			if (len(tournament.matches) == 0):
 				message["finished"] = "True"
 				tournament.django_tournament.data = tournament.data
@@ -800,7 +799,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				return
 			#increment tournament round if its last game of round
 			else:
-				if (len(tournament.players) == tournament.number_players - (tournament.round + 1) * tournament.number_players // 2):
+				if (len(tournament.players) == tournament.number_players / ((tournament.round + 1) * 2)):
 					tournament.round += 1
 
 			await self.channel_layer.group_send(
