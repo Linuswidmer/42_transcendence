@@ -26,5 +26,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
+handler400 = 'app_server.views.handler400'
+handler403 = 'app_server.views.handler403'
 handler404 = 'app_server.views.handler404'
 handler500 = 'app_server.views.handler500'
