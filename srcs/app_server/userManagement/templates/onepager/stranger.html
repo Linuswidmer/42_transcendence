@@ -10,8 +10,18 @@
 </div>
 
 <pong-stranger data-loginUrl="{% url 'userManagement:login' %}"
-	data-registerUrl="{% url 'userManagement:register_user' %}"
-	data-guestUrl="{% url 'userManagement:register_guest' %}"
-	data-remoteAuthUrl="{% provider_login_url 'provider' %}"></pong-stranger>
+data-registerUrl="{% url 'userManagement:register_user' %}"
+data-guestUrl="{% url 'userManagement:register_guest' %}"
+data-remoteAuthUrl="{% provider_login_url 'provider' %}"></pong-stranger>
 
- 
+<form id="authForm" action="https://api.intra.42.fr/oauth/authorize" method="GET">
+	<input type="hidden" name="client_id" value={{ OAUTH_CLIENT_ID }}>
+	<input type="hidden" name="redirect_uri" value={{ OAUTH_CALLBACK_URL }}>
+	<input type="hidden" name="response_type" value="code">
+	<input type="hidden" name="scope" value="public">
+	<input type="hidden" name="state" id="stateInput">
+	<input type="hidden" name="prompt" value="consent">
+	<div class="text-center">
+		<button class="button" type="submit">SignIn with 42</button>
+	  </div>
+  </form>
