@@ -591,7 +591,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		# print("---------------")
 
 		# if full do matchmaking and send start_round to all group members
-		if (len(tournament.matches) > 0 and (tournament.round != 0 and len(tournament.players) == tournament.number_players / ((tournament.round) * 2))
+		if (len(tournament.matches) > 0 and (tournament.round != 0 and len(tournament.players) == tournament.number_players / 2**(tournament.round))
 	  		or (tournament.round == 0 and len(tournament.players) == tournament.number_players)):
 			tournament.visible_in_lobby = False
 			self.tournament_started = True
@@ -799,7 +799,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				return
 			#increment tournament round if its last game of round
 			else:
-				if (len(tournament.players) == tournament.number_players / ((tournament.round + 1) * 2)):
+				if (len(tournament.players) == tournament.number_players / 2**(tournament.round + 1)):
 					tournament.round += 1
 
 			await self.channel_layer.group_send(
