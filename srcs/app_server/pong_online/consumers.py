@@ -243,10 +243,13 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				print(self.username, " #1")
 				self.tournament_started = False
 				self.tournament_group_name = False
-				await self.channel_layer.group_send(
-					self.game_group_name,
-					{"type": "end_game_player_left", "player": self.username}, #json_from_client.get("player", "")},
-				)
+				if self.hosts_game:
+					await self.end_game_player_left({"player": self.username})
+				else:
+					await self.channel_layer.group_send(
+						self.game_group_name,
+						{"type": "end_game_player_left", "player": self.username},
+					)
 			#player left before a match started, that is not a tournament --> leaves game
 			elif (self.in_game and not self.is_playing and not self.tournament_group_name):
 				print(self.username, " #2")
