@@ -110,10 +110,12 @@ class Tournament extends HTMLElement {
 
 	handle_beforeunload = () => {
 		ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
+		window.removeEventListener('beforeunload', this.handle_beforeunload);
 	}
 
 	handle_leave_tournament_button_click= () => {
 		console.log("Leave Tournament button clicked");
+		window.removeEventListener('beforeunload', this.handle_beforeunload);
 		ws.send(JSON.stringify({type: 'leave'})); //action': 'leave_tournament', 'tournament_id': this.tournament_id}));
 	}
 
@@ -131,6 +133,7 @@ class Tournament extends HTMLElement {
 				this.updateTournamentLobby(data);
 			}
 			if (data.type === "redirect_to_tournament_stats") {
+				window.removeEventListener('beforeunload', this.handle_beforeunload);
 				console.log(window.location.origin + '/tournament_stats/' + data.tournament_id + '/');
 				let tournamentStatsUrl = '/tournament_stats/' + data.tournament_id + '/';
 				//history.pushState("", "", tournamentStatsUrl);

@@ -241,6 +241,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			#player left during a match --> loses 
 			if (self.in_game and self.is_playing):
 				print(self.username, " #1")
+				self.in_game = False
 				self.tournament_started = False
 				self.tournament_group_name = False
 				if self.hosts_game:
@@ -269,10 +270,13 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				print(self.username, " #4")
 				#simulate the game as played
 				asyncio.create_task(self.game_loop(self.match.modus))
-				await self.channel_layer.group_send(
-					self.game_group_name,
-					{"type": "end_game_player_left", "player": self.username},
-				)
+				if self.hosts_game:
+					await self.end_game_player_left({"player": self.username})
+				else:
+					await self.channel_layer.group_send(
+						self.game_group_name,
+						{"type": "end_game_player_left", "player": self.username},
+					)
 			#player left the tournament lobby after the tournament started --> loses next game
 			elif (not self.in_game and self.tournament_started):
 				print(self.username, " #5")
@@ -615,7 +619,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				elif opponent.startswith('§'):
 					#print(self.username, ' start both games and leave')
 					await self.register_opponent(opponent[1:], match_id)
-					await self.process_lobby_update_in_consumer({type: 'lobby_update', 'action': 'join', 'match_id': match_id, 'tournament_id': tournament_id, 'username': self.username, 'modus': 'remote'})
+					await self.process_lobby_update_in_consumer({type: 'lobby_update', 'action': 'join', 'match_id': match_id, 'tournament_id': self.tournament_group_name, 'username': self.username, 'modus': 'remote'})
 					self.hosts_game = True
 					# remove § in front of the player name
 					for i in range(len(tournament.players)):
