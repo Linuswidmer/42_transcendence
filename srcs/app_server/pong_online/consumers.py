@@ -213,12 +213,10 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		
 		if self.username:
 			try:
-				print("username in receive: ", self.username)
 				user = await sync_to_async(User.objects.select_related('profile').get)(username=self.username)
 				profile = user.profile
 				profile.logged_in = True
 				await sync_to_async(profile.save)()
-				print("User logged_in ", profile.logged_in)
 			except User.DoesNotExist:
 				pass
 
@@ -253,14 +251,13 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 					)
 			#player left before a match started, that is not a tournament --> leaves game
 			elif (self.in_game and not self.is_playing and not self.tournament_group_name):
-				print(self.username, " #2")
+				print(self.username, " #2", )
 				await self.process_lobby_update_in_consumer({"action": "leave", 'username': self.username, 'modus': self.match.modus})
-				if (self.match and (self.match.modus == 'local' and self.match.modus == 'ai')):
-					return
-				await self.channel_layer.group_send(
-					"lobby",
-					{"type": "group_lobby_update"}
-				)
+				if (self.match and (self.match.modus != 'local' and self.match.modus != 'ai') or not self.match):
+					await self.channel_layer.group_send(
+						"lobby",
+						{"type": "group_lobby_update"}
+					)
 			#player left tournament lobby before tournament started --> leaves tournament
 			elif (not self.in_game and self.tournament_group_name and not self.tournament_started):
 				print(self.username, " #3")
@@ -592,8 +589,14 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			)
 			return None
 
-		tournament_id = event["tournament_id"]
-		tournament = self.lobby.tournaments[tournament_id]
+		if "tournament_id" in event:
+			tournament_id = event["tournament_id"]
+			tournament = self.lobby.tournaments[tournament_id]
+		elif self.tournament_group_name:
+			tournament_id = self.tournament_group_name
+			tournament = self.lobby.tournaments[tournament_id]
+		else:
+			return None
 
 		# print("---------------")
 		# print("in TM update from ", self.username)
@@ -714,6 +717,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	async def game_loop(self, modus):
 		players = self.match.registered_players
 		print("AI LEVEL: ", self.match.ai_level)
+		print("players: ", players, " matchGN: ", self.match.group_name, "match TMID: ", self.match.tournament_id)
 		self.gdc = await sync_to_async(self.create_data_collector)(modus, players[1], players[0], self.match.group_name, self.match.tournament_id)
 		logger.debug("new game loop started")
 		pong_instance = Pong(self.gdc)

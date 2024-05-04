@@ -109,14 +109,14 @@ class Tournament extends HTMLElement {
 	}
 
 	handle_beforeunload = () => {
-		ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
 		window.removeEventListener('beforeunload', this.handle_beforeunload);
+		ws.send(JSON.stringify({'type': 'player_left', 'player': this.username, 'location': 'beforeunload tournament'}));
 	}
 
 	handle_leave_tournament_button_click= () => {
-		console.log("Leave Tournament button clicked");
 		window.removeEventListener('beforeunload', this.handle_beforeunload);
-		ws.send(JSON.stringify({type: 'leave'})); //action': 'leave_tournament', 'tournament_id': this.tournament_id}));
+		console.log("Leave Tournament button clicked");
+		ws.send(JSON.stringify({type: 'leave', 'location': 'leave tmbtn tournament'})); //action': 'leave_tournament', 'tournament_id': this.tournament_id}));
 	}
 
 	handle_message(e) {
@@ -125,6 +125,7 @@ class Tournament extends HTMLElement {
 			console.log("ws.onmessage:", data);
 			if (data.action === "start_tournament_round"){
 				console.log("starting round", data.match_id)
+				window.removeEventListener('beforeunload', this.handle_beforeunload);
 				//window.location.href = window.location.origin + '/lobby/';
 				ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join', 'match_id': data.match_id, 'tournament_id': data.tournament_id, 'username': this.username, 'modus': 'remote'}));
 			}

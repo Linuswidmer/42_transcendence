@@ -124,6 +124,7 @@ class Game extends HTMLElement {
 		this.leave_game_button = document.querySelector('#leaveGame');
 		this.leave_game_button.addEventListener('click',
 		this.handle_leave_game_button_click);
+		window.addEventListener('beforeunload', this.handle_beforeunload);
     }
 
 	norm2height(relativeY) {
@@ -136,7 +137,7 @@ class Game extends HTMLElement {
 
 	handle_beforeunload = () => {
 		console.log("HANDLE BEFORE UNLOAD TRIGGERED")
-		ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
+		ws.send(JSON.stringify({'type': 'player_left', 'player': this.username, 'location': 'beforeunload pong_online'}));
 		this.remove_event_listener();
 	}
 
@@ -173,7 +174,7 @@ class Game extends HTMLElement {
 			if (data.type === 'send_to_group') {
 				switch (data.identifier) {
 					case 'deliver_init_game_data':
-						window.addEventListener('beforeunload', this.handle_beforeunload);	
+						//window.addEventListener('beforeunload', this.handle_beforeunload);	
 						this.handle_game_view_population(data);
 						break;
 					case 'game_end':
@@ -184,11 +185,11 @@ class Game extends HTMLElement {
 						this.draw_entities();
 						break;
 					case 'start_game':
+						this.add_event_listener();
 						console.log('received start game msg from server');
 						break;
 					case 'initial_game_data':
 						this.handle_initial_game_data(data);
-						this.add_event_listener();
 						break;
 					default:
 						console.log('Unknown message', data);

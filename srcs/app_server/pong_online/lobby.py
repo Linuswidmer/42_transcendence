@@ -67,7 +67,8 @@ class Lobby:
 		return True, ""
 
 	def remove_registered_player(self, player):
-		self.registered_players_total.remove(player)
+		if player in self.registered_players_total:
+			self.registered_players_total.remove(player)
 	
 	# rename to join tournament
 	def register_player_tournament(self, username, tournament_id):
