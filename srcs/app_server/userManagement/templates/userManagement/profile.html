@@ -121,18 +121,37 @@
                     </div>
                 </div>
             </div>
-            <div class="d-flex justify-content-center">
-                {% if stats.totalGames != 0 %}
+
+            <div class="chart-titles">
+                <h3>Single Games</h3>
+                <h3>Tournaments</h3>
+              </div>
+            <div class="charts">
                 <div class="chart">
-                    <canvas id="winLossChart"></canvas>
+                    <div class="bar-container">
+                        <div id="winsSingle" class="bar" style="height: 0%; background-color: green;"></div>
+                        <div id="winsSingleDesc" class="description"></div>
+                    <div class="label">Wins</div>
+                  </div>
+                  <div class="bar-container">
+                    <div id="lossesSingle" class="bar" style="height: 0%; background-color: red;"></div>
+                    <div id="lossesSingleDesc" class="description"></div>
+                    <div class="label">Losses</div>
+                  </div>
                 </div>
-                {% endif %}
-                {% if stats.totalTournaments != 0 %}
                 <div class="chart">
-                    <canvas id="winLossChartTournament"></canvas>
+                  <div class="bar-container">
+                    <div id="winsTournament" class="bar" style="height: 0%; background-color: blue;"></div>
+                    <div id="winsTournamentDesc" class="description"></div>
+                    <div class="label">Wins</div>
+                  </div>
+                  <div class="bar-container">
+                      <div id="lossesTournament" class="bar" style="height: 0%; background-color: orange;"></div>
+                      <div id="lossesTournamentDesc" class="description"></div>
+                    <div class="label">Losses</div>
+                  </div>
                 </div>
-                {% endif %}
-            </div>
+              </div>
         </div>
 </div>
 
@@ -323,7 +342,7 @@
 	data-totalWins="{{ stats.totalWins }}"
 	data-totalDefeats="{{ stats.totalDefeats }}"
 	data-wonTournaments="{{ stats.wonTournaments }}"
-	data-totalTournaments="{{ stats.totalTournaments|add:'-wonTournaments' }}"
+	data-totalTournaments="{{ stats.totalTournaments }}"
 	data-localAveragePointsPerGame="{{ stats.gameTypeStats.local.averagePointsPerGame }}"
     data-localBestGameScore="{{ stats.gameTypeStats.local.bestGameScore }}"
     data-localHighestWinningStreak="{{ stats.gameTypeStats.local.highestWinningStreak }}"
