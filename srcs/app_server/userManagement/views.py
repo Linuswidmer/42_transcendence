@@ -1,4 +1,4 @@
-from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
+from django.contrib.auth import login, logout, authenticate, update_session_auth_hash, get_user_model
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User, Group
 from .models import Profile
@@ -12,19 +12,21 @@ from django.template import loader
 from django.contrib.auth.decorators import login_required
 import uuid
 from .StatsBuilder import StatsBuilder, GameListData
-from pong_online.models import UserGameStats, Tournaments
+from pong_online.models import UserGameStats, Tournaments, Games
 import json
-
+import requests
+from django.contrib import messages
+from django.shortcuts import redirect
 
 def dashboard(request):
 	return render(request, "userManagement/dashboard.html")
 
-def index(request, username=None, tournament_id=None):
+def index(request, username=None, tournament_id=None, match_id=None):
 	return render(request, "onepager/index.html")
-	
+
 def	home(request):
 	if request.user.is_authenticated:
-		return render(request, "onepager/logged_in.html", {"username": request.user.username})
+		return render(request, "pong_online/lobby.html", {"username": request.user.username})
 	else:
 		return render(request, "onepager/stranger.html")
 
@@ -186,17 +188,72 @@ def navigation(request):
 	return render(request, 'includes/navigation.html')
 
 @login_required(login_url='/home')
-def single_game_stats(request):
-	matchName = request.GET.get('matchName')
-	username = request.GET.get('username')
-	user = User.objects.get(username=username)
+def single_game_stats(request, match_id):
+	game = Games.objects.get(matchName=match_id)
+	user_game_stat = UserGameStats.objects.filter(game=game).first()
+	user = user_game_stat.user
 	sb = StatsBuilder(user)
 	sb.build()
 	for gld in sb.gameListData:
-		if gld.game.matchName == matchName:
+		if gld.game.matchName == match_id:
 			return render(request, "userManagement/single_game_stats.html", {"gld": gld})
 
-@login_required(login_url='/home')	
+@login_required(login_url='/home')
 def tournament_stats(request, tournament_id):
 	tournament = Tournaments.objects.get(tournament_id=tournament_id)
 	return render(request, "userManagement/tournament_stats.html", {"tm_name": tournament.tournament_id, "tm_data": json.dumps(tournament.data)})
+
+
+def callback(request):
+	User = get_user_model()
+	code = request.GET.get('code')
+	if code:
+		data = {
+			'grant_type': 'authorization_code',
+			'client_id': os.environ.get("OAUTH_CLIENT_ID"),
+			'client_secret': os.environ.get("OAUTH_CLIENT_SECRET"),
+			'code': code,
+			'redirect_uri': os.environ.get("OAUTH_CALLBACK_URL"),
+		}
+		print(data)
+		try:
+			response = requests.post('https://api.intra.42.fr/oauth/token', data=data)
+			response_data = response.json()
+			print(response_data)
+			access_token = response_data['access_token']
+			user_info_response = requests.get('https://api.intra.42.fr/v2/me', headers={'Authorization': f'Bearer {access_token}'})
+			user_info = user_info_response.json()
+			# print(user_info)
+
+			username = user_info['login']
+			email = user_info['email']
+			avatar_url = user_info['image']['link']
+			last_name = user_info['last_name']
+			first_name = user_info['first_name']
+			#password = user_info['login'] + "@secretpw1#"
+			user = User.objects.filter(username=username).first()
+			if user:
+				login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+				user.online = True
+				user.save()
+				return redirect('/')
+			else:
+				# If the user doesn't exist, create a new user and log in
+				user = User.objects.create_user(username=username, email=email, password=None)  # No password required
+				user.first_name = first_name
+				user.last_name = last_name
+				user.avatar_url = avatar_url
+				user.save()
+				login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+				user.online = True
+				user.save()
+				return redirect('/')
+		except requests.exceptions.RequestException as e:
+			print("Request Exception:", e)
+			message = 'Failed to authenticate user. Please try again.'
+			messages.error(request, message)
+			return render(request, "onepage.html")
+	else:
+		message = 'Failed to reach API. Please try again.'
+		messages.error(request, message)
+		return render(request, "onepagr.html")

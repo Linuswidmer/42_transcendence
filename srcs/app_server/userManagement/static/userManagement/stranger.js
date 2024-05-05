@@ -3,14 +3,14 @@ import {router, getCookie} from "./main.js"
 class Stranger extends HTMLElement {
     constructor() {
         super();
-        
+
         this.innerHTML = /*html*/`
 			<div class="button-container">
 				<!-- Content for non-authenticated users -->
 				<button type="button" class="button" id="loginBtn">Login</button>
 				<button type="button" class="button" id="registerBtn">Register</button>
 				<button type="button" class="button" id="guestBtn">Continue as Guest</button>
-				<button type="button" class="button" id="fortyTwoBtn">Sign In with 42</button>
+
 			</div>
 
 			<div id="modalContainer"></div>
@@ -19,7 +19,7 @@ class Stranger extends HTMLElement {
 		let loginBtn = this.querySelector("#loginBtn");
 		let registerBtn = this.querySelector("#registerBtn");
 		let guestBtn = this.querySelector("#guestBtn");
-		let _42Btn = this.querySelector("#fortyTwoBtn");
+		// let _42Btn = doc.querySelector("#fortyTwoBtn");
 
 		this.loginUrl = this.getAttribute("data-loginUrl");
 		this.registerUrl = this.getAttribute("data-registerUrl");
@@ -42,10 +42,10 @@ class Stranger extends HTMLElement {
 			renderForm(this.guestUrl, "guestModal", "Continue as guest");
 		};
 
-		_42Btn.onclick = () => {
-			console.log("42btn");
-			window.location.href=this.remoteAuthUrl;
-		};
+		// _42Btn.onclick = () => {
+		// 	console.log("42btn");
+		// 	window.location.href=this.remoteAuthUrl;
+		// };
 
 
     }
@@ -159,8 +159,8 @@ function renderForm(url, containerId, title) {
 const csrftoken = getCookie('csrftoken');
  // Function to load logged-in content after successful login
 function loadLoggedInContent() {
-	history.pushState("", "", "/");
-	router();
+	//history.pushState("", "", "/");
+	router("/");
 }
 
 function extractErrorMessage(errorMessage) {

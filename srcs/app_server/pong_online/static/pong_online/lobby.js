@@ -60,10 +60,10 @@ class Lobby extends HTMLElement {
     }
 
 	handle_message(e) {
-		console.log('handle message');
+		// console.log('handle message');
 		try {
 			const data = JSON.parse(e.data);
-			console.log("data from server: ", data);
+			// console.log("data from server: ", data);
 			switch (data.type) {
 				case 'lobby_update':
 					this.update_lobby(data);
@@ -78,7 +78,7 @@ class Lobby extends HTMLElement {
 					alert(data.message);
 					break;
 				default:
-					console.log('Unknown message', data);
+					// console.log('Unknown message', data);
 			}
 		} catch (error) {
 				console.log('Error parsing JSON:', error);
@@ -205,7 +205,7 @@ class Lobby extends HTMLElement {
 			'How many players?', // Modal title
 			`<div class="button-popup-container">
 				<!-- Create buttons for different levels -->
-				${[4, 8, 12, 16].map(level => `
+				${[4, 8, 16].map(level => `
 					<button class="levelButton buttonblue btn" data-level="${level}">Size: ${level}</button>
 				`).join('')}
 			</div>`
@@ -351,8 +351,8 @@ class Lobby extends HTMLElement {
 	}
 
 	join_game(modus) {
-		history.pushState("", "", "/pong_online/");
-		router(() => {
+		//history.pushState("", "", "/pong_online/");
+		router("/pong_online/", () => {
 			ws.send(JSON.stringify({type: 'get_game_data'}));
 		});
 		console.log("join game");
@@ -360,8 +360,8 @@ class Lobby extends HTMLElement {
 
 	join_tournament(server_data) {
 		let tournamentGameUrl = '/tournament/' + server_data.tournament_id + '/';
-		history.pushState("", "", tournamentGameUrl);
-		router(() => {
+		//history.pushState("", "", tournamentGameUrl);
+		router(tournamentGameUrl, () => {
 			ws.send(JSON.stringify({type: 'tournament_lobby_update', 'tournament_id': server_data.tournament_id}));
 		});
 		console.log("join tournament");
