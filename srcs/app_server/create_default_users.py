@@ -28,8 +28,8 @@ if not user_exists:
 
 social_app_name = '42'
 social_app_exists = SocialApp.objects.filter(name=social_app_name).exists()
-client_id = os.getenv('CLIENT_ID')
-client_secret = os.getenv('CLIENT_SECRET')
+client_id = os.getenv('OAUTH_CLIENT_ID')
+client_secret = os.getenv('OAUTH_CLIENT_SECRET')
 
 if not social_app_exists:
     site = Site.objects.all()[0]

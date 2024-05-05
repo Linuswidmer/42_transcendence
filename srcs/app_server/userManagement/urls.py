@@ -1,6 +1,6 @@
 from django.urls import path, include
 
-from .views import dashboard, profile_list, profile, register_user, register_guest, update_user, update_profile, change_password, index, stranger, logged_in, navbar, check_login_status, navigation, dynamic_content, single_game_stats, tournament_stats, home, follow
+from .views import dashboard, profile_list, profile, register_user, register_guest, update_user, update_profile, change_password, index, stranger, logged_in, navbar, check_login_status, navigation, dynamic_content, single_game_stats, tournament_stats, home, follow, callback
 
 
 
@@ -14,7 +14,7 @@ urlpatterns = [
 	path("tournament_stats/<str:tournament_id>/", index, name="tournament_stats"),
     path('profile/<str:username>/', index, name='profile'),
     path("profile_list/", index, name="profile_list"),
-
+	path('callback', callback, name='callback'),
 	path("fetch/profile_list/", profile_list, name="fetch_profile_list"),
 	path('fetch/profile/<str:username>/', profile, name='fetch_profile'),
 	path("fetch/singleGameStats/<str:match_id>/", single_game_stats, name="fetch_single_game_stats"),
