@@ -152,7 +152,7 @@ class Lobby:
 		return name
 
 	# rename to create_match
-	def add_match(self, modus) -> bool:
+	def add_match(self, modus):
 		match_name = self.generate_name()
 		self.matches[match_name] = Match(match_id=match_name, modus=modus)
 		return match_name

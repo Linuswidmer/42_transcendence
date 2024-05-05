@@ -49,6 +49,11 @@ class apiConsumer(AsyncWebsocketConsumer):
 		)
 		await self.close()
 
+
+	{type: 'lobby_update', 'action': 'join',
+					'match_id': id, 'username': this.username, 'modus': 'remote'})
+
+
 	async def receive(self, text_data):
 		print("api_text_data: ", text_data)
 		# Split the received text into command and arguments
@@ -71,21 +76,36 @@ class apiConsumer(AsyncWebsocketConsumer):
 				response += json.dumps(self.lobby.get_all_matches())
 
 			elif option == "create" and len(args) == 1:
-				if self.lobby.add_match(args[0]):
-					response += "created match successfully"
+				self.lobby.add_match("remote")
+				response += "created match successfully"
+				await self.channel_layer.group_send(
+					"lobby",
+					{"type": "group_lobby_update"}
+				)
+
+			elif option == "addplayer" and len(args) == 2:
+				matchname = args[0]
+				playername = args[1]
+
+				if self.lobby.get_match(matchname):
+					await self.channel_layer.group_add(matchname, self.channel_name)
+					await self.channel_layer.group_send(
+						matchname,
+						{"type": "process_lobby_update_in_consumer", {'action': 'join',
+					'match_id': id, 'username': this.username, 'modus': 'remote'}}
+					)
+					await self.channel_layer.group_discard(matchname, self.channel_name)
+	 			else:
+					response += option + ": match does not exist"
+					
+				success, message = self.lobby.register_player_match(args[1], args[0])
+				if success:
+					response += "added player successfully"
 					await self.channel_layer.group_send(
 						"lobby",
 						{"type": "group_lobby_update"}
 					)
 				else:
-					response += option + ": match name already exists"
-
-			elif option == "addplayer" and len(args) == 2:
-				success, message = self.lobby.register_player_match(args[1], args[0])
-				if success:
-					response += "added player successfully"
-				else:
-					response += option + ": " + message
 
 			elif option == "listen" and len(args) == 1:
 				if await self.listen_to_match(args[0]):
@@ -146,6 +166,8 @@ class apiConsumer(AsyncWebsocketConsumer):
 	async def group_lobby_update(self, event):
 		pass
 
+	async def process_lobby_update_in_consumer(self, json_from_client):
+		pass
 
 class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#global class variable to try some things without the db
@@ -479,7 +501,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				self.hosts_game = False
 				await self.send(text_data=json.dumps({"type": "leave_tournament", "tournament_id": tournament_id}))
 				await self.channel_layer.group_discard(
-    				tournament_id, self.channel_name
+					tournament_id, self.channel_name
 				)
 				json_from_client["type"] = "group_lobby_update"
 				await self.channel_layer.group_send(
