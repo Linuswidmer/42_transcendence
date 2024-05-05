@@ -13,6 +13,8 @@ from .GameDataCollector import GameDataCollector
 from django.contrib.auth.models import User
 import asyncio
 from asgiref.sync import sync_to_async
+from channels.db import database_sync_to_async
+from django.contrib.auth import authenticate
 
 logger = logging.getLogger("__name__")
 logging.basicConfig(level=logging.INFO)
@@ -26,6 +28,7 @@ from pong_online.lobby import Lobby
 from enum import Enum
 
 
+
 class apiConsumer(AsyncWebsocketConsumer):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -33,19 +36,124 @@ class apiConsumer(AsyncWebsocketConsumer):
 		self.lobby = Lobby()
 		self.listen_group_name = None
 		self.listen_match = None
+		self.authenticated = False
+		self.last_sent_time = 0
+		self.interval = 3
 
 	async def connect(self):
 		await self.accept()
 
+		await self.channel_layer.group_add("lobby", self.channel_name)
+
 		await self.send(
 			text_data=json.dumps({"type": "connect", "api_id": self.id})
 		)
+
+		await self.send("You must authenticate before issuing commands.")
 
 	async def disconnect(self, close_code):
 		await self.send(
 			text_data=json.dumps({"type": "disconnect", "api_id": self.id, "reason": close_code})
 		)
 		await self.close()
+
+	@database_sync_to_async
+	def verify_user(self, username, password):
+		user = authenticate(username=username, password=password)
+		return user is not None
+
+
+	async def handle_match(self, option, args):
+		response = "match" + ": "
+		if not option:
+			response += "no option provided"
+
+		elif option == "list":
+			response += json.dumps(self.lobby.get_all_matches())
+
+		elif option == "create":
+			self.lobby.add_match("remote")
+			response += "created match successfully"
+			await self.channel_layer.group_send(
+				"lobby",
+				{"type": "group_lobby_update"}
+			)
+
+		elif option == "delete" and len(args) == 1:
+			delete_candidate = self.lobby.get_match(args[0])
+			if not (delete_candidate):
+				response += "not deleted: match does not exist"
+			else:
+				if (len(delete_candidate.get_registered_players()) != 0):
+					response += "cannot delete, players are already registered"
+				else:
+					self.lobby.delete_match(delete_candidate)
+					response += "deleted match"
+					await self.channel_layer.group_send(
+						"lobby",
+						{"type": "group_lobby_update"}
+					)
+
+		elif option == "addplayer" and len(args) == 2:
+			matchname = args[0]
+			playername = args[1]
+
+			if self.lobby.get_match(matchname):
+				await self.channel_layer.group_send(
+					"lobby",
+					{"type": "process_api", "action": "addplayer", "username": playername, "matchname": matchname}
+				)
+				response += "added " + args[1] + " to match " + args[0]
+			else:
+				response += option + ": match does not exist"
+			
+			await self.channel_layer.group_send(
+				"lobby",
+				{"type": "group_lobby_update"}
+			)
+		else:
+			response += option + ": not a valid option"
+		return response
+
+	async def handle_exit(self, option, args):
+		await self.disconnect("user closed connection")
+		return
+
+	async def handle_listen(self, option, args):
+		if not option:
+			response = "no option provided"
+		elif await self.listen_to_match(option):
+			response = "listen succesful"
+		else:
+			response = option + ": not a valid option"
+		return response
+
+	async def handle_help(self, option, args):
+		help_text = """
+		Here are the available commands and options:
+
+		match:
+			- list: Lists all matches.
+			- create: Creates a new match.
+			- delete [matchname]: Deletes the match with the given name. The match must not have any registered players.
+			- addplayer [matchname] [playername]: Adds the player with the given name to the match with the given name.
+
+		exit: Closes the connection.
+
+		listen:
+			- [matchname]: Starts listening to the match with the given name.
+			- stop: stops listening to the match with the given name.
+
+		help: lists available commands.
+		"""
+		return help_text
+
+	COMMANDS = {
+		'match': handle_match,
+		'exit': handle_exit,
+		'listen': handle_listen,
+		'help': handle_help,
+	}
 
 	async def receive(self, text_data):
 		print("api_text_data: ", text_data)
@@ -59,51 +167,54 @@ class apiConsumer(AsyncWebsocketConsumer):
 		command = tokens.pop(0)
 		option = tokens.pop(0) if tokens else None
 		args = tokens
+		response = None
 
-		response = command + ": "
-		if command == "match":
-			if not option:
-				response += "no option provided"
-
-			elif option == "list":
-				response += json.dumps(self.lobby.get_all_matches())
-
-			elif option == "create" and len(args) == 1:
-				if self.lobby.add_match(args[0]):
-					response += "created match successfully"
-				else:
-					response += option + ": match name already exists"
-
-			elif option == "addplayer" and len(args) == 2:
-				success, message, match = self.lobby.register_player_match(args[1], args[0])
-				if success:
-					response += "added player successfully"
-				else:
-					response += option + ": " + message
-
-			elif option == "listen" and len(args) == 1:
-				if await self.listen_to_match(args[0]):
-					return
-				else:
-					response += option + ": valid arguments are a valid match ID or stop"
+		if not self.authenticated:
+			is_valid = await self.verify_user("admin", command)
+			if is_valid:
+				await self.send("authentication succesful: enjoy this incredibly useful api")
+				self.authenticated = True
+				response = await self.handle_help(None, None)
+				await self.send(response)
 			else:
-				response += option + ": not a valid option"
-
-		elif command == "exit":
-			await self.disconnect("user closed connection")
+				await self.send("wrong password, try again")
 			return
-		
-		elif command == "listen":
-			if await self.listen_to_match(option):
-				return
-			else:
-				response += option + ": not a valid option"
 
+		handler = self.COMMANDS.get(command)
+		if handler is not None:
+			response = await handler(self, option, args)
 		else:
-			response += "invalid command"
+			await self.send("Invalid command.")
 
-		await self.send(response)
+		if response:
+			await self.send(response)
 	
+	async def process_api(self, event):
+		pass
+	
+	async def set_is_playing(self, event):
+		pass
+
+	async def send_to_group(self, event):
+		current_time = time.time()
+		if current_time - self.last_sent_time < self.interval:
+			# It hasn't been long enough since the last message was sent.
+			return
+
+		identifier = event.get("identifier", "")
+		if identifier == "game_update":
+			extracted_data = event["entity_data"]
+			if event["entity_data"]["game_over"]:
+				response = "Game over: " + str(extracted_data)
+			else:
+				response = extracted_data
+			await self.send(
+				text_data=json.dumps(response)
+			)
+		
+		self.last_sent_time = current_time
+
+
 	async def listen_to_match(self, option):
 		if option == "stop":
 			print("Listen stop")
@@ -124,19 +235,24 @@ class apiConsumer(AsyncWebsocketConsumer):
 		self.listen_group_name = None
 		self.listen_match = None
 
-	async def group_game_state_update(self, event):
-		# print("game_state:", " leon:", event["entity_data"]["leon"]["relativeY"], " local_opponent:", event["entity_data"]["local_opponent"]["relativeY"])
-		extracted_data = {name: event["entity_data"][name] for name in self.listen_match.get_registered_players()}
-		if event["entity_data"]["game_over"]:
-			response = "Game over: " + str(extracted_data)
-		else:
-			response = extracted_data
+	# async def group_game_state_update(self, event):
+	# 	# print("game_state:", " leon:", event["entity_data"]["leon"]["relativeY"], " local_opponent:", event["entity_data"]["local_opponent"]["relativeY"])
+	# 	# extracted_data = {name: event["entity_data"][name] for name in self.listen_match.get_registered_players()}
+	# 	# if event["entity_data"]["game_over"]:
+	# 	# 	response = "Game over: " + str(extracted_data)
+	# 	# else:
+	# 	# 	response = extracted_data
 
-		# await asyncio.sleep(3)
-		await self.send(
-			text_data=json.dumps(response)
-		)
+	# 	# await asyncio.sleep(3)
+	# 	await self.send(
+	# 		text_data=json.dumps(event)
+	# 	)
 
+	async def group_lobby_update(self, event):
+		pass
+
+	async def process_lobby_update_in_consumer(self, json_from_client):
+		pass
 
 class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#global class variable to try some things without the db
@@ -365,6 +481,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 	#register: put consumer in group (match_id as group_name) -> thats were game updates will be published to
 	async def process_lobby_update_in_consumer(self, json_from_client):
+		print("json from client process lobby update:", json_from_client)
 		action = json_from_client.get("action", "")
 		match_id = json_from_client.get("match_id", "")
 		tournament_id = json_from_client.get("tournament_id", None)
@@ -470,7 +587,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				self.hosts_game = False
 				await self.send(text_data=json.dumps({"type": "leave_tournament", "tournament_id": tournament_id}))
 				await self.channel_layer.group_discard(
-    				tournament_id, self.channel_name
+					tournament_id, self.channel_name
 				)
 				json_from_client["type"] = "group_lobby_update"
 				await self.channel_layer.group_send(
@@ -532,6 +649,13 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			self.hosts_game = True
 		await self.send(text_data=json.dumps({"type": "join", "modus": "remote"}))
 
+	async def process_api(self, event):
+		if (event["username"] != self.username):
+			return
+		if (event["action"] == "addplayer"):
+				print("JOIN PROCESS API")
+				await self.receive(json.dumps({"type": 'lobby_update', 'action': 'join',
+					'match_id': event["matchname"], 'username': self.username, 'modus': 'remote'}))
 
 	async def group_lobby_update(self, event):
 		basic_update = {"type": "lobby_update"}
