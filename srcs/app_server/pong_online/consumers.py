@@ -37,6 +37,8 @@ class apiConsumer(AsyncWebsocketConsumer):
 	async def connect(self):
 		await self.accept()
 
+		await self.channel_layer.group_add("lobby", self.channel_name)
+
 		await self.send(
 			text_data=json.dumps({"type": "connect", "api_id": self.id})
 		)
@@ -71,11 +73,15 @@ class apiConsumer(AsyncWebsocketConsumer):
 			elif option == "create" and len(args) == 1:
 				if self.lobby.add_match(args[0]):
 					response += "created match successfully"
+					await self.channel_layer.group_send(
+						"lobby",
+						{"type": "group_lobby_update"}
+					)
 				else:
 					response += option + ": match name already exists"
 
 			elif option == "addplayer" and len(args) == 2:
-				success, message, match = self.lobby.register_player_match(args[1], args[0])
+				success, message = self.lobby.register_player_match(args[1], args[0])
 				if success:
 					response += "added player successfully"
 				else:
@@ -136,6 +142,9 @@ class apiConsumer(AsyncWebsocketConsumer):
 		await self.send(
 			text_data=json.dumps(response)
 		)
+
+	async def group_lobby_update(self, event):
+		pass
 
 
 class MultiplayerConsumer(AsyncWebsocketConsumer):
