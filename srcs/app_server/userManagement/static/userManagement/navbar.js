@@ -4,15 +4,15 @@ class Navbar extends HTMLElement {
     constructor() {
         super();
 		this.username = this.getAttribute('data-username');
-		console.log("username please:", this.username);
+		//console.log("username please:", this.username);
 
-		console.log('WS STATE: ', ws.readyState);
+		//console.log('WS STATE: ', ws.readyState);
 		if (ws.readyState == WebSocket.OPEN){
-			console.log('WS was already open in navbar')
+			//console.log('WS was already open in navbar')
 			ws.send(JSON.stringify({type: 'test'}));
 		}else {
 			ws.onopen = function(event) {
-				console.log('WS open in navbar after waiting')
+				//console.log('WS open in navbar after waiting')
 				ws.send(JSON.stringify({type: 'test'}));
 			}
 		}
@@ -34,18 +34,18 @@ class Navbar extends HTMLElement {
 
         // State
 		logoBtn.onclick = () => {
-			console.log("logo button on navbar tag clicked");
+			//console.log("logo button on navbar tag clicked");
         };
         lobbyBtn.onclick = () => {
-			console.log("lobby button on navbar tag clicked");
+			//console.log("lobby button on navbar tag clicked");
         };
 
 		profileBtn.onclick = () => {
-			console.log("profile button on navbar tag clicked");
+			//console.log("profile button on navbar tag clicked");
         };
 
 		logoutBtn.onclick = () => {
-			console.log("logout button on navbar tag clicked");
+			//console.log("logout button on navbar tag clicked");
         };
     }
 }

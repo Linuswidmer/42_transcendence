@@ -28,22 +28,22 @@ class Stranger extends HTMLElement {
 
 		// State
 		loginBtn.onclick = () => {
-			console.log("loginbtn");
+			//console.log("loginbtn");
 			renderForm(this.loginUrl, "loginModal", "Login");
 		};
 
 		registerBtn.onclick = () => {
-			console.log("registerbtn");
+			//console.log("registerbtn");
 			renderForm(this.registerUrl, "registerModal", "Register");
 		};
 
 		guestBtn.onclick = () => {
-			console.log("guestbtn");
+			//console.log("guestbtn");
 			renderForm(this.guestUrl, "guestModal", "Continue as guest");
 		};
 
 		// _42Btn.onclick = () => {
-		// 	console.log("42btn");
+		// 	//console.log("42btn");
 		// 	window.location.href=this.remoteAuthUrl;
 		// };
 
@@ -54,7 +54,7 @@ class Stranger extends HTMLElement {
 customElements.define("pong-stranger", Stranger);
 
 function renderForm(url, containerId, title) {
-    console.log("triggered")
+    //console.log("triggered")
 	fetch(url, {
 		// Include CSRF token in the headers if includeCSRF is true
 		headers: {
@@ -113,7 +113,7 @@ function renderForm(url, containerId, title) {
                     // Create FormData object using the form element
                     const formData = new FormData(form);
                     // Send POST request to register user
-                    console.log(url)
+                    //console.log(url)
                     fetch(url, {
                         method: "POST",
                         body: formData,
@@ -123,7 +123,7 @@ function renderForm(url, containerId, title) {
                         }
                     })
                     .then(response => {
-                        console.log(response);
+                        //console.log(response);
                         if (!response.url.includes(url)) {
                             const modal = document.getElementById(`${containerId}Modal`);
                             modal.classList.remove('show');

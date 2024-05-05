@@ -13,7 +13,7 @@ user_exists = User.objects.filter(username=username).exists()
 if not user_exists:
     User.objects.create_user(username=username, password=make_password(''))
 
-username = 'DUMP_LOCAL'
+username = 'Local'
 user_exists = User.objects.filter(username=username).exists()
 
 if not user_exists:

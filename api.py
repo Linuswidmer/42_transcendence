@@ -20,13 +20,13 @@ async def receive_message(websocket):
 
 			response = await websocket.recv()
 
-			print(f"Response from server: {response}")
+			#print(f"Response from server: {response}")
 
 			# await asyncio.sleep(2)
 
 		except ConnectionClosedOK:
 
-			print("Connection closed by the server.")
+			#print("Connection closed by the server.")
 
 			break
 
@@ -44,7 +44,7 @@ async def send_message(uri):
 
 	# csrf_token = get_csrf_token("127.0.0.1:8443", "/home/")
 
-	# print("csrf:", csrf_token)
+	#print("csrf:", csrf_token)
 
 	# headers = {
 
@@ -78,7 +78,7 @@ async def send_message(uri):
 
 if len(sys.argv) != 2:
 
-	print(f"Usage: {sys.argv[0]} <websocket-url>")
+	#print(f"Usage: {sys.argv[0]} <websocket-url>")
 
 else:
 

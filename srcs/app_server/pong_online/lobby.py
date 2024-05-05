@@ -162,7 +162,7 @@ class Lobby:
 
 	async def add_tournament(self, username, size) -> bool:
 		tournament_id = self.generate_name()
-		print('Create Tournamnet, generated name: ', tournament_id)
+		#print('Create Tournamnet, generated name: ', tournament_id)
 		self.tournaments[tournament_id] = Tournament(tournament_id, size, self)
 		self.tournaments[tournament_id].django_tournament = await sync_to_async(self.create_django_tournament)(tournament_id)
 		self.tournaments[tournament_id].players.append(username)

@@ -5,17 +5,17 @@ class Lobby extends HTMLElement {
         super();
 
 		this.username = this.getAttribute('data-username');
-		console.log("username lobby:", this.username);
+		//console.log("username lobby:", this.username);
 
-		console.log('WS STATE: ', ws.readyState);
+		//console.log('WS STATE: ', ws.readyState);
 		if (ws.readyState == WebSocket.OPEN){
-			console.log('WS was already open: send username to consumer: ', this.username);
+			//console.log('WS was already open: send username to consumer: ', this.username);
 			ws.send(JSON.stringify({type: 'username', 'username': this.username}));
 			ws.send(JSON.stringify({type: 'lobby_update', 'action': 'display'}));
 		}else {
 			var username = this.username; //this is necessary because i cannot use this in the onopen callback
 			ws.onopen = function(event) {
-				console.log('Waited for ws to open: send username to consumer after waiting: ', username);
+				//console.log('Waited for ws to open: send username to consumer after waiting: ', username);
 				ws.send(JSON.stringify({type: 'username', 'username': username}));
 				ws.send(JSON.stringify({type: 'lobby_update', 'action': 'display'}));
 			}
@@ -60,10 +60,10 @@ class Lobby extends HTMLElement {
     }
 
 	handle_message(e) {
-		// console.log('handle message');
+		//console.log('handle message');
 		try {
 			const data = JSON.parse(e.data);
-			// console.log("data from server: ", data);
+			//console.log("data from server: ", data);
 			switch (data.type) {
 				case 'lobby_update':
 					this.update_lobby(data);
@@ -78,21 +78,21 @@ class Lobby extends HTMLElement {
 					alert(data.message);
 					break;
 				default:
-					// console.log('Unknown message', data);
+					//console.log('Unknown message', data);
 			}
 		} catch (error) {
-				console.log('Error parsing JSON:', error);
+				//console.log('Error parsing JSON:', error);
 		}
 	}
 
 	handle_create_game_button_click = () => {
-		console.log("Create game button clicked");
+		//console.log("Create game button clicked");
 		ws.send(JSON.stringify({type: 'lobby_update', 'action': 'create',
 		'username': this.username, 'modus': 'remote'}));
 	}
 	
 	// handle_create_tournament_button_click = () => {
-	// 	console.log("Create tournament button clicked");
+	// 	//console.log("Create tournament button clicked");
 	
 	// 	// Create a modal container
 	// 	var modal = document.createElement('div');
@@ -122,7 +122,7 @@ class Lobby extends HTMLElement {
 	// 		levelButton.addEventListener('click', function() {
 	// 			// Action to perform when a level button is clicked
 	// 			var selectedSize = this.value;
-	// 			console.log("TM Size: " + selectedSize + " selected");
+	// 			//console.log("TM Size: " + selectedSize + " selected");
 	// 			// Here, you can send the selected level to the server or perform any other action
 	// 			// For example, you can send it via websockets
 	// 			ws.send(JSON.stringify({type: 'lobby_update', 'action': 'create_tournament', 'username': this.username, 'tm_size': selectedSize}));
@@ -140,7 +140,7 @@ class Lobby extends HTMLElement {
 	// 	document.body.appendChild(modal);
 	// }
 	handle_create_tournament_button_click = () => {
-		console.log("Create tournament button clicked");
+		//console.log("Create tournament button clicked");
 	
 		// Function to create modal HTML dynamically
 		const createModal = (containerId, title, html) => {
@@ -185,7 +185,7 @@ class Lobby extends HTMLElement {
 		 modal.querySelectorAll('.levelButton').forEach(button => {
             button.addEventListener('click', function() {
                 const selectedSize = this.getAttribute('data-level');
-                console.log("TM Size: " + selectedSize + " selected");
+                //console.log("TM Size: " + selectedSize + " selected");
                 // Send selected size to the server via WebSockets
                 ws.send(JSON.stringify({
                     type: 'lobby_update',
@@ -214,13 +214,13 @@ class Lobby extends HTMLElement {
 	
 	
 	handle_play_local_button_click = () => {
-		console.log("Local game button clicked");
+		//console.log("Local game button clicked");
 		ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join', 
 		'username': this.username, 'modus': 'local'}))
 	}
 	
 	handle_play_ai_button_click = () => {
-		console.log("Play AI button clicked");
+		//console.log("Play AI button clicked");
 	
 		// Function to create modal HTML dynamically
 		const createModal = (containerId, title, html) => {
@@ -265,7 +265,7 @@ class Lobby extends HTMLElement {
 			modal.querySelectorAll('.levelButton').forEach(button => {
 				button.addEventListener('click', function() {
 					const selectedLevel = this.getAttribute('data-level');
-					console.log("AI Difficulty Level " + selectedLevel + " selected");
+					//console.log("AI Difficulty Level " + selectedLevel + " selected");
 					// Send selected AI difficulty level to the server via WebSockets
 					ws.send(JSON.stringify({
 						type: 'lobby_update',
@@ -297,7 +297,7 @@ class Lobby extends HTMLElement {
 	update_lobby(data) {
 		let matches_info = data.matches_info;
 		let tournaments_info = data.tournaments_info;
-		console.log("lobby_update tm-info: ", tournaments_info);
+		//console.log("lobby_update tm-info: ", tournaments_info);
 		
 		//clear remote_game_list div
 		this.remote_game_list_DIV.innerHTML = '';
@@ -319,7 +319,7 @@ class Lobby extends HTMLElement {
 				
 				let joinButton = matchElement.querySelector('.join');
 				joinButton.addEventListener('click', () => {
-					console.log("Join button clicked for match id: ", id);
+					//console.log("Join button clicked for match id: ", id);
 					ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join',
 					'match_id': id, 'username': this.username, 'modus': 'remote'}));
 				});
@@ -342,7 +342,7 @@ class Lobby extends HTMLElement {
 				
 				let joinButton = tournamentElement.querySelector('.join');
 				joinButton.addEventListener('click', () => {
-					console.log("Join button clicked for tournament id: ", id);
+					//console.log("Join button clicked for tournament id: ", id);
 					ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join_tournament',
 					'tournament_id': id, 'username': this.username}));
 				});
@@ -355,7 +355,7 @@ class Lobby extends HTMLElement {
 		router("/pong_online/", () => {
 			ws.send(JSON.stringify({type: 'get_game_data'}));
 		});
-		console.log("join game");
+		//console.log("join game");
 	}
 
 	join_tournament(server_data) {
@@ -364,7 +364,7 @@ class Lobby extends HTMLElement {
 		router(tournamentGameUrl, () => {
 			ws.send(JSON.stringify({type: 'tournament_lobby_update', 'tournament_id': server_data.tournament_id}));
 		});
-		console.log("join tournament");
+		//console.log("join tournament");
 	}
 
 	

@@ -3,7 +3,7 @@ import { getCookie, router } from "./main.js";
 class Profile extends HTMLElement {
     constructor() {
         super();
-		console.log("constructor profile custom element");
+		//console.log("constructor profile custom element");
 
 		let username = this.getAttribute('data-username');
 		let allProfilesUrl = this.getAttribute('data-allProfilesUrl');
@@ -15,8 +15,8 @@ class Profile extends HTMLElement {
 		let allProfilesBtn = document.getElementById("allProfilesBtn");
 		if (allProfilesBtn) {
 			allProfilesBtn.addEventListener("click", function() {
-				console.log("allProfilesBtn");
-				console.log("all profiles Url:", allProfilesUrl);
+				//console.log("allProfilesBtn");
+				//console.log("all profiles Url:", allProfilesUrl);
 				//history.pushState("", "", allProfilesUrl);
 				router(allProfilesUrl);
 			});
@@ -25,7 +25,7 @@ class Profile extends HTMLElement {
 		let profilePictureBtn = document.getElementById("profilePictureBtn");
 		if (profilePictureBtn) {
 			profilePictureBtn.addEventListener("click", function() {
-				console.log("profilePictureBtn");
+				//console.log("profilePictureBtn");
 				renderForm(updateProfileUrl, "profilePicture", "Change Profile Picture");
 			});
 		}
@@ -33,7 +33,7 @@ class Profile extends HTMLElement {
 		let updateProfileBtn = document.getElementById("updateProfileBtn");
 		if (updateProfileBtn) {
 			updateProfileBtn.addEventListener("click", function() {
-				console.log("updateProfileBtn");
+				//console.log("updateProfileBtn");
 				renderForm(updateUserUrl, "updateProfile", "Update Profile Info");
 			});
 		}
@@ -41,13 +41,13 @@ class Profile extends HTMLElement {
 		let passwordBtn = document.getElementById("passwordBtn");
 		if (passwordBtn) {
 			passwordBtn.addEventListener("click", function() {
-				console.log("passwordBtn");
+				//console.log("passwordBtn");
 				renderForm(changePasswordUrl, "password", "Change Password");
 			});
 		}
 
 		function renderForm(url, containerId, title) {
-		console.log("triggered")
+		//console.log("triggered")
 			fetch(url, {
 			// Include CSRF token in the headers if includeCSRF is true
 			headers: {
@@ -105,7 +105,7 @@ class Profile extends HTMLElement {
 						// Create FormData object using the form element
 						const formData = new FormData(form);
 						// Send POST request to register user
-						console.log(url)
+						//console.log(url)
 						fetch(url, {
 							method: "POST",
 							body: formData,
@@ -116,7 +116,7 @@ class Profile extends HTMLElement {
 							}
 						})
 						.then(response => {
-							console.log(response);
+							//console.log(response);
 							if (!response.url.includes(url)) {
 								const modal = document.getElementById(`${containerId}Modal`);
 								modal.classList.remove('show');
@@ -124,7 +124,7 @@ class Profile extends HTMLElement {
 								if (containerId == 'profilePicture' || containerId == 'updateProfile' || containerId == 'password'){
 									if (containerId == 'updateProfile') {
 										username = formData.get('username');
-										console.log("new username: ", username)
+										//console.log("new username: ", username)
 									}
 									reloadProfilePage(username);
 								}
@@ -157,7 +157,7 @@ class Profile extends HTMLElement {
 	
 	
 	function reloadProfilePage(username) {
-	  		console.log("reloading profile page")
+	  		//console.log("reloading profile page")
 			//history.pushState("", "", "/profile/" + username);
 			router("/profile/" + username);
 		}
@@ -194,13 +194,13 @@ class Profile extends HTMLElement {
         document.getElementById('winsSingle').style.height = (totalWinsSingle / totalGamesSingle * 100) + '%';
         document.getElementById('lossesSingle').style.height = (totalLossesSingle / totalGamesSingle * 100) + '%';
 
-        console.log(this.getAttribute('data-totalTournaments'));
+        //console.log(this.getAttribute('data-totalTournaments'));
 
         var totalWinsTournament = parseInt(this.getAttribute('data-wonTournaments'));
         var totalLossesTournament = this.getAttribute('data-totalTournaments') - totalWinsTournament;
         
-        console.log("totalWinsTournament: ", totalWinsTournament);
-        console.log("totalLossesTournament: ", totalLossesTournament);
+        //console.log("totalWinsTournament: ", totalWinsTournament);
+        //console.log("totalLossesTournament: ", totalLossesTournament);
 
         var totalGamesTournament = totalWinsTournament + totalLossesTournament;
         document.getElementById('winsTournamentDesc').innerHTML = totalWinsTournament;
@@ -242,23 +242,23 @@ class Profile extends HTMLElement {
 		setTableData(localAveragePointsPerGame, localBestGameScore, localHighestWinningStreak, localLongestBallRally);
 	
 		document.getElementById('localGamesButton').addEventListener('click', function() {
-			console.log("localGames");
+			//console.log("localGames");
 			setTableData(localAveragePointsPerGame, localBestGameScore, localHighestWinningStreak, localLongestBallRally);
 		});
 	
 		document.getElementById('remoteGamesButton').addEventListener('click', function() {
-			console.log("remoteGames");
+			//console.log("remoteGames");
 			setTableData(remoteAveragePointsPerGame, remoteBestGameScore, remoteHighestWinningStreak, remoteLongestBallRally);
 		});
 	
 		document.getElementById('aiGamesButton').addEventListener('click', function() {
-			console.log("aiGames");
+			//console.log("aiGames");
 			setTableData(aiAveragePointsPerGame, aiBestGameScore, aiHighestWinningStreak, aiLongestBallRally);
 		});
 
         document.getElementById("expand-btn").addEventListener("click", function() {
             var hiddenRows = document.querySelectorAll(".hideSingleGame");
-            console.log("hiddenRows: ", hiddenRows);
+            //console.log("hiddenRows: ", hiddenRows);
             hiddenRows.forEach(function(row) {
                 row.style.display = "table-row";
             });
