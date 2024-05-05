@@ -105,7 +105,7 @@ class Game extends HTMLElement {
 				<canvas id="pongCanvas" width="600" height="400"></canvas>
 			</div>
 			<button class="btn buttonblue" id="startGameButton">Start</button>
-			<button class="btn buttonblue" id="leaveGame">leaveGame_backToLobby</button>
+			<button class="btn buttonblue" id="leaveGame">Leave Game</button>
 		</div>
 	`;
 
