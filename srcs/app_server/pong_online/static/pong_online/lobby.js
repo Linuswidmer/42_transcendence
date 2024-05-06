@@ -25,8 +25,8 @@ class Lobby extends HTMLElement {
 			<div>
 				<button class="btn buttonblue" id="create_game">Create remote game</button>
 				<button class="btn buttonblue" id="create_tournament">Create tournament</button>
-				<button class="btn buttonblue" id="play_ai">Play against Ai</button>
-				<button class="btn buttonblue" id="play_local">Play local</button>
+				<button class="btn buttonblue" id="play_ai">Play against AI</button>
+				<button class="btn buttonblue" id="play_local">Play against local opponent</button>
 			</div>
 			
 			<div id="remote_game_list"></div>

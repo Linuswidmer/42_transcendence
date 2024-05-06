@@ -20,16 +20,15 @@ async def receive_message(websocket):
 
 			response = await websocket.recv()
 
-			#print(f"Response from server: {response}")
+			print(f"Response from server: {response}")
 
-			# await asyncio.sleep(2)
+			#await asyncio.sleep(2)
 
 		except ConnectionClosedOK:
 
-			#print("Connection closed by the server.")
+			print("Connection closed by the server.")
 
 			break
-
 
 
 async def send_message(uri):
@@ -56,7 +55,7 @@ async def send_message(uri):
 
 
 
-	async with websockets.connect(uri) as websocket:
+	async with websockets.connect(uri, ssl=ssl_context) as websocket:
 
 		asyncio.create_task(receive_message(websocket))
 
@@ -72,13 +71,10 @@ async def send_message(uri):
 
 				break
 
-			
-
-
 
 if len(sys.argv) != 2:
 
-	#print(f"Usage: {sys.argv[0]} <websocket-url>")
+	print(f"Usage: {sys.argv[0]} <websocket-url>")
 
 else:
 
