@@ -38,18 +38,12 @@ class apiConsumer(AsyncWebsocketConsumer):
 		self.listen_match = None
 		self.authenticated = False
 		self.last_sent_time = 0
-		self.interval = 3
+		self.interval = 0.5
 
 	async def connect(self):
 		await self.accept()
 
 		await self.channel_layer.group_add("lobby", self.channel_name)
-
-		await self.send(
-			text_data=json.dumps({"type": "connect", "api_id": self.id})
-		)
-
-		await self.send("You must authenticate before issuing commands.")
 
 	async def disconnect(self, close_code):
 		await self.send(
@@ -98,12 +92,17 @@ class apiConsumer(AsyncWebsocketConsumer):
 			matchname = args[0]
 			playername = args[1]
 
-			if self.lobby.get_match(matchname):
+			match_candidate = self.lobby.get_match(matchname)
+			if match_candidate:
 				await self.channel_layer.group_send(
 					"lobby",
 					{"type": "process_api", "action": "addplayer", "username": playername, "matchname": matchname}
 				)
-				response += "added " + args[1] + " to match " + args[0]
+				await asyncio.sleep(1)
+				if playername in match_candidate.get_registered_players():
+					response += "added " + args[1] + " to match " + args[0]
+				else:
+					response += "player doesnt exist or cannot be added"
 			else:
 				response += option + ": match does not exist"
 			
@@ -123,7 +122,7 @@ class apiConsumer(AsyncWebsocketConsumer):
 		if not option:
 			response = "no option provided"
 		elif await self.listen_to_match(option):
-			response = "listen succesful"
+			response = "listen " + option + " successful"
 		else:
 			response = option + ": not a valid option"
 		return response
@@ -172,7 +171,7 @@ class apiConsumer(AsyncWebsocketConsumer):
 		if not self.authenticated:
 			is_valid = await self.verify_user("admin", command)
 			if is_valid:
-				await self.send("authentication succesful: enjoy this incredibly useful api")
+				await self.send("Authentication successful")
 				self.authenticated = True
 				response = await self.handle_help(None, None)
 				await self.send(response)
@@ -196,21 +195,24 @@ class apiConsumer(AsyncWebsocketConsumer):
 		pass
 
 	async def send_to_group(self, event):
+		identifier = event.get("identifier", "")
+		if identifier != "game_update":
+			return
+		
 		current_time = time.time()
-		if current_time - self.last_sent_time < self.interval:
+		if current_time - self.last_sent_time < self.interval and event["entity_data"]["game_over"] == False:
 			# It hasn't been long enough since the last message was sent.
 			return
 
-		identifier = event.get("identifier", "")
-		if identifier == "game_update":
-			extracted_data = event["entity_data"]
-			if event["entity_data"]["game_over"]:
-				response = "Game over: " + str(extracted_data)
-			else:
-				response = extracted_data
-			await self.send(
-				text_data=json.dumps(response)
-			)
+		
+		extracted_data = event["entity_data"]
+		if event["entity_data"]["game_over"]:
+			response = "Game over: " + str(extracted_data)
+		else:
+			response = extracted_data
+		await self.send(
+			text_data=json.dumps(response)
+		)
 		
 		self.last_sent_time = current_time
 
