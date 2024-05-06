@@ -18,11 +18,15 @@ class Navbar extends HTMLElement {
 		}
 
         this.innerHTML = /*html*/`
-			<div id="navbar">
-			<div class="navbar navbar-light" style="background-color: #6a0dad;">
+
+		<div id="navbar">
+    	<div class="navbar-content">
+        	<h1 id="ingrid">${this.username}</h1>
+        	<div class="navbar-button"  style="background-color: #6a0dad;">
 				<a href="/lobby/" class="navbar-button" id="lobbyBtn" data-link>Lobby</a>
 				<a href="/profile/${this.username}" class="navbar-button" id="profileBtn" data-link>Profile</a>
 				<a href="/" class="navbar-button" id="logoutBtn" data-logout>Logout</a>
+			</div>
 			</div>
 		</div>
         `;

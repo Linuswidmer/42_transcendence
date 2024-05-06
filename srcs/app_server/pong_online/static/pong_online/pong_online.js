@@ -90,20 +90,26 @@ class Game extends HTMLElement {
 		<div id="keyPrompt">move up: 'a' --- move down: 'd'</div>
 	
 		<div id="centeredContent">
-			<div class="container" id="pongGamePage">
-				<div id="scoreBoard">
-				<div class="card-body">
-						<div id="leftPlayerName">Left player: </div>
-						<div id="leftScore"></div>
-					</div>
-					<div id="vs">VS</div>
-					<div class="card-body">
-						<div id="rightPlayerName">Right player: </div>
-						<div id="rightScore"></div>
-					</div>
-				</div>
+		<div class="container" id="pongGamePage">
+		<div id="scoreBoard">
+		<div class="card-body">
+		<div id="leftPlayerName">Left player: </div>
+		<div id="leftScore"></div>
+		</div>
+		<div id="vs">VS</div>
+		<div class="card-body">
+		<div id="rightPlayerName">Right player: </div>
+		<div id="rightScore"></div>
+		</div>
+		</div>
+		<div style="margin-bottom:5px">
+			<button class="btn btn-primary" id="blue">Blue</button>
+			<button class="btn btn-success" id="green">Green</button>
+			<button class="btn btn-warning" id="yellow">Yellow</button>
+		</div>
 				<canvas id="pongCanvas" width="600" height="400"></canvas>
 			</div>
+			
 			<button class="btn buttonblue" id="startGameButton">Start</button>
 			<button class="btn buttonblue" id="leaveGame">Leave Game</button>
 		</div>
@@ -125,6 +131,24 @@ class Game extends HTMLElement {
 		this.leave_game_button.addEventListener('click',
 		this.handle_leave_game_button_click);
 		window.addEventListener('beforeunload', this.handle_beforeunload);
+		// Get references to the buttons and canvas
+		this.blueButton = document.getElementById('blue');
+		this.greenButton = document.getElementById('green');
+		this.yellowButton = document.getElementById('yellow');
+		this.canvas = document.getElementById('pongCanvas');
+
+		// Add event listeners to the buttons
+		this.blueButton.addEventListener('click', () => {
+			this.canvas.style.backgroundColor = 'blue';
+		});
+
+		this.greenButton.addEventListener('click', () => {
+			this.canvas.style.backgroundColor = 'green';
+		});
+
+		this.yellowButton.addEventListener('click', () => {
+			this.canvas.style.backgroundColor = 'yellow';
+});
     }
 
 	norm2height(relativeY) {
