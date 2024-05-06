@@ -4,7 +4,7 @@ class tournamentStats extends HTMLElement{
 	constructor(){
 		super();
 		var tournament_data = JSON.parse(this.getAttribute('tournamentData'));
-		console.log('Constructor tournament stats custom called: ', tournament_data)
+		//console.log('Constructor tournament stats custom called: ', tournament_data)
 
 		// Get rounds container
 		const roundsContainer = document.getElementById('rounds');
@@ -48,7 +48,7 @@ class tournamentStats extends HTMLElement{
 				// Add a click event listener
 				matchLink.addEventListener('click', function(event) {
 					const statsURL = '/singleGameStats/' + matchKey + '/';
-					console.log('Game link clicked: ', statsURL);
+					//console.log('Game link clicked: ', statsURL);
 					//history.pushState("", "", statsURL);
 					router(statsURL);
 				});

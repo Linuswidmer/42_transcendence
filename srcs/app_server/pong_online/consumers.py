@@ -13,6 +13,8 @@ from .GameDataCollector import GameDataCollector
 from django.contrib.auth.models import User
 import asyncio
 from asgiref.sync import sync_to_async
+from channels.db import database_sync_to_async
+from django.contrib.auth import authenticate
 
 logger = logging.getLogger("__name__")
 logging.basicConfig(level=logging.INFO)
@@ -26,6 +28,7 @@ from pong_online.lobby import Lobby
 from enum import Enum
 
 
+
 class apiConsumer(AsyncWebsocketConsumer):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
@@ -33,13 +36,20 @@ class apiConsumer(AsyncWebsocketConsumer):
 		self.lobby = Lobby()
 		self.listen_group_name = None
 		self.listen_match = None
+		self.authenticated = False
+		self.last_sent_time = 0
+		self.interval = 3
 
 	async def connect(self):
 		await self.accept()
 
+		await self.channel_layer.group_add("lobby", self.channel_name)
+
 		await self.send(
 			text_data=json.dumps({"type": "connect", "api_id": self.id})
 		)
+
+		await self.send("You must authenticate before issuing commands.")
 
 	async def disconnect(self, close_code):
 		await self.send(
@@ -47,8 +57,106 @@ class apiConsumer(AsyncWebsocketConsumer):
 		)
 		await self.close()
 
+	@database_sync_to_async
+	def verify_user(self, username, password):
+		user = authenticate(username=username, password=password)
+		return user is not None
+
+
+	async def handle_match(self, option, args):
+		response = "match" + ": "
+		if not option:
+			response += "no option provided"
+
+		elif option == "list":
+			response += json.dumps(self.lobby.get_all_matches())
+
+		elif option == "create":
+			self.lobby.add_match("remote")
+			response += "created match successfully"
+			await self.channel_layer.group_send(
+				"lobby",
+				{"type": "group_lobby_update"}
+			)
+
+		elif option == "delete" and len(args) == 1:
+			delete_candidate = self.lobby.get_match(args[0])
+			if not (delete_candidate):
+				response += "not deleted: match does not exist"
+			else:
+				if (len(delete_candidate.get_registered_players()) != 0):
+					response += "cannot delete, players are already registered"
+				else:
+					self.lobby.delete_match(delete_candidate)
+					response += "deleted match"
+					await self.channel_layer.group_send(
+						"lobby",
+						{"type": "group_lobby_update"}
+					)
+
+		elif option == "addplayer" and len(args) == 2:
+			matchname = args[0]
+			playername = args[1]
+
+			if self.lobby.get_match(matchname):
+				await self.channel_layer.group_send(
+					"lobby",
+					{"type": "process_api", "action": "addplayer", "username": playername, "matchname": matchname}
+				)
+				response += "added " + args[1] + " to match " + args[0]
+			else:
+				response += option + ": match does not exist"
+			
+			await self.channel_layer.group_send(
+				"lobby",
+				{"type": "group_lobby_update"}
+			)
+		else:
+			response += option + ": not a valid option"
+		return response
+
+	async def handle_exit(self, option, args):
+		await self.disconnect("user closed connection")
+		return
+
+	async def handle_listen(self, option, args):
+		if not option:
+			response = "no option provided"
+		elif await self.listen_to_match(option):
+			response = "listen succesful"
+		else:
+			response = option + ": not a valid option"
+		return response
+
+	async def handle_help(self, option, args):
+		help_text = """
+		Here are the available commands and options:
+
+		match:
+			- list: Lists all matches.
+			- create: Creates a new match.
+			- delete [matchname]: Deletes the match with the given name. The match must not have any registered players.
+			- addplayer [matchname] [playername]: Adds the player with the given name to the match with the given name.
+
+		exit: Closes the connection.
+
+		listen:
+			- [matchname]: Starts listening to the match with the given name.
+			- stop: stops listening to the match with the given name.
+
+		help: lists available commands.
+		"""
+		return help_text
+
+	COMMANDS = {
+		'match': handle_match,
+		'exit': handle_exit,
+		'listen': handle_listen,
+		'help': handle_help,
+	}
+
 	async def receive(self, text_data):
-		print("api_text_data: ", text_data)
+		#print("api_text_data: ", text_data)
 		# Split the received text into command and arguments
 		if text_data.strip() == "":
 			response = "Error: Empty command"
@@ -59,60 +167,63 @@ class apiConsumer(AsyncWebsocketConsumer):
 		command = tokens.pop(0)
 		option = tokens.pop(0) if tokens else None
 		args = tokens
+		response = None
 
-		response = command + ": "
-		if command == "match":
-			if not option:
-				response += "no option provided"
-
-			elif option == "list":
-				response += json.dumps(self.lobby.get_all_matches())
-
-			elif option == "create" and len(args) == 1:
-				if self.lobby.add_match(args[0]):
-					response += "created match successfully"
-				else:
-					response += option + ": match name already exists"
-
-			elif option == "addplayer" and len(args) == 2:
-				success, message, match = self.lobby.register_player_match(args[1], args[0])
-				if success:
-					response += "added player successfully"
-				else:
-					response += option + ": " + message
-
-			elif option == "listen" and len(args) == 1:
-				if await self.listen_to_match(args[0]):
-					return
-				else:
-					response += option + ": valid arguments are a valid match ID or stop"
+		if not self.authenticated:
+			is_valid = await self.verify_user("admin", command)
+			if is_valid:
+				await self.send("authentication succesful: enjoy this incredibly useful api")
+				self.authenticated = True
+				response = await self.handle_help(None, None)
+				await self.send(response)
 			else:
-				response += option + ": not a valid option"
-
-		elif command == "exit":
-			await self.disconnect("user closed connection")
+				await self.send("wrong password, try again")
 			return
-		
-		elif command == "listen":
-			if await self.listen_to_match(option):
-				return
-			else:
-				response += option + ": not a valid option"
 
+		handler = self.COMMANDS.get(command)
+		if handler is not None:
+			response = await handler(self, option, args)
 		else:
-			response += "invalid command"
+			await self.send("Invalid command.")
 
-		await self.send(response)
+		if response:
+			await self.send(response)
 	
+	async def process_api(self, event):
+		pass
+	
+	async def set_is_playing(self, event):
+		pass
+
+	async def send_to_group(self, event):
+		current_time = time.time()
+		if current_time - self.last_sent_time < self.interval:
+			# It hasn't been long enough since the last message was sent.
+			return
+
+		identifier = event.get("identifier", "")
+		if identifier == "game_update":
+			extracted_data = event["entity_data"]
+			if event["entity_data"]["game_over"]:
+				response = "Game over: " + str(extracted_data)
+			else:
+				response = extracted_data
+			await self.send(
+				text_data=json.dumps(response)
+			)
+		
+		self.last_sent_time = current_time
+
+
 	async def listen_to_match(self, option):
 		if option == "stop":
-			print("Listen stop")
+			#print("Listen stop")
 			if self.listen_group_name:
 				await self.channel_layer.group_discard(self.listen_group_name, self.channel_name)
 				self.listen_group_name = None
 			return True
 		elif option in self.lobby.get_all_matches():
-			print("Listen start")
+			#print("Listen start")
 			self.listen_group_name = option
 			self.listen_match = self.lobby.get_match(option)
 			await self.channel_layer.group_add(self.listen_group_name, self.channel_name)
@@ -124,19 +235,24 @@ class apiConsumer(AsyncWebsocketConsumer):
 		self.listen_group_name = None
 		self.listen_match = None
 
-	async def group_game_state_update(self, event):
-		# print("game_state:", " leon:", event["entity_data"]["leon"]["relativeY"], " local_opponent:", event["entity_data"]["local_opponent"]["relativeY"])
-		extracted_data = {name: event["entity_data"][name] for name in self.listen_match.get_registered_players()}
-		if event["entity_data"]["game_over"]:
-			response = "Game over: " + str(extracted_data)
-		else:
-			response = extracted_data
+	# async def group_game_state_update(self, event):
+	# 	#print("game_state:", " leon:", event["entity_data"]["leon"]["relativeY"], " local_opponent:", event["entity_data"]["local_opponent"]["relativeY"])
+	# 	# extracted_data = {name: event["entity_data"][name] for name in self.listen_match.get_registered_players()}
+	# 	# if event["entity_data"]["game_over"]:
+	# 	# 	response = "Game over: " + str(extracted_data)
+	# 	# else:
+	# 	# 	response = extracted_data
 
-		# await asyncio.sleep(3)
-		await self.send(
-			text_data=json.dumps(response)
-		)
+	# 	# await asyncio.sleep(3)
+	# 	await self.send(
+	# 		text_data=json.dumps(event)
+	# 	)
 
+	async def group_lobby_update(self, event):
+		pass
+
+	async def process_lobby_update_in_consumer(self, json_from_client):
+		pass
 
 class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#global class variable to try some things without the db
@@ -150,7 +266,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		MultiplayerConsumer.n_connected_websockets += 1
-		print("number of connected websockets:", MultiplayerConsumer.n_connected_websockets)
+		#print("number of connected websockets:", MultiplayerConsumer.n_connected_websockets)
 		
 		self.username = ""
 		self.game_group_name = ""
@@ -180,12 +296,12 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 	async def disconnect(self, close_code):
 		try:
-			print("username in disconnect: ", self.username)
+			#print("username in disconnect: ", self.username)
 			user = await sync_to_async(User.objects.select_related('profile').get)(username=self.username)
 			profile = user.profile
 			profile.logged_in = False
 			await sync_to_async(profile.save)()
-			print("User logged_in ", profile.logged_in)
+			#print("User logged_in ", profile.logged_in)
 		except User.DoesNotExist:
 			pass
 		
@@ -202,7 +318,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#describing the type of message to deal with the information accordingly
 	async def receive(self, text_data):
 		logger.debug("data received in receive: %s", text_data)
-		print("receive:", text_data)
+		#print("receive:", text_data)
 
 		json_from_client = json.loads(text_data)
 
@@ -226,19 +342,19 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 					self.game_group_name,
 					{"type": "set_is_playing"}
 				)			
+		##print("...................")
+		#print("consumer: ", self.username, " | in_game: ", self.in_game, " | is_playing: ", self.is_playing, " | in_tm: ", self.tournament_started)
+		#print("game_group: ", self.game_group_name, " | tournament_group: ", self.tournament_group_name)
+		#print("matches: ", self.lobby.matches)
+		#print("tournaments: ", self.lobby.tournaments)
+		#print("registered players", self.lobby.registered_players_total)
 		#print("...................")
-		print("consumer: ", self.username, " | in_game: ", self.in_game, " | is_playing: ", self.is_playing, " | in_tm: ", self.tournament_started)
-		# print("game_group: ", self.game_group_name, " | tournament_group: ", self.tournament_group_name)
-		# print("matches: ", self.lobby.matches)
-		# print("tournaments: ", self.lobby.tournaments)
-		# print("registered players", self.lobby.registered_players_total)
-		# print("...................")
 		
 		# if a client cloeses the window or leaves the page, this is
 		if message_type == "player_left" or message_type == "leave" or message_type == "unusual_leave":
 			#player left during a match --> loses 
 			if (self.in_game and self.is_playing):
-				print(self.username, " #1")
+				#print(self.username, " #1")
 				self.in_game = False
 				self.tournament_started = False
 				self.tournament_group_name = False
@@ -251,7 +367,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 					)
 			#player left before a match started, that is not a tournament --> leaves game
 			elif (self.in_game and not self.is_playing and not self.tournament_group_name):
-				print(self.username, " #2", )
+				#print(self.username, " #2", )
 				await self.process_lobby_update_in_consumer({"action": "leave", 'username': self.username, 'modus': self.match.modus})
 				if (self.match and (self.match.modus != 'local' and self.match.modus != 'ai') or not self.match):
 					await self.channel_layer.group_send(
@@ -260,11 +376,11 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 					)
 			#player left tournament lobby before tournament started --> leaves tournament
 			elif (not self.in_game and self.tournament_group_name and not self.tournament_started):
-				print(self.username, " #3")
+				#print(self.username, " #3")
 				await self.process_lobby_update_in_consumer({"action": "leave_tournament", "tournament_id": self.tournament_group_name})
 			#player left before a match started in a tournament --> loses
 			elif (self.in_game and self.tournament_started):
-				print(self.username, " #4")
+				#print(self.username, " #4")
 				#simulate the game as played
 				asyncio.create_task(self.game_loop(self.match.modus))
 				if self.hosts_game:
@@ -276,7 +392,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 					)
 			#player left the tournament lobby after the tournament started --> loses next game
 			elif (not self.in_game and self.tournament_started):
-				print(self.username, " #5")
+				#print(self.username, " #5")
 				tournament = self.lobby.tournaments[self.tournament_group_name]
 				# add § in front of the player name
 				for i in range(len(tournament.players)):
@@ -333,7 +449,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 	async def set_is_playing(self, event):
 		self.is_playing = True
-		#print("consumer: ", self.username, " | in_game: ", self.in_game, " | is_playing: ", self.is_playing)
+		##print("consumer: ", self.username, " | in_game: ", self.in_game, " | is_playing: ", self.is_playing)
 
 	async def send_initial_game_view_data(self):
 		#for remote get the match from the lobby. Fix that the key is sent in this request
@@ -365,6 +481,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 
 	#register: put consumer in group (match_id as group_name) -> thats were game updates will be published to
 	async def process_lobby_update_in_consumer(self, json_from_client):
+		#print("json from client process lobby update:", json_from_client)
 		action = json_from_client.get("action", "")
 		match_id = json_from_client.get("match_id", "")
 		tournament_id = json_from_client.get("tournament_id", None)
@@ -457,9 +574,9 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				return
 		
 		if action == "leave_tournament":
-			print("leave tournament called by: ", self.username)
+			#print("leave tournament called by: ", self.username)
 			success, message = self.lobby.unregister_player_tournament(self.username, tournament_id)
-			print("success: ", success, " | message: ", message)
+			#print("success: ", success, " | message: ", message)
 			if success:
 				self.game_group_name = ""
 				self.tournament_group_name = ""
@@ -470,7 +587,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				self.hosts_game = False
 				await self.send(text_data=json.dumps({"type": "leave_tournament", "tournament_id": tournament_id}))
 				await self.channel_layer.group_discard(
-    				tournament_id, self.channel_name
+					tournament_id, self.channel_name
 				)
 				json_from_client["type"] = "group_lobby_update"
 				await self.channel_layer.group_send(
@@ -510,7 +627,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		if modus == "ai":
 			local_opponent_name = "AI_Ursula"
 		if modus == 'local':
-			local_opponent_name = 'DUMP_LOCAL'
+			local_opponent_name = 'Local'
 		self.in_game = True
 		self.hosts_game = True
 		self.match = self.lobby.create_local_match(modus, ai_level)
@@ -532,6 +649,13 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			self.hosts_game = True
 		await self.send(text_data=json.dumps({"type": "join", "modus": "remote"}))
 
+	async def process_api(self, event):
+		if (event["username"] != self.username):
+			return
+		if (event["action"] == "addplayer"):
+				#print("JOIN PROCESS API")
+				await self.receive(json.dumps({"type": 'lobby_update', 'action': 'join',
+					'match_id': event["matchname"], 'username': self.username, 'modus': 'remote'}))
 
 	async def group_lobby_update(self, event):
 		basic_update = {"type": "lobby_update"}
@@ -550,7 +674,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		)
 
 	async def end_game_player_left(self,event):
-		print("end_game_player_left called by: ", self.username, " is hosting game: ", self.hosts_game)
+		#print("end_game_player_left called by: ", self.username, " is hosting game: ", self.hosts_game)
 		self.in_game = False
 		self.is_playing = False
 		if self.hosts_game:
@@ -576,7 +700,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			basic_update["error"] = event["error"]
 
 		if "action" in event and "redirect_to_tournament_stats" in event["action"]:
-			print("over from ", self.username)
+			#print("over from ", self.username)
 			self.game_group_name = ""
 			self.tournament_group_name = ""
 			self.in_game = False
@@ -598,12 +722,12 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		else:
 			return None
 
-		# print("---------------")
-		# print("in TM update from ", self.username)
-		# print("tournament players: ", tournament.players)
-		# print("tournament number of players: ", tournament.number_players, " | round: ", tournament.round)
-		# print("tournament matches: ", tournament.matches)
-		# print("---------------")
+		#print("---------------")
+		#print("in TM update from ", self.username)
+		#print("tournament players: ", tournament.players)
+		#print("tournament number of players: ", tournament.number_players, " | round: ", tournament.round)
+		#print("tournament matches: ", tournament.matches)
+		#print("---------------")
 
 		# if full do matchmaking and send start_round to all group members
 		if (len(tournament.matches) > 0 and (tournament.round != 0 and len(tournament.players) == tournament.number_players / 2**(tournament.round))
@@ -614,13 +738,13 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 				match_index = tournament.players.index(self.username) // 2
 				match_id = tournament.matches[match_index].group_name
 				opponent = tournament.get_opponent(self.username)
-				#print('opponent of ', self.username, ' is ', opponent)
+				##print('opponent of ', self.username, ' is ', opponent)
 				#check if opponent is still in TM:
 				if not opponent.startswith('§'):
 					basic_update["match_id"] = match_id
 					basic_update["action"] = "start_tournament_round"
 				elif opponent.startswith('§'):
-					#print(self.username, ' start both games and leave')
+					##print(self.username, ' start both games and leave')
 					await self.register_opponent(opponent[1:], match_id)
 					await self.process_lobby_update_in_consumer({type: 'lobby_update', 'action': 'join', 'match_id': match_id, 'tournament_id': self.tournament_group_name, 'username': self.username, 'modus': 'remote'})
 					self.hosts_game = True
@@ -716,8 +840,8 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 	#here we could import the game from another file to keep things separated
 	async def game_loop(self, modus):
 		players = self.match.registered_players
-		print("AI LEVEL: ", self.match.ai_level)
-		print("players: ", players, " matchGN: ", self.match.group_name, "match TMID: ", self.match.tournament_id)
+		#print("AI LEVEL: ", self.match.ai_level)
+		#print("players: ", players, " matchGN: ", self.match.group_name, "match TMID: ", self.match.tournament_id)
 		self.gdc = await sync_to_async(self.create_data_collector)(modus, players[1], players[0], self.match.group_name, self.match.tournament_id)
 		logger.debug("new game loop started")
 		pong_instance = Pong(self.gdc)
@@ -764,7 +888,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 		#remove player from registred after match, so the player can play again
 		#also remove the match from the lobby and update the lobby
 		if (modus == 'remote'):
-			print('DELETE MATCH?: ', self.match.tournament_id)
+			#print('DELETE MATCH?: ', self.match.tournament_id)
 			if (self.match.tournament_id == None):
 				self.lobby.delete_match(self.match)
 			self.lobby.remove_registered_player(players[0])
@@ -800,7 +924,7 @@ class MultiplayerConsumer(AsyncWebsocketConsumer):
 			message = {"type": "show_tournament_lobby", "tournament_id" : self.match.tournament_id}
 			
 			#if tournament is finished, delete from lobby and redirect to tournament stats
-			#print("tournament matches in gameloop: ", tournament.matches)
+			##print("tournament matches in gameloop: ", tournament.matches)
 			if (len(tournament.matches) == 0):
 				message["finished"] = "True"
 				tournament.django_tournament.data = tournament.data

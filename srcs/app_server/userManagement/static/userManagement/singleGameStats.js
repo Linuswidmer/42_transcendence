@@ -1,7 +1,7 @@
 class singleGameStats extends HTMLElement {
 	constructor() {
 		super();
-		console.log("constructor singleGameStats custom element");
+		//console.log("constructor singleGameStats custom element");
 
 		var statsTable = document.getElementById('stats-table');
 		var rows = statsTable.getElementsByTagName('tr');
@@ -16,21 +16,6 @@ class singleGameStats extends HTMLElement {
 			} else if (player2Stat > player1Stat) {
 				cells[2].classList.add('winner-border'); 
 			}
-		}
-
-		// Get the h2 element
-		var h2 = document.getElementById('vs');
-
-		// Get the scores
-		var userScore = parseInt(cells[0].innerText);
-		var opponentScore = parseInt(cells[2].innerText);
-
-		// Add the crown emoji to the player with the higher score
-		if (userScore > opponentScore) {
-			h2.innerHTML = '👑 ' + h2.innerHTML;
-			console.log('User wins');
-		} else if (opponentScore > userScore) {
-			h2.innerHTML = h2.innerHTML + ' 👑';
 		}
 	}
 }

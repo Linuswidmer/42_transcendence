@@ -225,7 +225,7 @@
                                     <td class="text-center">{{ gld.game.matchDate }} {{ gld.game.matchTime }} </td>
                                     {% if gld.opponentGameStats.user == None %}
 										<td class="text-center">Guest</td>
-									{% elif gld.opponentGameStats.user.username == "DUMP_LOCAL" %}
+									{% elif gld.opponentGameStats.user.username == "Local" %}
 										<td class="text-center">Local Opponent</td>
 									{% else %}
 										<td class="text-center"><a class="btn buttonblue" href="/profile/{{ gld.opponentGameStats.user }}" data-link>{{ gld.opponentGameStats.user }}</a></td>

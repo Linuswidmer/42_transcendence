@@ -6,8 +6,8 @@ class Tournament extends HTMLElement {
 
 		this.username = this.getAttribute('data-username');
 		this.tournament_id = this.getAttribute('data-tournament');
-		console.log("username tournament:", this.username);
-		console.log("tournament name:", this.tournament_id);
+		//console.log("username tournament:", this.username);
+		//console.log("tournament name:", this.tournament_id);
 
         this.innerHTML = /*html*/`
 				<div class="tournament-container">
@@ -115,34 +115,34 @@ class Tournament extends HTMLElement {
 
 	handle_leave_tournament_button_click= () => {
 		window.removeEventListener('beforeunload', this.handle_beforeunload);
-		console.log("Leave Tournament button clicked");
+		//console.log("Leave Tournament button clicked");
 		ws.send(JSON.stringify({type: 'leave', 'location': 'leave tmbtn tournament'})); //action': 'leave_tournament', 'tournament_id': this.tournament_id}));
 	}
 
 	handle_message(e) {
 		try{
 			const data = JSON.parse(e.data);
-			console.log("ws.onmessage:", data);
+			//console.log("ws.onmessage:", data);
 			if (data.action === "start_tournament_round"){
-				console.log("starting round", data.match_id)
+				//console.log("starting round", data.match_id)
 				window.removeEventListener('beforeunload', this.handle_beforeunload);
 				//window.location.href = window.location.origin + '/lobby/';
 				ws.send(JSON.stringify({type: 'lobby_update', 'action': 'join', 'match_id': data.match_id, 'tournament_id': data.tournament_id, 'username': this.username, 'modus': 'remote'}));
 			}
 			if (data.type === "tournament_lobby_update") {
-				console.log('Update tm lobby');
+				//console.log('Update tm lobby');
 				this.updateTournamentLobby(data);
 			}
 			if (data.type === "redirect_to_tournament_stats") {
 				window.removeEventListener('beforeunload', this.handle_beforeunload);
-				console.log(window.location.origin + '/tournament_stats/' + data.tournament_id + '/');
+				//console.log(window.location.origin + '/tournament_stats/' + data.tournament_id + '/');
 				let tournamentStatsUrl = '/tournament_stats/' + data.tournament_id + '/';
 				//history.pushState("", "", tournamentStatsUrl);
 				router(tournamentStatsUrl);
 			}
 			if (data.type === "leave_tournament"){
 				window.removeEventListener('beforeunload', this.handle_beforeunload);
-				console.log(window.location.origin + '/lobby/');
+				//console.log(window.location.origin + '/lobby/');
 				//history.pushState("", "", "/lobby/");
 				router("/lobby/");
 			}
@@ -154,7 +154,7 @@ class Tournament extends HTMLElement {
 				});
 			}
 		} catch (error) {
-			console.log('Error parsing JSON:', error);
+			//console.log('Error parsing JSON:', error);
 		}
 	}
 }

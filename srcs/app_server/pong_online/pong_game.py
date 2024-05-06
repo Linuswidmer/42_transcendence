@@ -78,7 +78,7 @@ class Ball(Entity):
 
 	def top_or_bottom_paddle_hit(self, paddle, ball_rect):
 		intersection_rect = ball_rect.clip(paddle.hitbox)
-		#print("Intersecting collision rect: ", intersection_rect)
+		##print("Intersecting collision rect: ", intersection_rect)
 
 		#since we are in the colliderect we have a collsion. If the intersect_rect
 		# is higher, this means there is more vertical overlap, so we have a hit on
@@ -117,7 +117,7 @@ class Ball(Entity):
 			# In this case, we reverse the x-direction of the ball to simulate a bounce.
 			bounce = self.top_or_bottom_paddle_hit(paddle, new_ball_rect)
 			if bounce == "SIDE":
-				#print("SIDE HIT")
+				##print("SIDE HIT")
 				initialYDirection = -1 if self.dy < 0 else 1
 				newXDirection = -1 if self.dx > 0 else 1
 				relativeIntersectToPaddleCenter = (paddle.y + (paddle.height / 2)) - self.y
@@ -130,11 +130,11 @@ class Ball(Entity):
 				self.dy = currentVel * math.sin(bouncAngle) * initialYDirection
 
 			elif bounce == "TOP_OR_BOTTOM" : # The ball hit the top or bottom of the paddle
-				#print("TOP OR BOTTOM")
+				##print("TOP OR BOTTOM")
 				self.dy *= -1
 
-			else:
-				print("NO HIT: Something went wrong")
+			#else:
+				#print("NO HIT: Something went wrong")
 
 			# increase or decrease dy of the ball if the paddle is moving
 			# the same/ or opposite direction respectively
@@ -208,9 +208,9 @@ class Pong:
 		self.screen_height = SCREEN_HEIGHT
 	
 	def get_initial_entity_data(self, game_data):
-		print(game_data)
+		#print(game_data)
 		player1_id, player2_id = list(game_data.keys())
-		print("Player IDs: ", player1_id, player2_id)
+		#print("Player IDs: ", player1_id, player2_id)
 		return {'entities': {
 					  'ball': {
 						  'entity_type': 'ball',
@@ -380,7 +380,7 @@ def main():
 		# entity_data = asyncio.run(async_wrapper(pong_instance, dt, game_data))
 		should_run = not entity_data["game_over"]
 		#send all entity data to clients, so they can render the game
-		# print(entity_data)
+		#print(entity_data)
 
 if __name__ == "__main__":
 	main()

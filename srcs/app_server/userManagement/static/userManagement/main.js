@@ -13,13 +13,13 @@ import {removeKeyEventListeners} from "../pong_online/pong_online.js"
 const protocol = window.location.protocol.match(/^https/) ? 'wss' : 'ws';
 	// const wsUrl = protocol + `://${window.location.host}/ws/pong/${roomName}/`; // this has to be modified to be a unique identifier
 
-console.log(protocol + '://' + window.location.host + '/ws/pong_online/game/')
+//console.log(protocol + '://' + window.location.host + '/ws/pong_online/game/')
 let ws = new WebSocket(
 	protocol + '://' + window.location.host + '/ws/pong_online/game/'
 );
 
 ws.onopen = function(event) {
-	console.log('WebSocket connection established');
+	//console.log('WebSocket connection established');
 	ws.send(JSON.stringify({type: 'firstContactfromClient'}));
 }
 
@@ -64,43 +64,43 @@ function getFirstPath(urlPath) {
 let lastRoute = null;
 
 function router(url=null, callback=null, event=null, data=null) {
-	console.log("url at router start:", url);
-	console.log("event in router:", event);
+	//console.log("url at router start:", url);
+	//console.log("event in router:", event);
 	let currentURLPath = lastRoute;
 	//when an event like popstate is passed
 	if (typeof url !== 'string') {
-		console.log("WARNING URL SHOULD BE STRING");
+		//console.log("WARNING URL SHOULD BE STRING");
 	}
 	if (event) {
-		console.log("EVENT");
+		//console.log("EVENT");
 		removeKeyEventListeners()
 		ws.send(JSON.stringify({type: 'unusual_leave'}));
 		let requestedURLPath = getFirstPath(url);
 		currentURLPath = requestedURLPath;
 	}
 
-	console.log('Current urlPath: ', currentURLPath)
-	console.log('Requested URL: ', url)
-	console.log('last route', lastRoute)
+	//console.log('Current urlPath: ', currentURLPath)
+	//console.log('Requested URL: ', url)
+	//console.log('last route', lastRoute)
 
 	
 	if (url && !event) {
 		let requestedURLPath = getFirstPath(url);
-		console.log('Requested urlPath: ', requestedURLPath)
+		//console.log('Requested urlPath: ', requestedURLPath)
 		// Check if WebSocket is already open
 		if (data == 'leave'){
-			console.log('REFRESH TRIGGERED');
-			console.log('ws state: ', ws.readyState);
+			//console.log('REFRESH TRIGGERED');
+			//console.log('ws state: ', ws.readyState);
 			if (ws.readyState === WebSocket.OPEN) {
 				// WebSocket is already open, send data
 				ws.send(JSON.stringify({ type: 'unusual_leave' }));
-				console.log('UNUSUAL REFRESH SEND ALREADY OPEN');
+				//console.log('UNUSUAL REFRESH SEND ALREADY OPEN');
 			} else {
 				// WebSocket is not open yet, wait for it to open
 				ws.onopen = function() {
 					// WebSocket is now open, send data
 					ws.send(JSON.stringify({ type: 'unusual_leave' }));
-					console.log('UNUSUAL REFRESH SEND ON OPEN');
+					//console.log('UNUSUAL REFRESH SEND ON OPEN');
 				}
 			}
 			history.replaceState("", "", "/lobby/");
@@ -110,7 +110,7 @@ function router(url=null, callback=null, event=null, data=null) {
 				//I think this triggers yanns leave game logic, should also handle normal leave button presses, since I commented the ws.send out there
 				removeKeyEventListeners()
 				ws.send(JSON.stringify({type: 'unusual_leave'}));
-				console.log('UNUSUAL MEME LEAVE');
+				//console.log('UNUSUAL MEME LEAVE');
 			}
 			history.replaceState("", "", url)
 		}else if (currentURLPath === '/tournament/'){
@@ -119,12 +119,12 @@ function router(url=null, callback=null, event=null, data=null) {
 				//ws.send(JSON.stringify({'type': 'player_left', 'player': this.username}));
 				removeKeyEventListeners()
 				ws.send(JSON.stringify({type: 'unusual_leave'}));
-				console.log('UNUSUAL TM LEAVE');
+				//console.log('UNUSUAL TM LEAVE');
 			}
 			history.replaceState("", "", url)
 		}else {
 			history.pushState("", "", url);
-			console.log('USUAL PUSH');
+			//console.log('USUAL PUSH');
 		}
 		currentURLPath = requestedURLPath//getFirstPath(location.pathname);
 	}
@@ -132,16 +132,15 @@ function router(url=null, callback=null, event=null, data=null) {
 	lastRoute = currentURLPath;
 	let view = routes[currentURLPath];
 
-	// console.log("entire url", location.href);
-	console.log("router path:", currentURLPath);
-	console.log("router view:", view);
+	//console.log("entire url", location.href);
+	//console.log("router path:", currentURLPath);
+	//console.log("router view:", view);
 
 
 	let content = document.getElementById('content');
 
     if (view) {
 		let fetchUrl = typeof view.fetch === 'function' ? view.fetch() : view.fetch;
-		document.title = fetchUrl;
 		fetch(fetchUrl)
 		.then(response => response.text())
 		.then(html => {
@@ -152,7 +151,7 @@ function router(url=null, callback=null, event=null, data=null) {
 		})
 		.catch(error => console.error('Error loading logged-in content:', error));
     } else {
-		console.log("router else");
+		//console.log("router else");
         history.replaceState("", "", "/");
         router("/", null, null);
     }
@@ -166,7 +165,7 @@ window.addEventListener("click", e => {
         router(e.target.href.replace(e.target.origin, '')); //@LEON: das brauchen wir ja dann nicht mehr 
     } else if (e.target.matches("[data-logout]")) {
 		e.preventDefault();
-		console.log("logout pressed");
+		//console.log("logout pressed");
 		let logoutUrl = "/accounts/logout/"; //maybe dynamic url later from django template
 		fetch(logoutUrl, {
 			method: "POST",
@@ -176,7 +175,7 @@ window.addEventListener("click", e => {
 		})
 		.then(response => {
 			if (response.ok) {
-				console.log("logout successful");
+				//console.log("logout successful");
         		router(e.target.href.replace(e.target.origin, '')); //@LEON: das brauchen wir ja dann nicht mehr 
 			} else {
 				console.error("Logout failed");

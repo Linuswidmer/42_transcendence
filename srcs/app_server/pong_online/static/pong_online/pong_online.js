@@ -24,7 +24,7 @@ class Ball extends Entity {
 	}
 
 	draw(context) {
-		// console.log("draw ball", this);
+		//console.log("draw ball", this);
 		context.beginPath();
 		context.arc(this.x, this.y, this.radius, 0, Math.PI*2);
 		context.fillStyle = "#000";
@@ -37,7 +37,7 @@ class Paddle extends Entity {
     constructor(username, x, y, screen_pos) {
 		super(x, y, 'paddle');
 		this.username = username;
-		// console.log("paddle username:", this.username);
+		//console.log("paddle username:", this.username);
 		this.screen_pos = screen_pos;
 		this.score_display = document.getElementById(this.screen_pos === 'left' ? 'leftScore' : 'rightScore');
     }
@@ -59,7 +59,7 @@ class Paddle extends Entity {
     }
 
     draw(context) {
-		// console.log("draw paddle", this);
+		//console.log("draw paddle", this);
 		context.fillStyle = '#000';
 		context.fillRect(this.x, this.y, this.width, this.height);
     }
@@ -70,7 +70,7 @@ class Game extends HTMLElement {
         super();
 
 		this.username = this.getAttribute('data-username');
-		console.log("username pong_online:", this.username);
+		//console.log("username pong_online:", this.username);
 		
 		this.entities = [];
 		this.iterationTime = null;
@@ -83,11 +83,11 @@ class Game extends HTMLElement {
 			'KeyL': false,
 		}
 
-
         this.innerHTML = /*html*/`
 		<div id="loggedInMessage">Logged in as: </div>
 
 		<div id="userPrompt">Waiting for BLAH to start the game: </div>
+		<div id="keyPrompt">move up: 'a' --- move down: 'd'</div>
 	
 		<div id="centeredContent">
 			<div class="container" id="pongGamePage">
@@ -136,7 +136,7 @@ class Game extends HTMLElement {
 	}
 
 	handle_beforeunload = () => {
-		console.log("HANDLE BEFORE UNLOAD TRIGGERED")
+		//console.log("HANDLE BEFORE UNLOAD TRIGGERED")
 		ws.send(JSON.stringify({'type': 'player_left', 'player': this.username, 'location': 'beforeunload pong_online'}));
 		this.remove_event_listener();
 	}
@@ -144,7 +144,7 @@ class Game extends HTMLElement {
 	handle_start_game_button_click = () => {
 		this.start_game_button.style.display = 'none';
 		ws.send(JSON.stringify({'type': 'start', 'modus': 'remote'}));
-		console.log('Start button remote clicked');
+		//console.log('Start button remote clicked');
 	}
 	
 	handle_leave_game_button_click = () => {
@@ -153,7 +153,7 @@ class Game extends HTMLElement {
 		//ws.send(JSON.stringify({type: 'leave', 'action': 'leave', 'username': this.username, 'modus': this.modus}));
 		//history.pushState("", "", "/lobby/");
 		router("/lobby/");
-		console.log('leaveButtonclicked');
+		//console.log('leaveButtonclicked');
 	}
 
 	add_event_listener() {
@@ -170,7 +170,7 @@ class Game extends HTMLElement {
     handle_message(e) {
         try {
             const data = JSON.parse(e.data);
-			// console.log("pong message: ", data)
+			//console.log("pong message: ", data)
 			if (data.type === 'send_to_group') {
 				switch (data.identifier) {
 					case 'deliver_init_game_data':
@@ -186,13 +186,13 @@ class Game extends HTMLElement {
 						break;
 					case 'start_game':
 						this.add_event_listener();
-						console.log('received start game msg from server');
+						//console.log('received start game msg from server');
 						break;
 					case 'initial_game_data':
 						this.handle_initial_game_data(data);
 						break;
 					default:
-						console.log('Unknown message', data);
+						//console.log('Unknown message', data);
 				}
 			} else if (data.type == 'redirect_to_tournament_stats') {
 				this.remove_event_listener();
@@ -208,7 +208,7 @@ class Game extends HTMLElement {
 				});
 			}
         } catch (error) {
-            console.log('Error parsing JSON:', error);
+            //console.log('Error parsing JSON:', error);
         }
     }
 
@@ -230,7 +230,7 @@ class Game extends HTMLElement {
 
 		for (var id in data.initial_entity_data.entities) {
 			var entity = data.initial_entity_data.entities[id];
-			console.log("handle_entity:", entity);
+			//console.log("handle_entity:", entity);
 			if (entity.entity_type === 'ball') {
 				this.entities[id] = new Ball(this.norm2width(entity.relX), this.norm2height(entity.relY));
 				this.entities[id].set_radius(this.norm2height(entity.relBallRadius));
@@ -239,11 +239,11 @@ class Game extends HTMLElement {
 				this.entities[id].set_dimensions(this.norm2width(entity.relPaddleWidth),
 					this.norm2height(entity.relPaddleHeight));
 			} else {
-				console.log("Warning: an unknown entity was send by the server");
+				//console.log("Warning: an unknown entity was send by the server");
 			}
 		}
 		this.modus = data.modus;
-		console.log("modus:", this.modus);
+		//console.log("modus:", this.modus);
 	}
 
 	handle_keydown = (event) => {
@@ -256,10 +256,10 @@ class Game extends HTMLElement {
 			data = {'playerId': this.username, 'type': 'keypress', 'action': 'moveDown'};
 		} else if (this.modus === 'local' && event.code === 'KeyJ' && !this.keys[event.code]) {
 			this.keys[event.code] = true;
-			data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'moveUp'};
+			data = {'playerId': 'Local', 'type': 'keypress', 'action': 'moveUp'};
 		} else if (this.modus === 'local' && event.code === 'KeyL'  && !this.keys[event.code]) {
 			this.keys[event.code] = true;
-			data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'moveDown'};
+			data = {'playerId': 'Local', 'type': 'keypress', 'action': 'moveDown'};
 		}
 	
 		if (typeof data !== 'undefined' && ws.readyState === WebSocket.OPEN) {
@@ -277,10 +277,10 @@ class Game extends HTMLElement {
 			data = {'playerId': this.username, 'type': 'keypress', 'action': 'stopMoveDown'};
 		} else if (this.modus === 'local' && event.code === 'KeyJ') {
 			this.keys[event.code] = false;
-			data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'stopMoveUp'};
+			data = {'playerId': 'Local', 'type': 'keypress', 'action': 'stopMoveUp'};
 		} else if (this.modus === 'local' && event.code === 'KeyL') {
 			this.keys[event.code] = false;
-			data = {'playerId': 'DUMP_LOCAL', 'type': 'keypress', 'action': 'stopMoveDown'};
+			data = {'playerId': 'Local', 'type': 'keypress', 'action': 'stopMoveDown'};
 		}
 	
 		if (typeof data !== 'undefined' && ws.readyState === WebSocket.OPEN) {
@@ -290,8 +290,8 @@ class Game extends HTMLElement {
 
 	handle_game_update(data) {
 		let server_entities = data.entity_data.entities;
-		// console.log("server entities", server_entities);
-		// console.log("local entities:", this.entities);
+		//console.log("server entities", server_entities);
+		//console.log("local entities:", this.entities);
 		for (var id in server_entities) {
 			var entity = this.entities[id];
 	
@@ -317,8 +317,13 @@ class Game extends HTMLElement {
 		var left_name_display = document.getElementById('leftPlayerName');
 		var right_name_display = document.getElementById('rightPlayerName');
 		var prompt = document.getElementById('userPrompt');
+		var keyprompt = document.getElementById('keyPrompt');
 
 		this.modus = data['modus'];
+
+		if (this.modus == 'local'){
+			keyprompt.textContent = "Left Player: move up: 'a' --- move down: 'd'\t||\t Right Player: move up: 'j' --- move down: 'l'"
+		}
 
 		if (data.hasOwnProperty("player1")){
 			if (data["player1"] == this.username) {

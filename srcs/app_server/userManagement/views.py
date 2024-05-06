@@ -139,7 +139,7 @@ def change_password(request):
 		)
 
 def profile_list(request):
-	all_users = User.objects.exclude(username="DUMP_LOCAL")
+	all_users = User.objects.exclude(username="Local")
 	return render(request, "userManagement/profile_list.html", {"registered_users": all_users})
 
 @login_required(login_url='/home')
@@ -215,15 +215,15 @@ def callback(request):
 			'code': code,
 			'redirect_uri': os.environ.get("OAUTH_CALLBACK_URL"),
 		}
-		print(data)
+		#print(data)
 		try:
 			response = requests.post('https://api.intra.42.fr/oauth/token', data=data)
 			response_data = response.json()
-			print(response_data)
+			#print(response_data)
 			access_token = response_data['access_token']
 			user_info_response = requests.get('https://api.intra.42.fr/v2/me', headers={'Authorization': f'Bearer {access_token}'})
 			user_info = user_info_response.json()
-			# print(user_info)
+			#print(user_info)
 
 			username = user_info['login']
 			email = user_info['email']
@@ -249,7 +249,7 @@ def callback(request):
 				user.save()
 				return redirect('/')
 		except requests.exceptions.RequestException as e:
-			print("Request Exception:", e)
+			#print("Request Exception:", e)
 			message = 'Failed to authenticate user. Please try again.'
 			messages.error(request, message)
 			return render(request, "onepage.html")
