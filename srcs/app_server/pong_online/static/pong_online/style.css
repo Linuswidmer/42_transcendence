@@ -11,6 +11,10 @@
   border-bottom: 1px solid #03EEF5;
 }
 
+#ingrid {
+  background-color: #6a0dad !important;
+  color: white !important;
+}
  /* Styling for buttons inside the navbar */
  .navbar-button {
   background-color: transparent;
@@ -20,6 +24,25 @@
   cursor: pointer;
   transition: color 0.3s;
   font-size: 16px;
+  display: flex;
+}
+
+.navbar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.navbar-button {
+  color: white;
+  text-decoration: none;
+  padding: 8px 12px;
+  margin-left: 10px;
+}
+
+.navbar-button:first-child {
+  margin-left: 0;
 }
 
 .navbar-button:hover {
