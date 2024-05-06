@@ -1,6 +1,8 @@
 {% include 'includes/navbar.html' %}
 <h1 id="match-name" class="text-center text-dark my-4 stylish-font">Game: {{ gld.game.matchName }}</h1>
-{% if gld.opponentGameStats.user.username != "Local" %}
+{% if gld.opponentGameStats.user.username == None %}
+    <h2 id="vs" class="text-center text-dark my-4 stylish-font"> <a href="/profile/{{ gld.userGameStats.user }}" data-link> {{ gld.userGameStats.user }} </a> vs. Guest</a></h2>
+{% elif gld.opponentGameStats.user.username != "Local" %}
 	<h2 id="vs" class="text-center text-dark my-4 stylish-font"> <a href="/profile/{{ gld.userGameStats.user }}" data-link> {{ gld.userGameStats.user }} </a> vs. <a href="/profile/{{ gld.opponentGameStats.user }}" data-link>{{ gld.opponentGameStats.user }}</a></h2>
 {% else %}
 	<h2 id="vs" class="text-center text-dark my-4 stylish-font"> <a href="/profile/{{ gld.userGameStats.user }}" data-link> {{ gld.userGameStats.user }} </a> vs. Local Opponent</a></h2>
