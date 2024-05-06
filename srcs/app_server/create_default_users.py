@@ -28,13 +28,13 @@ username = 'AI_Ursula'
 user_exists = User.objects.filter(username=username).exists()
 
 if not user_exists:
-    User.objects.create_user(username=username, password=os.getenv('USERS_OTHER_PW'))
+    User.objects.create_user(username=username, password=make_password(''))
 
 username = 'DUMP_LOCAL'
 user_exists = User.objects.filter(username=username).exists()
 
 if not user_exists:
-    User.objects.create_user(username=username, password=os.getenv('USERS_OTHER_PW'))
+    User.objects.create_user(username=username, password=make_password(''))
 
 username = 'admin'
 user_exists = User.objects.filter(username=username).exists()
