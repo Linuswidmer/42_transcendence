@@ -45,12 +45,6 @@ class apiConsumer(AsyncWebsocketConsumer):
 
 		await self.channel_layer.group_add("lobby", self.channel_name)
 
-		await self.send(
-			text_data=json.dumps({"type": "connect", "api_id": self.id})
-		)
-
-		await self.send("You must authenticate before issuing commands.")
-
 	async def disconnect(self, close_code):
 		await self.send(
 			text_data=json.dumps({"type": "disconnect", "api_id": self.id, "reason": close_code})
@@ -98,12 +92,16 @@ class apiConsumer(AsyncWebsocketConsumer):
 			matchname = args[0]
 			playername = args[1]
 
-			if self.lobby.get_match(matchname):
+			match_candidate = self.lobby.get_match(matchname)
+			if match_candidate:
 				await self.channel_layer.group_send(
 					"lobby",
 					{"type": "process_api", "action": "addplayer", "username": playername, "matchname": matchname}
 				)
-				response += "added " + args[1] + " to match " + args[0]
+				if playername in match_candidate.get_registered_players():
+					response += "added " + args[1] + " to match " + args[0]
+				else:
+					response += "player doesnt exist or cannot be added"
 			else:
 				response += option + ": match does not exist"
 			
@@ -172,7 +170,7 @@ class apiConsumer(AsyncWebsocketConsumer):
 		if not self.authenticated:
 			is_valid = await self.verify_user("admin", command)
 			if is_valid:
-				await self.send("authentication succesful: enjoy this incredibly useful api")
+				await self.send("Authentication successful")
 				self.authenticated = True
 				response = await self.handle_help(None, None)
 				await self.send(response)
