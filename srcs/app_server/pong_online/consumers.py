@@ -38,7 +38,7 @@ class apiConsumer(AsyncWebsocketConsumer):
 		self.listen_match = None
 		self.authenticated = False
 		self.last_sent_time = 0
-		self.interval = 3
+		self.interval = 0.5
 
 	async def connect(self):
 		await self.accept()
@@ -98,6 +98,7 @@ class apiConsumer(AsyncWebsocketConsumer):
 					"lobby",
 					{"type": "process_api", "action": "addplayer", "username": playername, "matchname": matchname}
 				)
+				await asyncio.sleep(1)
 				if playername in match_candidate.get_registered_players():
 					response += "added " + args[1] + " to match " + args[0]
 				else:
@@ -121,7 +122,7 @@ class apiConsumer(AsyncWebsocketConsumer):
 		if not option:
 			response = "no option provided"
 		elif await self.listen_to_match(option):
-			response = "listen succesful"
+			response = "listen " + option + " successful"
 		else:
 			response = option + ": not a valid option"
 		return response
@@ -194,21 +195,24 @@ class apiConsumer(AsyncWebsocketConsumer):
 		pass
 
 	async def send_to_group(self, event):
+		identifier = event.get("identifier", "")
+		if identifier != "game_update":
+			return
+		
 		current_time = time.time()
-		if current_time - self.last_sent_time < self.interval:
+		if current_time - self.last_sent_time < self.interval and event["entity_data"]["game_over"] == False:
 			# It hasn't been long enough since the last message was sent.
 			return
 
-		identifier = event.get("identifier", "")
-		if identifier == "game_update":
-			extracted_data = event["entity_data"]
-			if event["entity_data"]["game_over"]:
-				response = "Game over: " + str(extracted_data)
-			else:
-				response = extracted_data
-			await self.send(
-				text_data=json.dumps(response)
-			)
+		
+		extracted_data = event["entity_data"]
+		if event["entity_data"]["game_over"]:
+			response = "Game over: " + str(extracted_data)
+		else:
+			response = extracted_data
+		await self.send(
+			text_data=json.dumps(response)
+		)
 		
 		self.last_sent_time = current_time
 
