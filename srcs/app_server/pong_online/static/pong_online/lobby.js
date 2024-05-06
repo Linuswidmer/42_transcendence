@@ -22,7 +22,7 @@ class Lobby extends HTMLElement {
 		}
 
         this.innerHTML = /*html*/`
-			<div>
+			<div class="ponggame">
 				<button class="btn buttonblue" id="create_game">Create remote game</button>
 				<button class="btn buttonblue" id="create_tournament">Create tournament</button>
 				<button class="btn buttonblue" id="play_ai">Play against AI</button>

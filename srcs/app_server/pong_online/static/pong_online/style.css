@@ -65,12 +65,13 @@ a {
 /* ---------------------------- MAIN -------------------------------*/
 
 body, html, h1 {
-  background-color: #fff; /* Light gray background */
-  color: #6a0dad;
+  background-color: #fff !important; /* Light gray background */
+  color: #6a0dad !important;
   margin: 0;
   padding: 0;
   height: 100%;
   width: 100%;
+  text-align: center !important;
 }
 
 #wrapper {
@@ -270,6 +271,17 @@ input {
 
 canvas {
     border: 2px solid black;
+}
+
+.ponggame{
+  position: fixed;
+  top: 200px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50%;
+  max-width: 600px;
+  background-color: #ffffff;
+  z-index: 999;
 }
 
 /* #leftPlayerName {
