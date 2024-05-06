@@ -83,11 +83,11 @@ class Game extends HTMLElement {
 			'KeyL': false,
 		}
 
-
         this.innerHTML = /*html*/`
 		<div id="loggedInMessage">Logged in as: </div>
 
 		<div id="userPrompt">Waiting for BLAH to start the game: </div>
+		<div id="keyPrompt">move up: 'a' --- move down: 'd'</div>
 	
 		<div id="centeredContent">
 			<div class="container" id="pongGamePage">
@@ -317,8 +317,13 @@ class Game extends HTMLElement {
 		var left_name_display = document.getElementById('leftPlayerName');
 		var right_name_display = document.getElementById('rightPlayerName');
 		var prompt = document.getElementById('userPrompt');
+		var keyprompt = document.getElementById('keyPrompt');
 
 		this.modus = data['modus'];
+
+		if (this.modus == 'local'){
+			keyprompt.textContent = "Left Player: move up: 'a' --- move down: 'd'\t||\t Right Player: move up: 'j' --- move down: 'l'"
+		}
 
 		if (data.hasOwnProperty("player1")){
 			if (data["player1"] == this.username) {
