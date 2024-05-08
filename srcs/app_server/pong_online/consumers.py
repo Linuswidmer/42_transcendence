@@ -194,6 +194,9 @@ class apiConsumer(AsyncWebsocketConsumer):
 	async def set_is_playing(self, event):
 		pass
 
+	async def process_keypress(self, keypress):
+		pass
+
 	async def send_to_group(self, event):
 		identifier = event.get("identifier", "")
 		if identifier != "game_update":

@@ -23,6 +23,14 @@ ws.onopen = function(event) {
 	ws.send(JSON.stringify({type: 'firstContactfromClient'}));
 }
 
+window.addEventListener('beforeunload', function(event) {
+    // Close WebSocket connection
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'unusual_leave' }));
+        ws.close();
+    }
+});
+
 function getCookie(name) {
 	let cookieValue = null;
 	if (document.cookie && document.cookie !== '') {

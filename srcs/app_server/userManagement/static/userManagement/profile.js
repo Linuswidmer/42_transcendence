@@ -10,6 +10,7 @@ class Profile extends HTMLElement {
 		let updateProfileUrl = this.getAttribute('data-updateProfileUrl');
 		let updateUserUrl = this.getAttribute('data-updateUserUrl');
 		let changePasswordUrl = this.getAttribute('data-changePasswordUrl');
+		let followUrl = this.getAttribute('data-followUrl');
 
 
 		let allProfilesBtn = document.getElementById("allProfilesBtn");
@@ -45,6 +46,31 @@ class Profile extends HTMLElement {
 				renderForm(changePasswordUrl, "password", "Change Password");
 			});
 		}
+
+		let followBtn = document.getElementById("followBtn");
+		if (followBtn) {
+			followBtn.addEventListener("click", function() {
+				fetch(followUrl, {
+					method: "POST",
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded',
+						"X-CSRFToken": getCookie("csrftoken")
+					},
+					body: new URLSearchParams({
+						'follow': followBtn.value
+					})
+				})
+				.then(response => {
+					if (response.ok) {
+						router(location.pathname, null, null, null);
+					} else {
+						console.error("(un)follow failed");
+					}
+				})
+				.catch(error => console.error('Error:', error));
+			});
+		}
+
 
 		function renderForm(url, containerId, title) {
 		//console.log("triggered")
@@ -129,22 +155,39 @@ class Profile extends HTMLElement {
 									reloadProfilePage(username);
 								}
 							} else {
+                                if (response.status == 413)
+                                {
+                                    var extractedMessage = "The file size is too large. Please upload a file that is less than 1MB.";
+                                    const modal = document.getElementById(`${containerId}Modal`);
+                                    const errorContainerOld = document.querySelector(".alert-danger");
+                                    if (!errorContainerOld){
+                                        const errorContainer = document.createElement("div");
+                                        errorContainer.classList.add("alert", "alert-danger");
+                                        errorContainer.textContent = extractedMessage;
+                                        modal.querySelector(".modal-body").appendChild(errorContainer);
+                                    } else {
+                                        errorContainerOld.textContent = extractedMessage;
+                                    }
+
+                                }
+                                else {
 								// Login failed
 								// Display error message
 								response.text().then(errorMessage => {
-								var extractedMessage = extractErrorMessage(errorMessage);
-								const modal = document.getElementById(`${containerId}Modal`);
-								const errorContainerOld = document.querySelector(".alert-danger");
-								if (!errorContainerOld){
-									const errorContainer = document.createElement("div");
-									errorContainer.classList.add("alert", "alert-danger");
-									errorContainer.textContent = extractedMessage;
-									modal.querySelector(".modal-body").appendChild(errorContainer);
-								} else {
-									errorContainerOld.textContent = extractedMessage;
-								}
-							});
-						}})
+                                    var extractedMessage = extractErrorMessage(errorMessage);
+                                    const modal = document.getElementById(`${containerId}Modal`);
+                                    const errorContainerOld = document.querySelector(".alert-danger");
+                                    if (!errorContainerOld){
+                                        const errorContainer = document.createElement("div");
+                                        errorContainer.classList.add("alert", "alert-danger");
+                                        errorContainer.textContent = extractedMessage;
+                                        modal.querySelector(".modal-body").appendChild(errorContainer);
+                                    } else {
+                                        errorContainerOld.textContent = extractedMessage;
+                                    }
+                                });
+                            }
+                            }})
 						.catch(error => console.error('Error:', error));
 						});
 								} else {

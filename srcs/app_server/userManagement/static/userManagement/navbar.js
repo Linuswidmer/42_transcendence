@@ -10,10 +10,50 @@ class Navbar extends HTMLElement {
 		if (ws.readyState == WebSocket.OPEN){
 			//console.log('WS was already open in navbar')
 			ws.send(JSON.stringify({type: 'test'}));
+			fetch('/get_username/')
+			.then(response => {
+				// Check if the response is OK
+				if (!response.ok) {
+					console.log("not authenticated");
+				}
+				// Parse the JSON response
+				return response.json();
+			})
+			.then(data => {
+				// Extract the username from the JSON response
+				const username = data.username;
+				ws.send(JSON.stringify({type: 'username', 'username': username}));
+				// Now you can use the username variable as needed
+			})
+			.catch(error => {
+				// Log any errors
+				console.error('Fetch error:', error);
+			});
+	
 		}else {
 			ws.onopen = function(event) {
 				//console.log('WS open in navbar after waiting')
 				ws.send(JSON.stringify({type: 'test'}));
+				fetch('/get_username/')
+				.then(response => {
+					// Check if the response is OK
+					if (!response.ok) {
+						console.log("not authenticated");
+					}
+					// Parse the JSON response
+					return response.json();
+				})
+				.then(data => {
+					// Extract the username from the JSON response
+					const username = data.username;
+					ws.send(JSON.stringify({type: 'username', 'username': username}));
+					// Now you can use the username variable as needed
+				})
+				.catch(error => {
+					// Log any errors
+					console.error('Fetch error:', error);
+				});
+	
 			}
 		}
 
@@ -31,15 +71,11 @@ class Navbar extends HTMLElement {
 		</div>
         `;
         
-		let logoBtn = document.querySelector("#logoBtn");
         let lobbyBtn = this.querySelector("#lobbyBtn");
 		let profileBtn = this.querySelector("#profileBtn");
 		let logoutBtn = this.querySelector("#logoutBtn");
 
-        // State
-		logoBtn.onclick = () => {
-			//console.log("logo button on navbar tag clicked");
-        };
+
         lobbyBtn.onclick = () => {
 			//console.log("lobby button on navbar tag clicked");
         };

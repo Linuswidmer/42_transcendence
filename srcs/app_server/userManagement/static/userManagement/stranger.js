@@ -123,7 +123,7 @@ function renderForm(url, containerId, title) {
                         }
                     })
                     .then(response => {
-                        //console.log(response);
+                       // console.log(response);
                         if (!response.url.includes(url)) {
                             const modal = document.getElementById(`${containerId}Modal`);
                             modal.classList.remove('show');

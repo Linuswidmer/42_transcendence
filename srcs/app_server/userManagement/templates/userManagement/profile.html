@@ -33,16 +33,13 @@
             </div>
             {% if user != request.user %}
             <div style="width: 200px; margin: 20px;">
-                <form method="post" action="{% url 'userManagement:follow' username=user.username %}">
-                    {% csrf_token %}
-                    <div class="buttons has-addons">
-                        {% if user.profile in request.user.profile.follows.all %}
-                        <button class="button is-danger btn btn-danger btn-block" name="follow" value="unfollow">Unfollow</button>
-                        {% else %}
-                        <button class="button is-success btn btn-success btn-block" name="follow" value="follow">Follow</button>
-                        {% endif %}
-                    </div>
-                </form>
+                <div class="buttons has-addons">
+                    {% if user.profile in request.user.profile.follows.all %}
+                    <button class="button is-danger btn btn-danger btn-block" id="followBtn" name="follow" value="unfollow">Unfollow</button>
+                    {% else %}
+                    <button class="button is-success btn btn-success btn-block" id="followBtn" name="follow" value="follow">Follow</button>
+                    {% endif %}
+                </div>
             </div>
             {% endif %}
         </div>
@@ -335,6 +332,7 @@
 
 <pong-profile 
     data-username="{{user.username}}"
+    data-followUrl="{% url 'userManagement:follow' username=user.username %}"
 	data-allProfilesUrl="{% url 'userManagement:profile_list' %}"
 	data-updateProfileUrl="{% url 'userManagement:update_profile' %}"
     data-updateUserUrl="{% url 'userManagement:update_user' %}"

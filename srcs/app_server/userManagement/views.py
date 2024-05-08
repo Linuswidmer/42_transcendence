@@ -22,7 +22,12 @@ def dashboard(request):
 	return render(request, "userManagement/dashboard.html")
 
 def index(request, username=None, tournament_id=None, match_id=None):
-	return render(request, "onepager/index.html")
+	if request.user.is_authenticated:
+		request.user.profile.logged_in = True
+		request.user.profile.save()
+		return render(request, "onepager/index.html", {"username": request.user.username})
+	else:
+		return render(request, "onepager/index.html")
 
 def	home(request):
 	if request.user.is_authenticated:
@@ -75,6 +80,7 @@ def register_guest(request):
 			{"form": form}
 		)
 
+@login_required(login_url='/')
 #view for updating existing user
 def update_user(request):
 	if request.method == "GET":
@@ -94,6 +100,7 @@ def update_user(request):
 			{"form": form}
 		)
 
+@login_required(login_url='/')
 #view for changing profile picture
 def update_profile(request):
 	if request.method == "GET":
@@ -104,7 +111,6 @@ def update_profile(request):
 		)
 	elif request.method == "POST":
 		current_avatar = request.user.profile.avatar
-		#delete the current avatar if there is a new one
 		if current_avatar and request.FILES and str(current_avatar) != "profile_images/default.jpg":
 			avatar_path = os.path.join(settings.MEDIA_ROOT, str(current_avatar))
 			if os.path.exists(avatar_path):
@@ -119,6 +125,7 @@ def update_profile(request):
 			{"form": form}
 		)
 
+@login_required(login_url='/')
 def change_password(request):
 	if request.method == "GET":
 		form = PasswordChangeForm(instance=request.user)
@@ -149,6 +156,7 @@ def profile(request, username):
 	sb.build()
 	return render(request, "userManagement/profile.html", {"user": user, "stats": sb})
 
+@login_required(login_url='/')
 def follow(request, username):
 	user = get_object_or_404(User, username=username)
 	if request.method == "POST":
@@ -257,3 +265,10 @@ def callback(request):
 		message = 'Failed to reach API. Please try again.'
 		messages.error(request, message)
 		return render(request, "onepagr.html")
+
+def get_username(request):
+    if request.user.is_authenticated:
+        username = request.user.username
+        return JsonResponse({'username': username})
+    else:
+        return JsonResponse({'username': ''})
