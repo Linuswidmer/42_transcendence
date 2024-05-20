@@ -2,16 +2,6 @@
 
 . /opt/venv/bin/activate
 
-# Function to handle SIGTERM signal
-term_handler() {
-    kill $GUNICORN_PID $DAPHNE_PID
-    wait $GUNICORN_PID $DAPHNE_PID
-    exit 0
-}
-
-# Trap the SIGTERM signal
-trap 'term_handler' SIGTERM
-
 if [ "$DATABASE" = "postgres" ]
 then
         echo "Waiting for postgres..."
@@ -42,5 +32,4 @@ daphne -b 0.0.0.0 -p 8001 app_server.asgi:application -v 0 &
 # Save the PID of the daphne server
 DAPHNE_PID=$!
 
-# Wait indefinitely
-while true; do sleep 1; done
+wait $GUNICORN_PID $DAPHNE_PID

@@ -10,6 +10,7 @@ services:
       - ./app_server:/usr/src/app
       - static_volume:/usr/src/app/staticfiles
       - ./app_server/media:/usr/src/app/media
+    init: true
     expose:
       - 8000
       - 8001
@@ -31,6 +32,7 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - django
+    init: true
     ports:
       - 8443:8443
     volumes:
