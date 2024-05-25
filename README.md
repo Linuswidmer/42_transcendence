@@ -70,7 +70,7 @@ To predict the ball position at the AI oppenent's wall the following needs to be
  - Construct a trinangle with the ball's direction β, the distance from the ball to the AI opponent's wall, to calculate the length of the oppsite site of the angle β.
  - Add the absolute value of the calculated side length to the ball's y position. This is like projecting the bounce to virtual added fields, because the result can be outside the field. If the result is not between 0 and HEIGHT, than there is at least one bounce.
  - Since at the sidewalls the angle of incidence equals the angle of the reflection we just need to 'eliminate' the added virtual canvases. Because every bounce creates on extra projection layer. The actual y_hit can therefore be extracted with the MODULO-operation.
- - The last thing to consider is the amount of bounces. For an even amout of bounces, the y_hit on the real canvas is just the result of the modulo operation. If not we need to subtract the result of the modulo operation from the HEIGHT. (The above red example might be irritating: If the y_virtual_hit is negative, than the absolute value is taken and in could it would be trated as the pink example)
+ - The last thing to consider is the amount of bounces. For an even amout of bounces, the y_hit on the real canvas is just the result of the modulo operation. If not we need to subtract the result of the modulo operation from the HEIGHT. (The above red example might be irritating: If the y_virtual_hit is negative, than the absolute value is used and it would be trated as the pink example, the y_virtual_hit would then be greater than HEIGHT)
 
 ### 2.1 Statistics and Dashboard
 
