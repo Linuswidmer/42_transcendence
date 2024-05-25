@@ -63,7 +63,7 @@ Requires `docker` and `docker-compose`
 
 ### 2.1 AI-opponent
 In order to develop a challenging computer opponent, two methods were considered: training a model or using geometry to predict the ball's position. Although the NEAT-trained model performed very well, the project's requirement that the AI opponent must only view the game once per second made a well-trained model almost useless. This is because the decisions made between each second are based on an outdated game state. In contrast, with geometry, you can accurately calculate where the ball will be in the next second. Therefore, you only need to know the current ball position, direction, and game dimensions. With this information, and some additional work to account for (multiple) bounces on the sidewalls, we created a challenging AI opponent. Here’s how:
-![ai_geom_overview](https://raw.githubusercontent.com/Linuswidmer/42_transcendence/main/images/pong_game.png)
+![ai_geom_overview](https://raw.githubusercontent.com/Linuswidmer/42_transcendence/main/images/ai_geometry_overview.png)
 
 ### 2.1 Statistics and Dashboard
 
