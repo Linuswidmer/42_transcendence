@@ -63,10 +63,10 @@ Requires `docker` and `docker-compose`
 
 ### 2.1 AI-opponent
 In order to develop a challenging computer opponent, two methods were considered: training a model or using geometry to predict the ball's position. Although the NEAT-trained model performed very well, the project's requirement that the AI opponent must only view the game once per second made a well-trained model almost useless. This is because the decisions made between each second are based on an outdated game state. In contrast, with geometry, you can accurately calculate where the ball will be in the next second. Therefore, you only need to know the current ball position, direction, and game dimensions. With this information, and some additional work to account for (multiple) bounces on the sidewalls, we created a challenging AI opponent. Here’s how:
-![transcendence1](https://raw.githubusercontent.com/Linuswidmer/42_transcendence/main/images/ai_geometry_overview.png)
+![transcendence2](https://raw.githubusercontent.com/Linuswidmer/42_transcendence/main/images/ai_geometry_overview.png)
 
 To predict the ball position at the AI oppenent's wall the following needs to be done. Let's have a closer look at the blue example:
-![transcendence1](https://raw.githubusercontent.com/Linuswidmer/42_transcendence/main/images/ai_prediction_example.png)
+![transcendence3](https://raw.githubusercontent.com/Linuswidmer/42_transcendence/main/images/ai_prediction_example.png)
  - Construct a trinangle with the ball's direction β, the distance from the ball to the AI opponent's wall, to calculate the length of the oppsite site of the angle β.
  - Add the absolute value of the calculated side length to the ball's y position. This is like projecting the bounce to virtual added fields, because the result can be outside the field. If the result is not between 0 and HEIGHT, than there is at least one bounce.
  - Since at the sidewalls the angle of incidence equals the angle of the reflection we just need to 'eliminate' the added virtual canvases. Because every bounce creates on extra projection layer. The actual y_hit can therefore be extracted with the MODULO-operation.
