@@ -66,7 +66,8 @@ In order to develop a challenging computer opponent, two methods were considered
 ![ai_geom_overview](https://raw.githubusercontent.com/Linuswidmer/42_transcendence/main/images/ai_geometry_overview.png)
 
 To predict the ball position at the AI oppenent's wall the following needs to be done:
-> - Construct a trinangle with the ball's direction, the distance from the ball to the AI opponent's wall
+ - Construct a trinangle with the ball's direction &#946, the distance from the ball to the AI opponent's wall, to calculate the length of the oppsite site of the angle &#946.
+ - 
 
 ### 2.1 Statistics and Dashboard
 
