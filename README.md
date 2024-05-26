@@ -105,8 +105,13 @@ To collect game data and show them on the users profile later the following rela
 
 When a game is started a class called `GameDataCollector` creates two `UserDataStats` (one for each user), on `Games` and optionally a `Tournaments` instance using Djangos ORM. During the game the `GameDataCollector` modifies the data of these instances. When the game is over, the instances are saved to the Postgre database.
 
-The dashboard on the users profile page gives an overview of the performance data for every
+The dashboard on the users profile page gives an overview of the overall player data, specific game data for each game type (AI, Local and Remote). The database only saves basic data. No calculated data is saved in the db in order to have a single source of truth. When the site is requested a class called `StatsBuilder` grabs all the relevant data from the databse to create the dashabord data.
+![ScreenShot](https://raw.githubusercontent.com/Linuswidmer/42_transcendence/main/images/game_tm_overview.png)
+![ScreenShot](https://raw.githubusercontent.com/Linuswidmer/42_transcendence/main/images/performance.png)
+![ScreenShot](https://raw.githubusercontent.com/Linuswidmer/42_transcendence/main/images/game_list.png)
 
+Through the list of all the games the player can view the collected data for the specific game.
+![ScreenShot](https://raw.githubusercontent.com/Linuswidmer/42_transcendence/main/images/game_stats.png)
 
 
   
