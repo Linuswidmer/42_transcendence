@@ -100,10 +100,12 @@ To collect game data and show them on the users profile later the following rela
 ![ScreenShot](https://raw.githubusercontent.com/Linuswidmer/42_transcendence/main/images/DB_schema.png)
 
 - `UserGameStats`: Data set which holds specific game performance data of one user. Therefore it has a one-to-one relation to a user and a many-to-one relation to a game, because always two `UserGameStats` reference one `Games`
-- `Games`: Data set which holds general game data which. It is referenced by two `UserGameStats`. It can reference a `Tournaments`
+- `Games`: Data set which holds general game data. It is referenced by two `UserGameStats`. It can reference a `Tournaments`
 - `Tournaments`: Data set which just holds an ID. A tournament is just a collection of games.
 
 When a game is started a class called `GameDataCollector` creates two `UserDataStats` (one for each user), on `Games` and optionally a `Tournaments` instance using Djangos ORM. During the game the `GameDataCollector` modifies the data of these instances. When the game is over, the instances are saved to the Postgre database.
+
+The dashboard on the users profile page gives an overview of the performance data for every
 
 
 
