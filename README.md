@@ -54,6 +54,27 @@ Requires `docker` and `docker-compose`
 ## Features
 
 ### 2.1 Containerization
+Our application used Docker and Docker Compose to create a scalable and efficient web application architecture. Our setup includes four containers, each serving a specific role in the application:
+
+-   **Nginx**: Handling HTTP/HTTPS requests, upgrading to websocket connections
+-   **Redis**: Used as a message broker and results backend, required for working with websockets in Django's channels framework
+-   **Django**: Core application logic, serving the backend. Specificallz using Gunicorn (HTTP requests) and Daphne (Websocket requests)
+-   **PostgreSQL**: As a relational database system.
+
+**Benefits of using Docker and (multiple) containers**
+
+The main benefit of using Docker is to ensure *consistency* & *portability*. Consitency means that the application runs the same way regardless of where it is deployed. Portability on the other hand describes that containers can be deployed across different environments with minimal configuration changes.
+
+We could have setup all services in one container, but using multiple containers  offers several advantages:
+
+-   **Separation of Concerns**: Each container is responsible for a specific service, which simplifies maintenance and development. Changes or updates to one service do not affect the others.
+-   **Resource Optimization**: Resources can be allocated and optimized for each service individually. For instance, the database container might need more memory, while the web server container might require more CPU.
+-   **Improved Fault Isolation**: If one service fails, it does not bring down the entire application. For example, if the Redis container fails, the rest of the application can continue to operate with limited functionality.
+-   **Enhanced Security**: Running services in separate containers enhances security by isolating them from each other. This limits the impact of potential vulnerabilities to a single service.
+
+**Drawbacks of using Docker and containers**
+While containerization offers many benefits, it had also it's drawbacks: In many parts of the development process, we had to restart an entire container when making minor changes, e.g. for working on the consumers in the Django container. As this became very tedious, we had to come up with a soltion. By running ``make dev`` the Django container launches the Django development server. This replaces the responsibility of nginx, but more importantly the built-in development server tracks changes made to files inside the Django application and restarts the application automatically.
+A similar behaviour could have probably been achived using ``docker compose watch``. Something that would be very intersting to investigate in future projects. 
 
 ### 2.1 Server-side pong & API
 
