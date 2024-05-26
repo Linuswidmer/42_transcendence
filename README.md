@@ -19,12 +19,12 @@
     </li>
     <li><a href="#features">Features</a></li>
 		<ul>
-	        <li><a href="#containerization">Containerization</a></li>
-	        <li><a href="#server-side-pong-and-API">Server-side Pong and API</a></li>
-	        <li><a href="#user-management">User Management</a></li>
-	        <li><a href="#OAuth">OAuth</a></li>
-	        <li><a href="#AI-Opponent">AI Opponent</a></li>
-	        <li><a href="#Statistics-and-dashboard">Statistics and Dashboard</a></li>
+	        <li><a href="#2.1-containerization">Containerization</a></li>
+	        <li><a href="#2.2-server-side-pong-and-API">Server-side Pong and API</a></li>
+	        <li><a href="#2.3-user-management">User Management</a></li>
+	        <li><a href="#2.4-OAuth">OAuth</a></li>
+	        <li><a href="#2.5-AI-Opponent">AI Opponent</a></li>
+	        <li><a href="#2.6-Statistics-and-dashboard">Statistics and Dashboard</a></li>
         </ul>
   </ol>
 </details>
@@ -76,13 +76,13 @@ We could have setup all services in one container, but using multiple containers
 While containerization offers many benefits, it had also it's drawbacks: In many parts of the development process, we had to restart an entire container when making minor changes, e.g. for working on the consumers in the Django container. As this became very tedious, we had to come up with a soltion. By running ``make dev`` the Django container launches the Django development server. This replaces the responsibility of nginx, but more importantly the built-in development server tracks changes made to files inside the Django application and restarts the application automatically.
 A similar behaviour could have probably been achived using ``docker compose watch``. Something that would be very intersting to investigate in future projects. 
 
-### 2.1 Server-side pong & API
+### 2.2 Server-side pong & API
 
-### 2.1 User management
+### 2.3 User management
 
-### 2.1 OAuth
+### 2.4 OAuth
 
-### 2.1 AI-opponent
+### 2.5 AI-opponent
 In order to develop a challenging computer opponent, two methods were considered: training a model or using geometry to predict the ball's position. Although the NEAT-trained model performed very well, the project's requirement that the AI opponent must only view the game once per second made a well-trained model almost useless. This is because the decisions made between each second are based on an outdated game state. In contrast, with geometry, you can accurately calculate where the ball will be in the next second. Therefore, you only need to know the current ball position, direction, and game dimensions. With this information, and some additional work to account for (multiple) bounces on the sidewalls, we created a challenging AI opponent. Here’s how:
 ![ScreenShot](https://raw.githubusercontent.com/Linuswidmer/42_transcendence/main/images/ai_geometry_overview.png)
 
@@ -93,6 +93,6 @@ To predict the ball position at the AI oppenent's wall the following needs to be
  - Since at the sidewalls the angle of incidence equals the angle of the reflection we just need to 'eliminate' the added virtual canvases. Because every bounce creates on extra projection layer. The actual y_hit can therefore be extracted with the MODULO-operation.
  - The last thing to consider is the amount of bounces. For an even amout of bounces, the y_hit on the real canvas is just the result of the modulo operation. If not we need to subtract the result of the modulo operation from the HEIGHT. (The above red example might be irritating: If the y_virtual_hit is negative, than the absolute value is used and it would be trated as the pink example, the y_virtual_hit would then be greater than HEIGHT)
 
-### 2.1 Statistics and Dashboard
+### 2.6 Statistics and Dashboard
 
 
