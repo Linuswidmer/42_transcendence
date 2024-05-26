@@ -103,6 +103,8 @@ To collect game data and show them on the users profile later the following rela
 - `Games`: Data set which holds general game data which. It is referenced by two `UserGameStats`. It can reference a `Tournaments`
 - `Tournaments`: Data set which just holds an ID. A tournament is just a collection of games.
 
-When a game is started a class calles `GameDataCollector` creates two `UserDataStats` (one for each user), on `Games` and optionally a `Tournaments` instance using Djangos ORM. During the game the `GameDataCollector` modifies the data of these instances. When the game is over, the instances are saved to the Postgre database.
+When a game is started a class called `GameDataCollector` creates two `UserDataStats` (one for each user), on `Games` and optionally a `Tournaments` instance using Djangos ORM. During the game the `GameDataCollector` modifies the data of these instances. When the game is over, the instances are saved to the Postgre database.
+
+
 
   
