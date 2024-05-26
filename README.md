@@ -113,10 +113,10 @@ The Player Stats section contians overall performance data unrelated to a game t
 The Game Stats section shows game type dependent performance data.
 ![ScreenShot](https://raw.githubusercontent.com/Linuswidmer/42_transcendence/main/images/performance.png)
 
-The All
+The All Games section lists all the games played by the user - including tournament games. The user can navigate to the game stats page by clicking the game.
 ![ScreenShot](https://raw.githubusercontent.com/Linuswidmer/42_transcendence/main/images/game_list.png)
 
-Through the list of all the games the player can view the collected data for the specific game.
+Through the list of all the games the player can view the collected data for the specific game. Again, the `StatsBuilder` class grabs both `UserGameStats` instances which reference a `Games` instance with the given match name. This data is then used to build up the page.
 ![ScreenShot](https://raw.githubusercontent.com/Linuswidmer/42_transcendence/main/images/game_stats.png)
 
 
