@@ -93,8 +93,8 @@ To predict the ball position at the AI oppenent's wall the following needs to be
  - Since at the sidewalls the angle of incidence equals the angle of the reflection we just need to 'eliminate' the added virtual canvases. Because every bounce creates on extra projection layer. The actual y_hit can therefore be extracted with the MODULO-operation.
  - The last thing to consider is the amount of bounces. For an even amout of bounces, the y_hit on the real canvas is just the result of the modulo operation. If not we need to subtract the result of the modulo operation from the HEIGHT. (The above red example might be irritating: If the y_virtual_hit is negative, than the absolute value is used and it would be trated as the pink example, the y_virtual_hit would then be greater than HEIGHT)
 
-Since the AI opponent knows the ball position at it's side of the game it knows where to go. It updates its position internally and in every refresh loop it tells the game with the same mechanism for the user paddle input if it needs to be moved up, down or stay in place. Different levels are acheived by adding a random error to the predicted position. The smaller (easier) the level, the bigger the range to chose the random offset, which is added to the predicted y_hit.
+Since the AI opponent knows the ball position at its side of the game it knows where to go. It updates its position internally and in every refresh loop it tells the game with the same mechanism for the user paddle input if it needs to be moved up, down or stay in place. Different levels are acheived by adding a random error to the predicted position. The smaller (easier) the level, the bigger the range to chose the random offset, which is added to the predicted y_hit.
 
 ### 2.6 Statistics and Dashboard
-
-
+To collect game data and show them on the users profile later the following relational database scheme is used:
+![ScreenShot](https://raw.githubusercontent.com/Linuswidmer/42_transcendence/main/images/DB_schema.png)
