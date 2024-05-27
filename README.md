@@ -77,6 +77,37 @@ While containerization offers many benefits, it had also it's drawbacks: In many
 A similar behaviour could have probably been achived using ``docker compose watch``. Something that would be very intersting to investigate in future projects. 
 
 ### 2.2 Server-side pong & API
+**The game itself**
+
+The pong game is implemented in python as it runs in our django backend. Having the game run in the backend makes manipulating or cheating the game more difficult as the only information that the client communicates with the server is whether a movement button is currently pressed or not. The server processes the button press information and every tick updates all the entities (ball, paddles). The collisions between ball and paddles are detected using pygames colliderect function. After the entities are updated the game state is published to all participating clients. This information is relative to the screen height/width, so the user can adapt to different canvas sizes in the front end.
+
+**Running the game on the server**
+
+Every client has a websocket connection when accessing our pong game. In the backend this websocket connection creates an instance of the asynchronous consumer class. This consumers class lets us send/receive data via the websocket connection. One of the two consumers that are part of a game of pong runs the game loop as part of the asynchonous event loop.
+
+**Drawbacks of running the game loop asynchronously**
+
+There are multiple problems with running a game loop asynchronously: Concurrency issues, complexity and therefore debugging difficulty, not garanteed determinism. In a future project we would try to implement the game loop synchronously with multiple threads, one for each game.
+
+
+**API**
+
+The api is designed to handle real-time communication for our lobby-system from the command line. In the backend it is also a handled as an asynchronous consumer. A connection to the api can be established via our small python script ([api.py](https://github.com/Linuswidmer/42_transcendence/blob/main/api.py)) that establishes a websocket connection to our server. First there is a user verification to prevent unauthorized access to our api endpoint. After being authenticated there are multiple commands to interact with our lobby system:
+- **match [option]**:
+	- **list**: Lists all matches.
+	- **create**: Creates a new match.
+	- **delete \<matchname>**: Deletes the match with the given name. The match must not have any registered players.
+	- **addplayer \<matchname> \<playername>**: Adds the player with the given name to the match with the given name.
+
+- **exit**: Closes the connection.
+
+- **listen [option]**:
+	- **\<matchname>**: Starts listening to the match with the given name.
+	- **stop**: stops listening to the match with the given name.
+
+- **help**: lists available commands.
+
+
 
 ### 2.3 User management
 
