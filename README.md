@@ -111,7 +111,10 @@ The api is designed to handle real-time communication for our lobby-system from 
 
 ### 2.3 User management
 
-### 2.4 OAuth
+### 2.4 OAuth2 authentification
+
+We implemented a remote authentification to let users log in with their 42 account. 
+We used the OAuth2 protocol which allowed us to request authorisation to private details in a user’s 42 account without getting their password. After registering our application, using our client ID and secret we could generate a token through a GET request, which was then sent in the header field of our POST request. We could then retrieve all the information needed from the current user and save his/her profile in our database. All the data was sent and received as JSON. 
 
 ### 2.5 AI-opponent
 In order to develop a challenging computer opponent, two methods were considered: training a model or using geometry to predict the ball's position. Although the NEAT-trained model performed very well, the project's requirement that the AI opponent must only view the game once per second made a well-trained model almost useless. This is because the decisions made between each second are based on an outdated game state. In contrast, with geometry, you can accurately calculate where the ball will be in the next second. Therefore, you only need to know the current ball position, direction, and game dimensions. With this information, and some additional work to account for (multiple) bounces on the sidewalls, we created a challenging AI opponent. Here’s how:
